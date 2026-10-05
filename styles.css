@@ -548,3 +548,28 @@ body.ft-no-scroll .mini-player-close{display:none!important}
 button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
 
 /* V1.5.6.14 startup runtime fix */
+
+/* V1.5.6.15 Apps Script search proxy */
+.proxy-setting-group{
+ margin-top:18px;padding:16px;border-radius:16px;
+ background:rgba(255,255,255,.035);border:1px solid rgba(255,255,255,.08)
+}
+.proxy-setting-group h3{margin:0 0 8px}
+.proxy-setting-group .form-row{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+#searchProxyUrlInput{
+ flex:1 1 420px;min-width:220px;padding:11px 12px;border-radius:10px;
+ border:1px solid rgba(255,255,255,.12);background:#0d1624;color:#fff
+}
+#searchProxyStatus.ok{color:#6ee7a8}
+#searchProxyStatus.err{color:#ff8f9d}
+
+/* V1.5.6.16 Simple Stable */
+.home-search .search-options,.home-search-results{display:none!important}
+.return-box{
+ margin-top:14px;
+ border:1px solid rgba(255,255,255,.08);
+ border-radius:18px;
+ padding:16px;
+ background:rgba(255,255,255,.035)
+}
+#homeSearchBtn{white-space:nowrap}

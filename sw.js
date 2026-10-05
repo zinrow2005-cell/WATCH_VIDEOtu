@@ -1,5 +1,5 @@
-const CACHE='watch-v15614';
-const ASSETS=['./','index.html','styles.css?v=15614','app.js?v=15614','manifest.webmanifest'];
+const CACHE='watch-v15616';
+const ASSETS=['./','index.html','styles.css?v=15616','app.js?v=15616','manifest.webmanifest'];
 
 self.addEventListener('install',function(e){
  self.skipWaiting();

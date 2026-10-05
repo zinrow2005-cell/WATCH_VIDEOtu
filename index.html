@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#0b1220">
-<title>WATCH_VIDEOtu V1.5.6.14</title>
+<title>WATCH_VIDEOtu V1.5.6.16</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=15614">
+<link rel="stylesheet" href="styles.css?v=15616">
 </head>
 <body>
 <header class="topbar">
@@ -79,23 +79,17 @@
       <div class="search-title">🔎 搜尋 YouTube</div>
       <div class="search-line">
         <input id="homeSearchInput" placeholder="輸入關鍵字，例如：恐龍、ABC、兒歌" autocomplete="off">
-        <button id="homeSearchBtn" class="primary search-go">搜尋</button>
+        <button id="homeSearchBtn" class="primary search-go">搜尋 YouTube</button>
       </div>
-      <div id="searchNodeStatus" class="search-hint">不需要 Google Cloud / API Key。搜尋結果直接顯示在 WATCH_VIDEOtu。</div>
-      <div class="search-options">
-        <select id="searchDuration">
-          <option value="">全部長度</option><option value="short">短片</option><option value="medium">中等</option><option value="long">長片</option>
-        </select>
-        <button id="searchMoreBtn" class="secondary hidden">載入更多</button>
-      </div>
-      <div id="homeSearchResults" class="home-search-results"></div>
+      <div id="searchNodeStatus" class="search-hint">搜尋會開啟 YouTube；找到影片後複製連結，再回來貼上即可播放。</div>
+      
 
       <div class="return-box">
-        <div class="quick-add-title">🎬 直接貼 YouTube 影片網址</div>
+        <div class="quick-add-title">📋 貼上 YouTube 影片網址</div>
         <div class="quick-add-line">
           <input id="quickUrlInput" placeholder="貼上 YouTube 影片網址" autocomplete="off">
           <select id="quickCategory"><option>英文</option><option>兒歌</option><option>卡通</option><option>故事</option><option>學習</option><option>其他</option></select>
-          <button id="quickPlayBtn">直接播放</button><button id="quickAddBtn">加入片庫</button>
+          <button id="quickPlayBtn">▶ 立即播放</button><button id="quickAddBtn">＋ 收藏</button>
         </div>
         <div id="quickAddStatus" class="search-hint"></div>
 <div id="autoCategoryPreview" class="auto-category-preview hidden"></div>
@@ -155,12 +149,12 @@
     <h3 class="manage-title">影片庫排序與編輯</h3>
     <div class="hint">可設定家長推薦與頻道名稱；iPad 建議使用 ↑ / ↓ 調整排序。</div>
     <div id="manageList" class="manage-list"></div>
-  </section>
+</section>
 </main>
 
 <div id="modal" class="modal hidden">
   <div class="modal-card"><h3>輸入家長 PIN</h3><input id="modalInput" inputmode="numeric" maxlength="6"><div class="modal-actions"><button id="modalCancel">取消</button><button id="modalOk">確定</button></div></div>
 </div>
-<script defer src="app.js?v=15614"></script>
+<script defer src="app.js?v=15616"></script>
 </body>
 </html>
