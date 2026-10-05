@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-var STORAGE='familytube_v15613';
-var OLD_KEYS=['familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v15614';
+var OLD_KEYS=['familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var DEFAULT={
  videos:[{id:'M7lc1UVf-VE',title:'YouTube 播放測試',category:'學習',channel:'YouTube',recommended:true,addedAt:Date.now()}],
  profiles:{
@@ -15,10 +15,11 @@ var DEFAULT={
 var state=load(),player=null,currentId=null,currentList=[],currentIndex=-1,parentOpen=false,kidMode=false,modalCb=null;
 var usageTick=null,lastUsageStamp=0,selectedAvatar='👧',quickMeta={id:'',title:'',channel:''},immersiveFull=false,relatedBusy=false;
 var ytApiReady=false,playerReady=false,pendingVideo=null,lastRelatedId='',playerCreating=false,playerMode='none',playerFallbackTimer=null;
+var miniPlayerActive=false,miniPlayerSuppressed=false,miniScrollBound=false;
 
 function $(id){return document.getElementById(id)}
 function clone(v){return JSON.parse(JSON.stringify(v))}
-function todayKey(){var d=new Date();return d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0')}
+function todayKey(){var d=new Date();return d.getFullYear()+'-'+pad2(d.getMonth()+1)+'-'+pad2(d.getDate())}
 function esc(s){return String(s||'').replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
 function load(){
  try{
@@ -317,16 +318,22 @@ function updateMiniPlayerOnScroll(){
  else if(rect.top < window.innerHeight && rect.bottom > 0)setMiniPlayer(false);
 }
 function bindMiniPlayerScroll(){
- if(miniScrollBound)return;
- miniScrollBound=true;
- var ticking=false;
- function onScroll(){
-  if(ticking)return;
-  ticking=true;
-  window.requestAnimationFrame(function(){ticking=false;updateMiniPlayerOnScroll()});
+ try{
+  if(miniScrollBound)return;
+  miniScrollBound=true;
+  var ticking=false;
+  function onScroll(){
+   if(ticking)return;
+   ticking=true;
+   var raf=window.requestAnimationFrame||function(fn){return setTimeout(fn,16)};
+   raf(function(){ticking=false;updateMiniPlayerOnScroll()});
+  }
+  try{window.addEventListener('scroll',onScroll,{passive:true})}
+  catch(e){window.addEventListener('scroll',onScroll,false)}
+  window.addEventListener('resize',onScroll,false);
+ }catch(e){
+  miniScrollBound=false;
  }
- window.addEventListener('scroll',onScroll,{passive:true});
- window.addEventListener('resize',onScroll);
 }
 function closeMiniPlayer(){
  miniPlayerSuppressed=true;
@@ -852,7 +859,7 @@ function loadRelatedVideos(id){
   }).catch(function(){
    if(currentId===requestId)$('relatedStatus').textContent='目前無法取得相關影片';
   });
- }).finally(function(){relatedBusy=false});
+ }).then(function(v){relatedBusy=false;return v},function(e){relatedBusy=false;throw e});
 }
 
 function askPin(cb){modalCb=cb;$('modal').classList.remove('hidden');$('modalInput').value='';$('modalInput').focus()}
@@ -911,8 +918,13 @@ function bindUiSafely(){
 
 document.addEventListener('DOMContentLoaded',function(){
  bindUiSafely();
- if($('miniPlayerClose'))$('miniPlayerClose').onclick=closeMiniPlayer;
- bindMiniPlayerScroll();
+
+ // Optional mini-player setup must never block the main UI.
+ try{
+  if($('miniPlayerClose'))$('miniPlayerClose').onclick=closeMiniPlayer;
+  bindMiniPlayerScroll();
+ }catch(e){}
+
  document.querySelectorAll('.category-chip').forEach(function(b){b.onclick=function(){applyFilter(b.dataset.filter)}});
  document.querySelectorAll('.avatar-grid button').forEach(function(b){b.onclick=function(){selectedAvatar=b.dataset.avatar;document.querySelectorAll('.avatar-grid button').forEach(function(x){x.classList.toggle('active',x.dataset.avatar===selectedAvatar)})}});
  $('homeSearchBtn').onclick=function(){if(searchTapLocked)return;searchTapLocked=true;setTimeout(function(){searchTapLocked=false},500);runInternalSearch(true)};$('quickPlayBtn').onclick=quickPlayHome;$('quickAddBtn').onclick=quickAddHome;
