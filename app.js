@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-var STORAGE='familytube_v15611';
-var OLD_KEYS=['familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v15612';
+var OLD_KEYS=['familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var DEFAULT={
  videos:[{id:'M7lc1UVf-VE',title:'YouTube 播放測試',category:'學習',channel:'YouTube',recommended:true,addedAt:Date.now()}],
  profiles:{
@@ -394,15 +394,15 @@ function renderRows(filter){
   var cont=p.recent.map(videoById).filter(function(v){if(!v||!allowedVideo(v))return false;var pr=p.progress[v.id];return pr&&pr.current>5&&pr.duration&&pr.current<pr.duration-10}).slice(0,12);
   addRow('繼續觀看',cont,'從上次看到的地方接著看',{resume:true,badge:'繼續'});
   addRow('家長推薦',all.filter(function(v){return v.recommended}).slice(0,16),'家長幫你挑好的內容',{badge:'👍 推薦'});
-  addRow('我的最愛',p.favorites.map(videoById).filter(function(v){return v&&allowedVideo(v)}).slice(0,20),'只屬於 '+p.name+' 的收藏',{badge:'★ 最愛'});
+  addRow('我的最愛',p.favorites.map(videoById).filter(function(v){return v&&allowedVideo(v)}).slice(0,SEARCH_RENDER_LIMIT),'只屬於 '+p.name+' 的收藏',{badge:'★ 最愛'});
   addRow('最近觀看',p.recent.map(videoById).filter(function(v){return v&&allowedVideo(v)}).slice(0,16),'最近點過的影片',{badge:'最近看過'});
   addRow('最近加入',all.slice().sort(function(a,b){return (b.addedAt||0)-(a.addedAt||0)}).slice(0,16),'家長最近新增的內容',{badge:'新加入'});
   /* AUTO_CATEGORY_HOME_ROWS */
   ['英文','兒歌','卡通','故事','學習','自然／動物'].forEach(function(cat){
-   var items=all.filter(function(v){return v.category===cat}).slice(0,20);
+   var items=all.filter(function(v){return v.category===cat}).slice(0,SEARCH_RENDER_LIMIT);
    if(items.length)addRow(cat,items,'自動分類影片',{badge:cat});
   });
-  ['英文','兒歌','卡通','故事','學習'].forEach(function(cat){addRow(cat+'專區',all.filter(function(v){return v.category===cat}).slice(0,20),'',{badge:cat})});
+  ['英文','兒歌','卡通','故事','學習'].forEach(function(cat){addRow(cat+'專區',all.filter(function(v){return v.category===cat}).slice(0,SEARCH_RENDER_LIMIT),'',{badge:cat})});
  }else addRow(filter+'專區',all.filter(function(v){return v.category===filter}),'',{badge:filter});
  if(!root.children.length)root.innerHTML='<section class="media-row"><div class="row-head"><h2>目前沒有可顯示的影片</h2></div></section>';
 }
@@ -428,6 +428,23 @@ var PIPED_INSTANCES=[
  'https://piped-api.garudalinux.org'
 ];
 var searchPage=1,lastSearchInstance='',searchBusy=false;
+
+
+function isLegacyIPadSafari(){
+ var ua=navigator.userAgent||'';
+ var isiPad=/iPad/.test(ua) || (navigator.platform==='MacIntel' && navigator.maxTouchPoints>1);
+ if(!isiPad)return false;
+ var m=ua.match(/OS (\d+)_/);
+ var major=m?parseInt(m[1],10):0;
+ return !major || major<=15;
+}
+var LEGACY_IPAD=isLegacyIPadSafari();
+var SEARCH_RENDER_LIMIT=LEGACY_IPAD?12:20;
+var SEARCH_PARALLEL_LIMIT=LEGACY_IPAD?2:3;
+
+function delayMs(ms){
+ return new Promise(function(resolve){setTimeout(resolve,ms)});
+}
 
 function withTimeout(promise,ms,label){
  return new Promise(function(resolve,reject){
@@ -485,7 +502,7 @@ function fetchPipedSearch(base,q){
   if(!r.ok)throw new Error('HTTP '+r.status);
   return r.json();
  }).then(function(j){
-  var items=normalizePipedItems(j).slice(0,20);
+  var items=normalizePipedItems(j).slice(0,SEARCH_RENDER_LIMIT);
   if(!items.length)throw new Error('沒有影片結果');
   return {items:items,base:base,provider:'Piped'};
  });
@@ -525,84 +542,146 @@ function fetchSearchFromInstance(base,q,page){
   if(!r.ok)throw new Error('HTTP '+r.status);
   return r.json();
  }).then(function(j){
-  var items=normalizeSearchItems(j,base).slice(0,20);
+  var items=normalizeSearchItems(j,base).slice(0,SEARCH_RENDER_LIMIT);
   if(!items.length)throw new Error('沒有影片結果');
   return {items:items,base:base,provider:'Invidious'};
  });
  return withTimeout(request,5000,'Invidious 搜尋逾時');
 }
 function fetchSearchWithFallback(q,page){
- var promises=[];
+ var tasks=[];
  SEARCH_INSTANCES.forEach(function(base){
-  promises.push(fetchSearchFromInstance(base,q,page));
+  tasks.push(function(){return fetchSearchFromInstance(base,q,page)});
  });
  PIPED_INSTANCES.forEach(function(base){
-  promises.push(fetchPipedSearch(base,q));
+  tasks.push(function(){return fetchPipedSearch(base,q)});
  });
- $('searchNodeStatus').textContent='正在同時搜尋多個來源…';
- return firstSuccessful(promises,5200);
+
+ $('searchNodeStatus').textContent=LEGACY_IPAD?'iPad 相容搜尋中…':'正在搜尋多個來源…';
+
+ return new Promise(function(resolve,reject){
+  var index=0,active=0,done=false,failed=0,total=tasks.length;
+  var globalTimer=setTimeout(function(){
+   if(done)return;
+   done=true;
+   reject(new Error('搜尋逾時，請再試一次'));
+  },LEGACY_IPAD?6500:5500);
+
+  function launchNext(){
+   if(done)return;
+   while(active<SEARCH_PARALLEL_LIMIT && index<total){
+    var task=tasks[index++];
+    active++;
+    (function(fn){
+     fn().then(function(res){
+      if(done)return;
+      done=true;
+      clearTimeout(globalTimer);
+      resolve(res);
+     },function(){
+      active--;
+      failed++;
+      if(done)return;
+      if(failed>=total){
+       done=true;
+       clearTimeout(globalTimer);
+       reject(new Error('目前搜尋來源都沒有回應'));
+       return;
+      }
+      // Yield one frame on older Safari instead of chaining many failures synchronously.
+      setTimeout(launchNext,LEGACY_IPAD?60:0);
+     });
+    })(task);
+   }
+  }
+  launchNext();
+ });
 }
 function renderInternalSearch(items,append){
  var root=$('homeSearchResults');
  if(!append)root.innerHTML='';
- items.forEach(function(v){
+ var frag=document.createDocumentFragment();
+ var queryValue=$('homeSearchInput').value||'';
+
+ items.slice(0,SEARCH_RENDER_LIMIT).forEach(function(v){
   var card=document.createElement('div');
   card.className='search-result-card';
-  var img=v.image||v.fallback||thumb(v.id);
-  card.innerHTML='<div class="search-thumb"><img src="'+esc(img)+'" alt=""><span class="search-duration">'+esc(secondsText(v.seconds))+'</span></div>'+
+
+  card.innerHTML='<div class="search-thumb"><img alt="" loading="lazy"><span class="search-duration">'+esc(secondsText(v.seconds))+'</span></div>'+
    '<div class="search-result-body"><div class="search-result-title">'+esc(v.title)+'</div>'+
    '<div class="search-result-channel">'+esc(v.channel)+'</div>'+
    '<div class="search-result-actions"><button class="play">▶ 播放</button><button class="add">＋ 收藏</button></div></div>';
 
   var imageEl=card.querySelector('.search-thumb img');
+  var primary=v.image||v.fallback||thumb(v.id);
+  var fallback=v.fallback||thumb(v.id);
   imageEl.onerror=function(){
-   var fallback=v.fallback||thumb(v.id);
-   if(this.src!==fallback){
-    this.onerror=null;
-    this.src=fallback;
-   }
+   if(this.getAttribute('data-fallback-used')==='1')return;
+   this.setAttribute('data-fallback-used','1');
+   this.src=fallback;
   };
 
-  var temp={id:v.id,title:v.title,channel:v.channel,category:'YouTube 搜尋',searchQuery:($('homeSearchInput').value||'')};
+  // Avoid decoding all thumbnails while the result DOM is being constructed on old iPad.
+  setTimeout(function(){
+   try{imageEl.src=primary}catch(e){}
+  },LEGACY_IPAD?80:0);
+
+  var temp={id:v.id,title:v.title,channel:v.channel,category:'YouTube 搜尋',searchQuery:queryValue};
   card.querySelector('.search-thumb').onclick=function(){selectVideo(v.id,[temp])};
   card.querySelector('.play').onclick=function(){selectVideo(v.id,[temp])};
   card.querySelector('.add').onclick=function(){
    if(state.videos.some(function(x){return x.id===v.id})){
     this.textContent='已存在';this.disabled=true;return;
    }
-   var nv=applyAutoCategory({id:v.id,title:v.title,channel:v.channel,category:'其他',recommended:false,addedAt:Date.now(),searchQuery:($('homeSearchInput').value||'')},$('homeSearchInput').value||'');state.videos.push(nv);
-   save();renderAll();this.textContent='✓ 已收藏';this.disabled=true;
+   var nv=applyAutoCategory({
+    id:v.id,title:v.title,channel:v.channel,category:'其他',
+    recommended:false,addedAt:Date.now(),searchQuery:queryValue
+   },queryValue);
+   state.videos.push(nv);
+   save();
+   renderAll();
+   this.textContent='✓ 已收藏';
+   this.disabled=true;
   };
-  root.appendChild(card);
+  frag.appendChild(card);
  });
+ root.appendChild(frag);
 }
 function runInternalSearch(reset){
  if(searchBusy)return;
  var input=$('homeSearchInput'),q=input.value.trim();
  if(!q){input.focus();return}
- if(reset){
-  searchPage=1;
-  $('homeSearchResults').innerHTML='<div class="search-loading">正在搜尋影片…</div>';
- }else{
-  searchPage++;
- }
- searchBusy=true;
- $('homeSearchBtn').disabled=true;
- $('searchMoreBtn').classList.add('hidden');
 
- fetchSearchWithFallback(q,searchPage).then(function(res){
+ try{
+  if(reset){
+   searchPage=1;
+   $('homeSearchResults').innerHTML='<div class="search-loading">正在搜尋影片…</div>';
+  }else{
+   searchPage++;
+  }
+  searchBusy=true;
+  $('homeSearchBtn').disabled=true;
+  $('searchMoreBtn').classList.add('hidden');
+
+  fetchSearchWithFallback(q,searchPage).then(function(res){
+   searchBusy=false;
+   $('homeSearchBtn').disabled=false;
+   lastSearchInstance=res.base;
+   renderInternalSearch(res.items,!reset);
+   $('searchNodeStatus').textContent='已顯示 '+res.items.length+' 部結果 · '+(res.provider||'搜尋')+'：'+res.base.replace('https://','');
+   $('searchMoreBtn').classList.remove('hidden');
+  },function(err){
+   searchBusy=false;
+   $('homeSearchBtn').disabled=false;
+   if(reset)$('homeSearchResults').innerHTML='<div class="search-loading">搜尋失敗，請再按一次搜尋。</div>';
+   $('searchNodeStatus').innerHTML='<span class="api-err">'+esc(err&&err.message?err.message:'搜尋失敗')+'</span>';
+  });
+ }catch(err){
   searchBusy=false;
   $('homeSearchBtn').disabled=false;
-  lastSearchInstance=res.base;
-  renderInternalSearch(res.items,!reset);
-  $('searchNodeStatus').textContent='已顯示 '+res.items.length+' 部結果 · '+(res.provider||'搜尋')+'：'+res.base.replace('https://','');
-  $('searchMoreBtn').classList.remove('hidden');
- },function(e){
-  searchBusy=false;
-  $('homeSearchBtn').disabled=false;
-  if(reset)$('homeSearchResults').innerHTML='<div class="search-loading">搜尋暫時失敗，請再按一次搜尋。</div>';
-  $('searchNodeStatus').innerHTML='<span class="api-err">搜尋失敗：'+esc(e&&e.message?e.message:'節點無回應')+'</span>';
- });
+  $('homeSearchResults').innerHTML='<div class="search-loading">搜尋功能發生錯誤，已恢復操作。</div>';
+  $('searchNodeStatus').innerHTML='<span class="api-err">'+esc(err&&err.message?err.message:'搜尋錯誤')+'</span>';
+ }
 }
 function resetQuickPreview(){quickMeta={id:'',title:'',channel:''};$('quickPreview').classList.add('hidden');if($('autoCategoryPreview'))$('autoCategoryPreview').classList.add('hidden')}
 function showQuickPreview(id,title,channel){quickMeta={id:id,title:title||'YouTube 影片',channel:channel||''};$('quickPreviewImg').src=thumb(id);$('quickPreviewTitle').textContent=quickMeta.title;$('quickPreviewChannel').textContent=quickMeta.channel;$('quickPreview').classList.remove('hidden');showAutoCategoryPreview({title:quickMeta.title,channel:quickMeta.channel,query:''})}
@@ -783,7 +862,7 @@ document.addEventListener('DOMContentLoaded',function(){
  bindMiniPlayerScroll();
  document.querySelectorAll('.category-chip').forEach(function(b){b.onclick=function(){applyFilter(b.dataset.filter)}});
  document.querySelectorAll('.avatar-grid button').forEach(function(b){b.onclick=function(){selectedAvatar=b.dataset.avatar;document.querySelectorAll('.avatar-grid button').forEach(function(x){x.classList.toggle('active',x.dataset.avatar===selectedAvatar)})}});
- $('homeSearchBtn').onclick=function(){runInternalSearch(true)};$('quickPlayBtn').onclick=quickPlayHome;$('quickAddBtn').onclick=quickAddHome;
+ $('homeSearchBtn').onclick=function(){if(searchTapLocked)return;searchTapLocked=true;setTimeout(function(){searchTapLocked=false},500);runInternalSearch(true)};$('quickPlayBtn').onclick=quickPlayHome;$('quickAddBtn').onclick=quickAddHome;
  $('homeSearchInput').addEventListener('keydown',function(e){if(e.key==='Enter'||e.keyCode===13)runInternalSearch(true)});
  $('searchMoreBtn').onclick=function(){runInternalSearch(false)};
  $('quickUrlInput').addEventListener('keydown',function(e){if(e.key==='Enter'||e.keyCode===13)quickPlayHome()});

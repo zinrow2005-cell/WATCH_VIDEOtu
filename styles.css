@@ -534,3 +534,12 @@ body.ft-no-scroll .mini-player-close{display:none!important}
 /* V1.5.6.11 multi-provider search */
 .search-progress-note{font-size:12px;color:#8ea0b8}
 #homeSearchBtn:disabled{pointer-events:none}
+
+/* V1.5.6.12 legacy iPad search mode */
+.search-result-card{contain:layout style}
+@supports not (contain:layout){
+ .search-result-card{contain:none}
+}
+@media(max-width:1100px){
+ .search-result-card{transform:translateZ(0)}
+}
