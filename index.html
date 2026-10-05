@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="strict-origin-when-cross-origin">
-<title>FamilyTube V1.5.6.3</title>
+<title>WATCH_VIDEOtu V1.5.6.5</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=1563">
+<link rel="stylesheet" href="styles.css?v=1565">
 </head>
 <body>
 <header class="topbar">
-  <div class="brand">FamilyTube <span>V1.5.6.3</span></div>
+  <button id="brandHomeBtn" class="brand brand-home" aria-label="回首頁"><span class="brand-play">▶</span><span class="brand-name">WATCH_VIDEO<span class="brand-tu">tu</span></span><span class="brand-ver">V1.5.6.5</span></button>
   <div class="top-actions">
     <button id="profileBtn" class="pill">👧 女兒</button>
     <button id="homeBtn" class="pill">🏠 首頁</button>
@@ -35,12 +35,20 @@
     </div>
   </section>
 
+  
   <section id="playerSection" class="player-shell hidden">
     <div class="player-top">
       <button id="backToHomeBtn" class="ghost big-kid-btn">← 回首頁</button>
-      <div id="nowPlaying" class="now-playing">尚未選擇影片</div>
+      <div class="player-title-wrap">
+        <div class="player-label">正在播放</div>
+        <div id="nowPlaying" class="now-playing">尚未選擇影片</div>
+      </div>
     </div>
-    <div id="player"></div>
+
+    <div class="player-stage">
+      <div id="player"></div>
+    </div>
+
     <div class="controls kid-controls">
       <button id="prevBtn">⏮ 上一部</button>
       <button id="playBtn">▶ / ⏸</button>
@@ -48,14 +56,20 @@
       <button id="favBtn">☆ 最愛</button>
       <button id="fullBtn">⛶ 全螢幕</button>
     </div>
-    <div id="watchStatus" class="watch-status"></div>
-    <section id="relatedSection" class="related-section">
+
+    <div class="player-info-row">
+      <div id="watchStatus" class="watch-status"></div>
+      <div id="relatedStatus" class="related-status"></div>
+    </div>
+
+    <div class="related-section">
       <div class="related-head">
         <h2>你可能也喜歡</h2>
-        <span id="relatedStatus">播放影片後會顯示相關內容</span>
+        <span>依正在觀看的影片推薦</span>
       </div>
       <div id="relatedGrid" class="related-grid"></div>
-    </section>
+    </div>
+  </section>
   </section>
 
 
@@ -219,6 +233,6 @@
 </div>
 
 <script src="https://www.youtube.com/iframe_api"></script>
-<script src="app.js?v=1563"></script>
+<script src="app.js?v=1565"></script>
 </body>
 </html>

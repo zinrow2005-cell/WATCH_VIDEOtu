@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-var STORAGE='familytube_v1563';
-var OLD_KEYS=['familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v1565';
+var OLD_KEYS=['familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var DEFAULT={
  videos:[{id:'M7lc1UVf-VE',title:'YouTube 播放測試',category:'學習',channel:'YouTube',recommended:true,addedAt:Date.now()}],
  profiles:{
@@ -14,7 +14,7 @@ var DEFAULT={
 };
 var state=load(),player=null,currentId=null,currentList=[],currentIndex=-1,parentOpen=false,kidMode=false,modalCb=null;
 var usageTick=null,lastUsageStamp=0,selectedAvatar='👧',quickMeta={id:'',title:'',channel:''},immersiveFull=false,relatedBusy=false;
-var playerReady=false,pendingVideo=null,lastRelatedId='';
+var ytApiReady=false,playerReady=false,pendingVideo=null,lastRelatedId='',playerCreating=false;
 
 function $(id){return document.getElementById(id)}
 function clone(v){return JSON.parse(JSON.stringify(v))}
@@ -61,21 +61,76 @@ function allowedVideo(v){
 function availableVideos(){return state.videos.filter(allowedVideo)}
 
 window.onYouTubeIframeAPIReady=function(){
- var origin=(location.protocol==='http:'||location.protocol==='https:')?location.origin:undefined;
- var opts={height:'390',width:'640',videoId:availableVideos()[0]?availableVideos()[0].id:'',
-  playerVars:{playsinline:1,rel:0,modestbranding:1},
-  events:{onReady:function(){
-   playerReady=true;
-   renderAll();
-   startUsageTracking();
-   if(pendingVideo){
-    var p=pendingVideo;pendingVideo=null;
-    try{player.loadVideoById(p.id)}catch(e){}
-   }
-  },onStateChange:onState,onError:onErr}};
- if(origin)opts.playerVars.origin=origin;
- player=new YT.Player('player',opts);
+ ytApiReady=true;
+ if(pendingVideo){
+  var p=pendingVideo;
+  pendingVideo=null;
+  createVisiblePlayer(p.id);
+ }
 };
+function playerVars(){
+ var vars={playsinline:1,rel:0,modestbranding:1,autoplay:1};
+ if(location.protocol==='http:'||location.protocol==='https:')vars.origin=location.origin;
+ return vars;
+}
+function rebuildPlayerHost(){
+ try{if(player&&player.destroy)player.destroy()}catch(e){}
+ player=null;playerReady=false;playerCreating=false;
+ var old=$('player');
+ if(old){
+  var host=document.createElement('div');host.id='player';
+  old.parentNode.replaceChild(host,old);
+ }
+}
+function createVisiblePlayer(id){
+ if(!id)return;
+ showPlayer();
+ if(!ytApiReady||!window.YT||!YT.Player){pendingVideo={id:id};return}
+ if(playerCreating)return;
+ playerCreating=true;
+ $('playerSection').classList.add('player-booting');
+ // Create the iframe only after the player area is visible. This is substantially
+ // more reliable on old iPad/Safari than constructing it inside display:none.
+ try{
+  player=new YT.Player('player',{
+   height:'390',width:'640',videoId:id,
+   playerVars:playerVars(),
+   events:{
+    onReady:function(e){
+     playerReady=true;playerCreating=false;
+     $('playerSection').classList.remove('player-booting');
+     startUsageTracking();
+     try{e.target.playVideo()}catch(ignore){}
+    },
+    onStateChange:onState,
+    onError:onErr
+   }
+  });
+ }catch(e){
+  playerCreating=false;
+  $('playerSection').classList.remove('player-booting');
+  rebuildPlayerHost();
+  setTimeout(function(){createVisiblePlayer(id)},120);
+ }
+}
+function playSelectedId(id){
+ if(!id)return;
+ showPlayer();
+ if(!ytApiReady){pendingVideo={id:id};$('playerSection').classList.add('player-booting');return}
+ if(!player||!playerReady){
+  rebuildPlayerHost();
+  createVisiblePlayer(id);
+  return;
+ }
+ try{
+  // String form is kept for maximum compatibility with older WebKit.
+  player.loadVideoById(id);
+  setTimeout(function(){try{player.playVideo()}catch(e){}},80);
+ }catch(e){
+  rebuildPlayerHost();
+  createVisiblePlayer(id);
+ }
+}
 function onState(e){
  if(e.data===YT.PlayerState.PLAYING){
   setTimeout(updateStoredVideoMetaFromPlayer,300);
@@ -95,6 +150,7 @@ function onErr(e){
  if(e.data===100)msg='影片不存在、已刪除或私人影片。';
  if($('relatedStatus'))$('relatedStatus').textContent=msg;
  alert(msg);
+ if(e.data===2||e.data===5){var retry=currentId;rebuildPlayerHost();if(retry)setTimeout(function(){createVisiblePlayer(retry)},150)}
 }
 
 function isBedtime(){
@@ -137,7 +193,7 @@ function updateUsageUI(){
 }
 
 function showPlayer(){$('kidsHome').classList.add('hidden');$('hero').classList.add('hidden');$('playerSection').classList.remove('hidden')}
-function showHome(){if(immersiveFull)exitImmersiveFullscreen();if($('parentPanel'))$('parentPanel').classList.add('hidden');parentOpen=false;$('playerSection').classList.add('hidden');$('hero').classList.remove('hidden');$('kidsHome').classList.remove('hidden');renderRows();updateUsageUI()}
+function showHome(){if($('playerSection'))$('playerSection').classList.remove('player-booting');if(immersiveFull)exitImmersiveFullscreen();if($('parentPanel'))$('parentPanel').classList.add('hidden');parentOpen=false;$('playerSection').classList.add('hidden');$('hero').classList.remove('hidden');$('kidsHome').classList.remove('hidden');renderRows();updateUsageUI()}
 function selectVideo(id,list){
  if(!canPlay()||!id)return;
 
@@ -161,14 +217,7 @@ function selectVideo(id,list){
  if($('relatedGrid'))$('relatedGrid').innerHTML='';
 
  // Playback gets priority. Related-video network work starts only after PLAYING.
- if(playerReady&&player&&player.loadVideoById){
-  try{player.loadVideoById({videoId:id,startSeconds:0})}
-  catch(e){
-   try{player.loadVideoById(id)}catch(ignore){}
-  }
- }else{
-  pendingVideo={id:id};
- }
+ playSelectedId(id);
 
  addRecent(id);
  updateFavBtn();
@@ -329,10 +378,19 @@ function enterImmersiveFullscreen(){
  el.classList.add('immersive-fullscreen');
  document.body.classList.add('ft-no-scroll');
  $('fullBtn').textContent='✕ 退出全螢幕';
- try{
-  if(el.requestFullscreen&&!document.fullscreenElement){var p=el.requestFullscreen();if(p&&p.catch)p.catch(function(){})}
-  else if(el.webkitRequestFullscreen&&!document.webkitFullscreenElement){el.webkitRequestFullscreen()}
- }catch(e){}
+
+ // Use CSS immersive fullscreen as the primary path for iPad/Safari reliability.
+ // Desktop browsers may still use native fullscreen when available.
+ var ua=navigator.userAgent||'';
+ var isiOS=/iPad|iPhone|iPod/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1);
+ if(!isiOS){
+  try{
+   if(el.requestFullscreen&&!document.fullscreenElement){
+    var p=el.requestFullscreen();
+    if(p&&p.catch)p.catch(function(){});
+   }
+  }catch(e){}
+ }
 }
 function exitImmersiveFullscreen(){
  immersiveFull=false;
@@ -382,7 +440,7 @@ function renderRelated(items){
   var card=document.createElement('div');card.className='related-card';
   card.innerHTML='<div class="related-thumb"><img src="'+esc(v.image||v.fallback||thumb(v.id))+'" alt=""><span class="related-duration">'+esc(secondsText(v.seconds))+'</span></div><div class="related-body"><div class="related-title">'+esc(v.title)+'</div><div class="related-channel">'+esc(v.channel)+'</div></div>';
   var im=card.querySelector('img');im.onerror=function(){this.onerror=null;this.src=v.fallback||thumb(v.id)};
-  card.onclick=function(){selectVideo(v.id,items)};
+  card.onclick=function(){selectVideo(v.id,[v])};
   root.appendChild(card);
  });
 }
@@ -454,9 +512,10 @@ document.addEventListener('DOMContentLoaded',function(){
  $('quickUrlInput').addEventListener('keydown',function(e){if(e.key==='Enter'||e.keyCode===13)quickPlayHome()});
  $('quickUrlInput').addEventListener('input',function(){setTimeout(inspectQuickUrl,80)});
  $('quickUrlInput').addEventListener('paste',function(){setTimeout(inspectQuickUrl,150)});
+ $('brandHomeBtn').onclick=showHome;
  $('profileBtn').onclick=toggleProfile;$('homeBtn').onclick=showHome;$('parentBtn').onclick=openParent;$('closeParentBtn').onclick=closeParent;$('backToHomeBtn').onclick=showHome;$('kidModeBtn').onclick=setKidMode;
  $('heroPlayBtn').onclick=function(){var rec=availableVideos().filter(function(v){return v.recommended}),p=profile(),v=rec[0]||(p.recent.length?videoById(p.recent[0]):availableVideos()[0]);if(v)selectVideo(v.id,availableVideos())};
- $('prevBtn').onclick=prevVideo;$('nextBtn').onclick=nextVideo;$('playBtn').onclick=function(){if(!player||!canPlay())return;player.getPlayerState()===YT.PlayerState.PLAYING?player.pauseVideo():player.playVideo()};$('favBtn').onclick=toggleFav;
+ $('prevBtn').onclick=prevVideo;$('nextBtn').onclick=nextVideo;$('playBtn').onclick=function(){if(!canPlay())return;if(!player||!playerReady){if(currentId)playSelectedId(currentId);return}player.getPlayerState()===YT.PlayerState.PLAYING?player.pauseVideo():player.playVideo()};$('favBtn').onclick=toggleFav;
  $('fullBtn').onclick=toggleImmersiveFullscreen;
  $('addBtn').onclick=addVideo;$('batchAddBtn').onclick=batchAdd;
  $('savePinBtn').onclick=function(){var p=$('pinInput').value.trim();if(!/^\d{4,6}$/.test(p)){alert('請輸入 4～6 位數 PIN');return}state.pin=p;save();$('pinInput').value='';alert('PIN 已更新')};
