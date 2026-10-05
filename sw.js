@@ -1,5 +1,5 @@
 const CACHE='watch-v1566';
-const ASSETS=['./','index.html','styles.css?v=1567','app.js?v=1567','manifest.webmanifest'];
+const ASSETS=['./','index.html','styles.css?v=1568','app.js?v=1568','manifest.webmanifest'];
 self.addEventListener('install',e=>{self.skipWaiting();e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));});
 self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim()));});
 self.addEventListener('fetch',e=>{

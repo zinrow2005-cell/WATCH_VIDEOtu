@@ -436,3 +436,18 @@ body.ft-no-scroll{overflow:hidden!important;touch-action:none}
 .immersive-fullscreen .player-stage{aspect-ratio:auto!important;flex:1 1 auto!important;height:auto!important;min-height:0!important}
 .immersive-fullscreen .player-stage #player,.immersive-fullscreen .player-stage #ytDirectFrame{height:100%!important;max-height:none!important}
 @media(orientation:landscape) and (max-height:820px){.player-stage #player{max-height:none!important}}
+
+/* V1.5.6.8 brand + auto category */
+.brand-videotu{display:inline-flex!important;align-items:center;gap:11px;border:0;background:transparent!important;padding:2px 4px!important;color:#fff;cursor:pointer}
+.brand-videotu .brand-mark{width:48px;height:48px;display:inline-flex;flex:0 0 48px;filter:drop-shadow(0 7px 14px rgba(255,23,77,.28));transition:.18s}
+.brand-videotu .brand-mark svg{display:block;width:100%;height:100%}
+.brand-videotu:hover .brand-mark{transform:translateY(-1px) scale(1.035)}
+.brand-copy{display:flex;flex-direction:column;align-items:flex-start;line-height:1.02}
+.brand-copy strong{font-size:21px;letter-spacing:-.55px;font-weight:950;white-space:nowrap}
+.brand-copy strong span{color:#ff496f}
+.brand-copy small{margin-top:5px;font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:#8190a7;font-weight:800}
+.auto-category-preview{display:inline-flex;align-items:center;gap:8px;margin-top:8px;padding:8px 10px;border-radius:10px;background:#111b2a;border:1px solid rgba(255,255,255,.08);font-size:12px;color:#cbd5e1}
+.auto-category-preview .cat-pill{display:inline-flex;padding:4px 8px;border-radius:999px;background:#263449;color:#fff;font-weight:900}
+.auto-category-preview .confidence{color:#8ba0bb;font-size:11px}
+.card-auto-cat{display:inline-flex;align-items:center;margin-top:6px;padding:3px 7px;border-radius:999px;background:#202c40;color:#d7e2f2;font-size:10px;font-weight:800}
+@media(max-width:650px){.brand-videotu .brand-mark{width:42px;height:42px;flex-basis:42px}.brand-copy strong{font-size:18px}.brand-copy small{display:none}}

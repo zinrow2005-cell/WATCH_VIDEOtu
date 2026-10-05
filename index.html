@@ -5,15 +5,23 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#0b1220">
-<title>WATCH_VIDEOtu V1.5.6.7</title>
+<title>WATCH_VIDEOtu V1.5.6.8</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=1567">
+<link rel="stylesheet" href="styles.css?v=1568">
 </head>
 <body>
 <header class="topbar">
-  <button id="brandHomeBtn" class="brand brand-home" aria-label="回首頁">
-    <span class="brand-play">▶</span><span class="brand-name">WATCH_VIDEO<span class="brand-tu">tu</span></span><span class="brand-ver">V1.5.6.7</span>
-  </button>
+  <button id="brandHomeBtn" class="brand brand-home brand-videotu" aria-label="回到 WATCH_VIDEOtu 首頁">
+  <span class="brand-mark" aria-hidden="true">
+    <svg viewBox="0 0 64 64" role="img">
+      <defs><linearGradient id="wtg" x1="0" y1="0" x2="1" y2="1"><stop offset="0%" stop-color="#ff3b6b"/><stop offset="55%" stop-color="#ff174d"/><stop offset="100%" stop-color="#ff7a18"/></linearGradient></defs>
+      <rect x="5" y="9" width="54" height="42" rx="14" fill="url(#wtg)"/>
+      <path d="M27 21.5L43 30.9c1.5.9 1.5 3.2 0 4.1L27 44.5c-1.6.9-3.6-.2-3.6-2.1V23.6c0-1.9 2-3 3.6-2.1z" fill="#fff"/>
+      <circle cx="50" cy="14" r="6" fill="#fff"/><path d="M50 10.7v6.6M46.7 14h6.6" stroke="#ff174d" stroke-width="2.4" stroke-linecap="round"/>
+    </svg>
+  </span>
+  <span class="brand-copy"><strong>WATCH_VIDEO<span>tu</span></strong><small>Kids Video Hub</small></span>
+</button>
   <div class="top-actions">
     <button id="profileBtn" class="pill">👧 女兒</button>
     <button id="homeBtn" class="pill">🏠 首頁</button>
@@ -88,6 +96,7 @@
           <button id="quickPlayBtn">直接播放</button><button id="quickAddBtn">加入片庫</button>
         </div>
         <div id="quickAddStatus" class="search-hint"></div>
+<div id="autoCategoryPreview" class="auto-category-preview hidden"></div>
         <div id="quickPreview" class="quick-preview hidden">
           <img id="quickPreviewImg" alt=""><div><div id="quickPreviewTitle" class="quick-preview-title">YouTube 影片</div><div id="quickPreviewChannel" class="quick-preview-channel"></div></div>
         </div>
@@ -152,6 +161,6 @@
 </div>
 
 <script src="https://www.youtube.com/iframe_api"></script>
-<script src="app.js?v=1567"></script>
+<script src="app.js?v=1568"></script>
 </body>
 </html>
