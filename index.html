@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="strict-origin-when-cross-origin">
-<title>FamilyTube V1.4</title>
+<title>FamilyTube V1.5</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <header class="topbar">
-  <div class="brand">FamilyTube <span>V1.4</span></div>
+  <div class="brand">FamilyTube <span>V1.5</span></div>
   <div class="top-actions">
     <button id="profileBtn" class="pill">👧 女兒</button>
     <button id="homeBtn" class="pill">🏠 首頁</button>
@@ -24,6 +24,10 @@
       <div class="eyebrow">家庭兒童影音中心</div>
       <h1 id="heroTitle">今天想看什麼？</h1>
       <p id="heroText">從下面的大圖卡選一部影片開始。</p>
+      <div class="hero-stats">
+        <div><b id="dailyUsed">0</b><span>今日已看</span></div>
+        <div><b id="dailyRemain">不限</b><span>今日剩餘</span></div>
+      </div>
       <div class="hero-actions">
         <button id="heroPlayBtn" class="primary">▶ 播放推薦</button>
         <button id="kidModeBtn" class="secondary">🧒 兒童模式</button>
@@ -33,17 +37,18 @@
 
   <section id="playerSection" class="player-shell hidden">
     <div class="player-top">
-      <button id="backToHomeBtn" class="ghost">← 回首頁</button>
+      <button id="backToHomeBtn" class="ghost big-kid-btn">← 回首頁</button>
       <div id="nowPlaying" class="now-playing">尚未選擇影片</div>
     </div>
     <div id="player"></div>
-    <div class="controls">
+    <div class="controls kid-controls">
       <button id="prevBtn">⏮ 上一部</button>
       <button id="playBtn">▶ / ⏸</button>
       <button id="nextBtn">下一部 ⏭</button>
       <button id="favBtn">☆ 最愛</button>
       <button id="fullBtn">⛶ 全螢幕</button>
     </div>
+    <div id="watchStatus" class="watch-status"></div>
   </section>
 
   <section id="kidsHome">
@@ -54,8 +59,8 @@
       <button data-filter="卡通" class="category-chip">🐻 卡通</button>
       <button data-filter="故事" class="category-chip">📚 故事</button>
       <button data-filter="學習" class="category-chip">🧠 學習</button>
+      <button data-filter="recommended" class="category-chip">👍 家長推薦</button>
     </div>
-
     <div id="dynamicRows"></div>
   </section>
 
@@ -63,33 +68,51 @@
     <div class="parent-head">
       <div>
         <div class="eyebrow dark">家長專區</div>
-        <h2>影片庫與系統管理</h2>
+        <h2>家庭模式設定</h2>
       </div>
       <button id="closeParentBtn" class="secondary">關閉</button>
     </div>
 
     <div class="admin-grid">
       <div class="admin-card">
-        <h3>新增影片</h3>
-        <input id="urlInput" placeholder="貼上 YouTube 網址">
-        <input id="titleInput" placeholder="影片名稱（可不填）">
-        <select id="categoryInput">
-          <option>英文</option><option>兒歌</option><option>卡通</option>
-          <option>故事</option><option>學習</option><option>其他</option>
+        <h3>兒童資料</h3>
+        <label>目前兒童</label>
+        <select id="profileSelect">
+          <option value="daughter">女兒</option>
+          <option value="son">兒子</option>
         </select>
-        <button id="addBtn">＋ 加入影片</button>
+        <label>顯示名稱</label>
+        <input id="profileNameInput" placeholder="例如：姊姊">
+        <label>頭像</label>
+        <div class="avatar-grid">
+          <button data-avatar="👧">👧</button><button data-avatar="👦">👦</button>
+          <button data-avatar="🐰">🐰</button><button data-avatar="🐻">🐻</button>
+          <button data-avatar="🦁">🦁</button><button data-avatar="🐼">🐼</button>
+        </div>
+        <button id="saveProfileBtn">儲存兒童資料</button>
       </div>
 
       <div class="admin-card">
-        <h3>觀看時間</h3>
-        <select id="timeLimit">
-          <option value="0">不限時</option>
-          <option value="15">15 分鐘</option>
+        <h3>每日觀看總量</h3>
+        <select id="dailyLimit">
+          <option value="0">不限</option>
           <option value="30">30 分鐘</option>
           <option value="45">45 分鐘</option>
           <option value="60">60 分鐘</option>
+          <option value="90">90 分鐘</option>
+          <option value="120">120 分鐘</option>
         </select>
-        <div id="timerText" class="status-text">不限時</div>
+        <div class="hint">依兒童分開累積，跨影片計算。</div>
+      </div>
+
+      <div class="admin-card">
+        <h3>睡前鎖定</h3>
+        <label>開始時間</label>
+        <input id="bedStart" type="time" value="21:00">
+        <label>結束時間</label>
+        <input id="bedEnd" type="time" value="07:00">
+        <label class="checkline"><input id="bedEnabled" type="checkbox"> 啟用睡前鎖定</label>
+        <button id="saveBedBtn">儲存睡前設定</button>
       </div>
 
       <div class="admin-card">
@@ -99,10 +122,35 @@
       </div>
 
       <div class="admin-card">
+        <h3>新增影片</h3>
+        <input id="urlInput" placeholder="貼上 YouTube 網址">
+        <input id="titleInput" placeholder="影片名稱（可不填）">
+        <input id="channelInput" placeholder="頻道名稱（選填）">
+        <select id="categoryInput">
+          <option>英文</option><option>兒歌</option><option>卡通</option>
+          <option>故事</option><option>學習</option><option>其他</option>
+        </select>
+        <button id="addBtn">＋ 加入影片</button>
+      </div>
+
+      <div class="admin-card">
+        <h3>允許頻道白名單</h3>
+        <textarea id="whitelistInput" rows="5" placeholder="每行一個頻道名稱，例如：&#10;Super Simple Songs&#10;Pinkfong"></textarea>
+        <label class="checkline"><input id="whitelistEnabled" type="checkbox"> 只顯示白名單頻道</label>
+        <button id="saveWhitelistBtn">儲存白名單</button>
+      </div>
+
+      <div class="admin-card">
         <h3>YouTube API</h3>
         <input id="apiKeyInput" type="password" placeholder="YouTube Data API Key（選填）">
         <button id="saveApiKeyBtn">儲存 API Key</button>
         <div class="hint">不填也可播放、貼網址與批次加入。</div>
+      </div>
+
+      <div class="admin-card">
+        <h3>資料備份</h3>
+        <button id="exportBtn">匯出備份</button>
+        <label class="file-btn">匯入備份<input id="importInput" type="file" accept="application/json"></label>
       </div>
 
       <div class="admin-card wide-card">
@@ -136,16 +184,10 @@
         <button id="playlistImportBtn">匯入播放清單</button>
         <div id="playlistStatus" class="hint">需要 API Key。</div>
       </div>
-
-      <div class="admin-card">
-        <h3>資料備份</h3>
-        <button id="exportBtn">匯出備份</button>
-        <label class="file-btn">匯入備份<input id="importInput" type="file" accept="application/json"></label>
-      </div>
     </div>
 
     <h3 class="manage-title">影片庫排序與編輯</h3>
-    <div class="hint">iPad 建議使用「↑ / ↓」調整排序。</div>
+    <div class="hint">可設定「家長推薦」與頻道名稱；iPad 建議使用 ↑ / ↓ 調整排序。</div>
     <div id="manageList" class="manage-list"></div>
   </section>
 </main>
