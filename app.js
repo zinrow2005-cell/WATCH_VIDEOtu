@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-var STORAGE='familytube_v1566';
-var OLD_KEYS=['familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v1567';
+var OLD_KEYS=['familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var DEFAULT={
  videos:[{id:'M7lc1UVf-VE',title:'YouTube 播放測試',category:'學習',channel:'YouTube',recommended:true,addedAt:Date.now()}],
  profiles:{
@@ -214,7 +214,48 @@ function updateUsageUI(){
 }
 
 function showPlayer(){$('kidsHome').classList.add('hidden');$('hero').classList.add('hidden');$('playerSection').classList.remove('hidden')}
-function showHome(){clearPlayerFallbackTimer();if(playerMode==='iframe')sendDirectCommand('pauseVideo');else if(player&&playerReady){try{player.pauseVideo()}catch(e){}}if($('playerSection'))$('playerSection').classList.remove('player-booting');if(immersiveFull)exitImmersiveFullscreen();if($('parentPanel'))$('parentPanel').classList.add('hidden');parentOpen=false;$('playerSection').classList.add('hidden');$('hero').classList.remove('hidden');$('kidsHome').classList.remove('hidden');renderRows();updateUsageUI()}
+
+function stopPlaybackForHome(){
+ // 1) Normal YouTube IFrame API player.
+ try{
+  if(player && typeof player.stopVideo==='function'){
+   player.stopVideo();
+  }else if(player && typeof player.pauseVideo==='function'){
+   player.pauseVideo();
+  }
+ }catch(e){}
+
+ // 2) Direct/fallback iframe mode used on older Safari/iPad.
+ try{
+  var direct=document.getElementById('ytDirectFrame');
+  if(direct){
+   direct.src='about:blank';
+   if(direct.parentNode)direct.parentNode.removeChild(direct);
+  }
+ }catch(e){}
+
+ // 3) Any iframe still remaining inside the player host.
+ try{
+  var host=$('player');
+  if(host){
+   var frames=host.querySelectorAll('iframe');
+   for(var i=0;i<frames.length;i++){
+    try{frames[i].src='about:blank'}catch(e){}
+   }
+  }
+ }catch(e){}
+
+ pendingVideo=null;
+ currentId=null;
+ currentIndex=-1;
+ lastRelatedId='';
+ if($('nowPlaying'))$('nowPlaying').textContent='尚未選擇影片';
+ if($('relatedGrid'))$('relatedGrid').innerHTML='';
+ if($('relatedStatus'))$('relatedStatus').textContent='';
+}
+
+function showHome(){
+ stopPlaybackForHome();clearPlayerFallbackTimer();if(playerMode==='iframe')sendDirectCommand('pauseVideo');else if(player&&playerReady){try{player.pauseVideo()}catch(e){}}if($('playerSection'))$('playerSection').classList.remove('player-booting');if(immersiveFull)exitImmersiveFullscreen();if($('parentPanel'))$('parentPanel').classList.add('hidden');parentOpen=false;$('playerSection').classList.add('hidden');$('hero').classList.remove('hidden');$('kidsHome').classList.remove('hidden');renderRows();updateUsageUI()}
 function selectVideo(id,list){
  if(!canPlay()||!id)return;
 
@@ -523,6 +564,13 @@ function renderManage(){
 function exportData(){var blob=new Blob([JSON.stringify(state,null,2)],{type:'application/json'}),a=document.createElement('a');a.href=URL.createObjectURL(blob);a.download='FamilyTube_backup.json';a.click()}
 function importData(file){var r=new FileReader();r.onload=function(){try{state=JSON.parse(r.result);save();renderAll();alert('匯入完成')}catch(e){alert('備份檔格式錯誤')}};r.readAsText(file)}
 function renderAll(){renderProfile();renderRows();renderManage();updateUsageUI()}
+
+
+window.addEventListener('pagehide',function(){
+ try{
+  if(player&&typeof player.pauseVideo==='function')player.pauseVideo();
+ }catch(e){}
+});
 
 document.addEventListener('DOMContentLoaded',function(){
  document.querySelectorAll('.category-chip').forEach(function(b){b.onclick=function(){applyFilter(b.dataset.filter)}});
