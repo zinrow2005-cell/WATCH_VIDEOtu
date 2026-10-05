@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-var STORAGE='familytube_v15612';
-var OLD_KEYS=['familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v15613';
+var OLD_KEYS=['familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var DEFAULT={
  videos:[{id:'M7lc1UVf-VE',title:'YouTube 播放測試',category:'學習',channel:'YouTube',recommended:true,addedAt:Date.now()}],
  profiles:{
@@ -43,7 +43,7 @@ function load(){
    if(!x.addedAt)x.addedAt=Date.now()-i*1000;
    if(typeof x.recommended!=='boolean')x.recommended=false;
    if(!x.channel)x.channel='';
-   if((!x.category||x.category==='其他'||x.category==='YouTube 搜尋')&&!x.categoryManual){applyAutoCategory(x,x.searchQuery||'')}
+   if(!x.category)x.category='其他'
   });
   return Object.assign(clone(DEFAULT),v);
  }catch(e){return clone(DEFAULT)}
@@ -89,6 +89,17 @@ function applyAutoCategory(video,query){
  video.category=r.category;video.autoCategory=true;video.categoryConfidence=r.confidence;video.categoryHits=r.hits;return video;
 }
 
+function migrateVideoCategoriesAfterInit(){
+ try{
+  if(!state||!Array.isArray(state.videos))return;
+  state.videos.forEach(function(v){
+   if((!v.category||v.category==='其他'||v.category==='YouTube 搜尋')&&!v.categoryManual){
+    applyAutoCategory(v,v.searchQuery||'');
+   }
+  });
+ }catch(e){}
+}
+
 function ytId(url){
  if(!url)return null;
  var m=url.match(/(?:youtu\.be\/|youtube\.com\/(?:watch\?v=|embed\/|shorts\/))([A-Za-z0-9_-]{11})/);
@@ -103,6 +114,33 @@ function allowedVideo(v){
  return state.whitelist.channels.some(function(x){return x.trim().toLowerCase()===c});
 }
 function availableVideos(){return state.videos.filter(allowedVideo)}
+
+
+var ytApiScriptRequested=false;
+function loadYouTubeApiAsync(){
+ if(ytApiScriptRequested)return;
+ ytApiScriptRequested=true;
+
+ // API may already exist because of browser cache or another script.
+ if(window.YT && window.YT.Player){
+  ytApiReady=true;
+  return;
+ }
+
+ try{
+  var s=document.createElement('script');
+  s.src='https://www.youtube.com/iframe_api';
+  s.async=true;
+  s.defer=true;
+  s.onerror=function(){
+   // Do not break the UI. Playback will use the direct iframe fallback.
+   ytApiReady=false;
+  };
+  document.head.appendChild(s);
+ }catch(e){
+  ytApiReady=false;
+ }
+}
 
 window.onYouTubeIframeAPIReady=function(){
  ytApiReady=true;
@@ -156,7 +194,7 @@ function scheduleDirectFallback(id){
  clearPlayerFallbackTimer();
  playerFallbackTimer=setTimeout(function(){
   if(currentId===id&&!playerReady)createDirectIframe(id,'timeout');
- },4500);
+ },LEGACY_IPAD?2200:3500);
 }
 function createVisiblePlayer(id){
  if(!id)return;
@@ -427,7 +465,7 @@ var PIPED_INSTANCES=[
  'https://pipedapi.syncpundit.io',
  'https://piped-api.garudalinux.org'
 ];
-var searchPage=1,lastSearchInstance='',searchBusy=false;
+var searchPage=1,lastSearchInstance='',searchBusy=false,searchTapLocked=false;
 
 
 function isLegacyIPadSafari(){
@@ -857,7 +895,22 @@ window.addEventListener('pagehide',function(){
  }catch(e){}
 });
 
+
+function bindUiSafely(){
+ try{
+  migrateVideoCategoriesAfterInit();
+  return true;
+ }catch(e){
+  try{
+   var n=$('searchNodeStatus');
+   if(n)n.textContent='介面已啟動，但部分資料初始化失敗。';
+  }catch(_){}
+  return false;
+ }
+}
+
 document.addEventListener('DOMContentLoaded',function(){
+ bindUiSafely();
  if($('miniPlayerClose'))$('miniPlayerClose').onclick=closeMiniPlayer;
  bindMiniPlayerScroll();
  document.querySelectorAll('.category-chip').forEach(function(b){b.onclick=function(){applyFilter(b.dataset.filter)}});
@@ -883,5 +936,6 @@ document.addEventListener('DOMContentLoaded',function(){
  document.addEventListener('keydown',function(e){if((e.key==='Escape'||e.keyCode===27)&&immersiveFull)exitImmersiveFullscreen()});
  if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0)navigator.serviceWorker.register('sw.js').catch(function(){});
  renderAll();showHome();
+ setTimeout(loadYouTubeApiAsync,50);
 });
 })();
