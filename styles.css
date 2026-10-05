@@ -143,3 +143,99 @@ main{max-width:1280px;margin:auto;padding:18px}
  .manage-row.v15 .extra-field,.manage-row.v15 .row-buttons{grid-column:3}
  .avatar-grid{grid-template-columns:repeat(3,1fr)}
 }
+
+/* V1.5.1 visual hotfix */
+html,body{background:#0b1220!important;color:#fff!important}
+body{min-height:100vh!important}
+.topbar{background:rgba(11,18,32,.96)!important;color:#fff!important}
+.brand,.topbar button{color:#fff!important}
+main{max-width:1280px!important;margin:0 auto!important;padding:18px!important}
+.hero{display:flex!important;background:
+ linear-gradient(90deg,rgba(5,10,20,.94),rgba(5,10,20,.32)),
+ radial-gradient(circle at 86% 30%,rgba(59,130,246,.75),transparent 32%),
+ radial-gradient(circle at 73% 72%,rgba(236,72,153,.48),transparent 28%),
+ #172033!important;color:#fff!important}
+.hero h1{color:#fff!important}
+.category-chip,.pill,.secondary,.ghost{appearance:none;-webkit-appearance:none}
+.category-chip{background:#172033!important;color:#fff!important;border:1px solid rgba(255,255,255,.12)!important}
+.category-chip.active{background:#fff!important;color:#111827!important}
+.video-card{background:#151e2e!important;color:#fff!important}
+
+.home-search{margin:18px 0 8px}
+.search-box{
+ background:#111a2a;border:1px solid rgba(255,255,255,.08);border-radius:20px;
+ padding:16px;box-shadow:0 10px 28px rgba(0,0,0,.18)
+}
+.search-title{font-size:22px;font-weight:900;margin-bottom:10px}
+.search-tabs{display:flex;gap:8px;margin-bottom:10px}
+.search-tab{
+ border:0;border-radius:999px;padding:9px 14px;background:#243044;color:#cbd5e1;font-weight:800
+}
+.search-tab.active{background:#fff;color:#111827}
+.search-line{display:flex;gap:10px}
+.search-line input{
+ flex:1;min-width:0;padding:14px 16px;border-radius:14px;border:1px solid #334155;
+ background:#0c1422;color:#fff;font-size:17px;outline:none
+}
+.search-line input::placeholder{color:#7d8aa0}
+.search-go{white-space:nowrap}
+.search-hint{font-size:12px;color:#94a3b8;margin-top:8px}
+.home-search-results{
+ display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin-top:14px
+}
+.home-result{
+ background:#172033;border-radius:14px;overflow:hidden;cursor:pointer;border:1px solid rgba(255,255,255,.06)
+}
+.home-result img{width:100%;aspect-ratio:16/9;object-fit:cover;display:block}
+.home-result-body{padding:10px}
+.home-result h3{font-size:14px;line-height:1.35;margin:0 0 6px}
+.home-result .meta{font-size:11px;color:#94a3b8}
+.home-result button{
+ width:100%;border:0;border-radius:9px;padding:9px;margin-top:8px;background:#fff;color:#111827;font-weight:800
+}
+@media(max-width:900px){.home-search-results{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:600px){
+ main{padding:12px!important}
+ .home-search-results{grid-template-columns:1fr}
+ .search-line{flex-direction:column}
+ .search-go{width:100%}
+}
+
+/* V1.5.2 usability / iPad stability */
+.quick-add{
+ margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.08)
+}
+.quick-add-title{font-weight:900;font-size:16px;margin-bottom:8px}
+.quick-add-line{display:grid;grid-template-columns:1fr 130px 90px;gap:8px}
+.quick-add-line input,.quick-add-line select{
+ min-width:0;padding:12px 14px;border-radius:12px;border:1px solid #334155;
+ background:#0c1422;color:#fff
+}
+.quick-add-line button{
+ border:0;border-radius:12px;background:#fff;color:#111827;font-weight:900;padding:12px
+}
+.top-actions button,.category-chip,.kid-controls button,.hero-actions button{
+ -webkit-tap-highlight-color:transparent;touch-action:manipulation
+}
+#player iframe{display:block!important;width:100%!important;height:100%!important;min-height:360px}
+.home-result,.video-card{user-select:none;-webkit-user-select:none}
+.parent-panel button,.parent-panel input,.parent-panel select,.parent-panel textarea{
+ font-size:16px
+}
+@media(max-width:700px){
+ .quick-add-line{grid-template-columns:1fr}
+ .quick-add-line button{width:100%}
+}
+@media(orientation:landscape) and (min-width:700px) and (max-width:1200px){
+ .topbar{padding:8px 12px!important}
+ .brand{font-size:22px!important}
+ .hero{min-height:150px!important;padding:18px 22px!important}
+ .hero h1{font-size:30px!important}
+ .hero-stats>div{padding:8px 12px}
+ .home-search{margin:10px 0 4px}
+ .search-box{padding:12px}
+ .category-strip{padding-top:12px}
+ .video-card{flex-basis:220px!important}
+ #player{min-height:420px!important}
+ .kid-controls button{min-height:54px!important;font-size:18px!important}
+}

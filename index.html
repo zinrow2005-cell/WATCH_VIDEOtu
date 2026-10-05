@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="strict-origin-when-cross-origin">
-<title>FamilyTube V1.5</title>
+<title>FamilyTube V1.5.2</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css">
+<link rel="stylesheet" href="styles.css?v=152">
 </head>
 <body>
 <header class="topbar">
-  <div class="brand">FamilyTube <span>V1.5</span></div>
+  <div class="brand">FamilyTube <span>V1.5.2</span></div>
   <div class="top-actions">
     <button id="profileBtn" class="pill">👧 女兒</button>
     <button id="homeBtn" class="pill">🏠 首頁</button>
@@ -49,6 +49,37 @@
       <button id="fullBtn">⛶ 全螢幕</button>
     </div>
     <div id="watchStatus" class="watch-status"></div>
+  </section>
+
+
+  <section id="homeSearch" class="home-search">
+    <div class="search-box">
+      <div class="search-title">🔎 搜尋影片</div>
+      <div class="search-tabs">
+        <button id="localSearchTab" class="search-tab active">我的影片</button>
+        <button id="youtubeSearchTab" class="search-tab">YouTube</button>
+      </div>
+      <div class="search-line">
+        <input id="homeSearchInput" placeholder="輸入影片名稱，例如：ABC、兒歌、恐龍">
+        <button id="homeSearchBtn" class="primary search-go">搜尋</button>
+      </div>
+      <div id="homeSearchHint" class="search-hint">搜尋你已加入 FamilyTube 的影片。</div>
+
+      <div class="quick-add">
+        <div class="quick-add-title">＋ 快速加入 YouTube 影片</div>
+        <div class="quick-add-line">
+          <input id="quickUrlInput" placeholder="直接貼 YouTube 網址，不需要 API Key">
+          <select id="quickCategory">
+            <option>英文</option><option>兒歌</option><option>卡通</option>
+            <option>故事</option><option>學習</option><option>其他</option>
+          </select>
+          <button id="quickAddBtn">加入</button>
+        </div>
+        <div id="quickAddStatus" class="search-hint"></div>
+      </div>
+
+      <div id="homeSearchResults" class="home-search-results"></div>
+    </div>
   </section>
 
   <section id="kidsHome">
@@ -144,7 +175,7 @@
         <h3>YouTube API</h3>
         <input id="apiKeyInput" type="password" placeholder="YouTube Data API Key（選填）">
         <button id="saveApiKeyBtn">儲存 API Key</button>
-        <div class="hint">不填也可播放、貼網址與批次加入。</div>
+        <div class="hint">只有「直接搜尋 YouTube / 匯入播放清單」需要 API Key；平常播放與貼網址加入都不需要。</div>
       </div>
 
       <div class="admin-card">
@@ -204,6 +235,6 @@
 </div>
 
 <script src="https://www.youtube.com/iframe_api"></script>
-<script src="app.js"></script>
+<script src="app.js?v=152"></script>
 </body>
 </html>
