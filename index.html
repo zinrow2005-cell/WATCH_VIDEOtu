@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="strict-origin-when-cross-origin">
-<title>FamilyTube V1.2</title>
+<title>FamilyTube V1.3</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="styles.css">
 </head>
 <body>
 <header class="topbar">
-  <div class="brand">FamilyTube <span>V1.2</span></div>
+  <div class="brand">FamilyTube <span>V1.3</span></div>
   <div class="top-actions">
     <button id="profileBtn" class="pill">👧 女兒</button>
     <button id="kidModeBtn" class="pill">🧒 兒童模式</button>
@@ -82,6 +82,45 @@
         <h3>PIN 設定</h3>
         <input id="pinInput" inputmode="numeric" maxlength="6" placeholder="4～6 位數 PIN">
         <button id="savePinBtn">儲存 PIN</button>
+      </div>
+
+      <div class="admin-card">
+        <h3>YouTube API</h3>
+        <input id="apiKeyInput" type="password" placeholder="YouTube Data API Key（選填）">
+        <button id="saveApiKeyBtn">儲存 API Key</button>
+        <div class="hint">不填也可正常播放、貼網址加入影片。</div>
+      </div>
+
+      <div class="admin-card wide-card">
+        <h3>智慧批次加入</h3>
+        <textarea id="batchInput" rows="5" placeholder="一次貼多個 YouTube 網址，每行一個。&#10;可混合 youtu.be / watch?v= / shorts 網址。"></textarea>
+        <select id="batchCategory">
+          <option>英文</option><option>兒歌</option><option>卡通</option>
+          <option>故事</option><option>學習</option><option>其他</option>
+        </select>
+        <button id="batchAddBtn">＋ 批次加入</button>
+        <div id="batchStatus" class="hint"></div>
+      </div>
+
+      <div class="admin-card wide-card">
+        <h3>YouTube 搜尋</h3>
+        <div class="inline">
+          <input id="searchInput" placeholder="例如：幼兒英文 ABC、兒歌">
+          <button id="searchBtn">搜尋</button>
+        </div>
+        <div id="searchStatus" class="hint">需要 API Key。</div>
+        <div id="searchResults" class="search-results"></div>
+      </div>
+
+      <div class="admin-card wide-card">
+        <h3>匯入 YouTube 播放清單</h3>
+        <input id="playlistInput" placeholder="貼上 YouTube 播放清單網址或 Playlist ID">
+        <select id="playlistCategory">
+          <option>英文</option><option>兒歌</option><option>卡通</option>
+          <option>故事</option><option>學習</option><option>其他</option>
+        </select>
+        <button id="playlistImportBtn">匯入播放清單</button>
+        <div id="playlistStatus" class="hint">需要 API Key；每次最多抓取 50 部，會自動繼續下一頁。</div>
       </div>
 
       <div class="admin-card">
