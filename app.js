@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-var STORAGE='familytube_v1565';
-var OLD_KEYS=['familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v1566';
+var OLD_KEYS=['familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var DEFAULT={
  videos:[{id:'M7lc1UVf-VE',title:'YouTube 播放測試',category:'學習',channel:'YouTube',recommended:true,addedAt:Date.now()}],
  profiles:{
@@ -14,7 +14,7 @@ var DEFAULT={
 };
 var state=load(),player=null,currentId=null,currentList=[],currentIndex=-1,parentOpen=false,kidMode=false,modalCb=null;
 var usageTick=null,lastUsageStamp=0,selectedAvatar='👧',quickMeta={id:'',title:'',channel:''},immersiveFull=false,relatedBusy=false;
-var ytApiReady=false,playerReady=false,pendingVideo=null,lastRelatedId='',playerCreating=false;
+var ytApiReady=false,playerReady=false,pendingVideo=null,lastRelatedId='',playerCreating=false,playerMode='none',playerFallbackTimer=null;
 
 function $(id){return document.getElementById(id)}
 function clone(v){return JSON.parse(JSON.stringify(v))}
@@ -73,63 +73,84 @@ function playerVars(){
  if(location.protocol==='http:'||location.protocol==='https:')vars.origin=location.origin;
  return vars;
 }
+function clearPlayerFallbackTimer(){
+ if(playerFallbackTimer){clearTimeout(playerFallbackTimer);playerFallbackTimer=null}
+}
 function rebuildPlayerHost(){
+ clearPlayerFallbackTimer();
  try{if(player&&player.destroy)player.destroy()}catch(e){}
- player=null;playerReady=false;playerCreating=false;
+ player=null;playerReady=false;playerCreating=false;playerMode='none';
  var old=$('player');
- if(old){
-  var host=document.createElement('div');host.id='player';
-  old.parentNode.replaceChild(host,old);
- }
+ if(old){var host=document.createElement('div');host.id='player';old.parentNode.replaceChild(host,old)}
+}
+function directEmbedUrl(id){
+ var q=['playsinline=1','rel=0','autoplay=1','enablejsapi=1'];
+ if(location.protocol==='http:'||location.protocol==='https:')q.push('origin='+encodeURIComponent(location.origin));
+ return 'https://www.youtube.com/embed/'+encodeURIComponent(id)+'?'+q.join('&');
+}
+function createDirectIframe(id,reason){
+ if(!id)return;
+ showPlayer();
+ clearPlayerFallbackTimer();
+ try{if(player&&player.destroy)player.destroy()}catch(e){}
+ player=null;playerReady=false;playerCreating=false;playerMode='iframe';
+ var host=$('player');if(!host)return;
+ host.innerHTML='';
+ var f=document.createElement('iframe');
+ f.id='ytDirectFrame';f.title='YouTube video player';f.src=directEmbedUrl(id);
+ f.setAttribute('frameborder','0');f.setAttribute('allowfullscreen','');
+ f.setAttribute('allow','autoplay; encrypted-media; picture-in-picture; web-share');
+ f.setAttribute('referrerpolicy','strict-origin-when-cross-origin');
+ f.style.width='100%';f.style.height='100%';f.style.display='block';
+ host.appendChild(f);
+ $('playerSection').classList.remove('player-booting');
+ if($('relatedStatus'))$('relatedStatus').textContent=reason==='timeout'?'已切換相容播放模式':'相容播放模式';
+ lastRelatedId=id;
+ setTimeout(function(){if(currentId===id)loadRelatedVideos(id)},900);
+}
+function scheduleDirectFallback(id){
+ clearPlayerFallbackTimer();
+ playerFallbackTimer=setTimeout(function(){
+  if(currentId===id&&!playerReady)createDirectIframe(id,'timeout');
+ },4500);
 }
 function createVisiblePlayer(id){
  if(!id)return;
  showPlayer();
- if(!ytApiReady||!window.YT||!YT.Player){pendingVideo={id:id};return}
+ if(!ytApiReady||!window.YT||!YT.Player){pendingVideo={id:id};$('playerSection').classList.add('player-booting');scheduleDirectFallback(id);return}
  if(playerCreating)return;
- playerCreating=true;
+ playerCreating=true;playerMode='api';
  $('playerSection').classList.add('player-booting');
- // Create the iframe only after the player area is visible. This is substantially
- // more reliable on old iPad/Safari than constructing it inside display:none.
+ scheduleDirectFallback(id);
  try{
   player=new YT.Player('player',{
-   height:'390',width:'640',videoId:id,
-   playerVars:playerVars(),
+   height:'390',width:'640',videoId:id,playerVars:playerVars(),
    events:{
     onReady:function(e){
-     playerReady=true;playerCreating=false;
-     $('playerSection').classList.remove('player-booting');
-     startUsageTracking();
+     if(currentId!==id)return;
+     clearPlayerFallbackTimer();playerReady=true;playerCreating=false;playerMode='api';
+     $('playerSection').classList.remove('player-booting');startUsageTracking();
      try{e.target.playVideo()}catch(ignore){}
     },
-    onStateChange:onState,
-    onError:onErr
+    onStateChange:onState,onError:onErr
    }
   });
- }catch(e){
-  playerCreating=false;
-  $('playerSection').classList.remove('player-booting');
-  rebuildPlayerHost();
-  setTimeout(function(){createVisiblePlayer(id)},120);
- }
+ }catch(e){playerCreating=false;createDirectIframe(id,'create-error')}
 }
 function playSelectedId(id){
  if(!id)return;
  showPlayer();
- if(!ytApiReady){pendingVideo={id:id};$('playerSection').classList.add('player-booting');return}
- if(!player||!playerReady){
-  rebuildPlayerHost();
-  createVisiblePlayer(id);
-  return;
+ if(playerMode==='iframe'){
+  var f=$('ytDirectFrame');
+  if(f){f.src=directEmbedUrl(id);lastRelatedId=id;setTimeout(function(){if(currentId===id)loadRelatedVideos(id)},900);return}
  }
- try{
-  // String form is kept for maximum compatibility with older WebKit.
-  player.loadVideoById(id);
-  setTimeout(function(){try{player.playVideo()}catch(e){}},80);
- }catch(e){
-  rebuildPlayerHost();
-  createVisiblePlayer(id);
- }
+ if(!ytApiReady){pendingVideo={id:id};$('playerSection').classList.add('player-booting');scheduleDirectFallback(id);return}
+ if(!player||!playerReady){rebuildPlayerHost();createVisiblePlayer(id);return}
+ try{player.loadVideoById(id);setTimeout(function(){try{player.playVideo()}catch(e){}},80)}catch(e){createDirectIframe(id,'load-error')}
+}
+function sendDirectCommand(func){
+ var f=$('ytDirectFrame');if(!f||!f.contentWindow)return;
+ try{f.contentWindow.postMessage(JSON.stringify({event:'command',func:func,args:[]}), '*')}catch(e){}
 }
 function onState(e){
  if(e.data===YT.PlayerState.PLAYING){
@@ -150,7 +171,7 @@ function onErr(e){
  if(e.data===100)msg='影片不存在、已刪除或私人影片。';
  if($('relatedStatus'))$('relatedStatus').textContent=msg;
  alert(msg);
- if(e.data===2||e.data===5){var retry=currentId;rebuildPlayerHost();if(retry)setTimeout(function(){createVisiblePlayer(retry)},150)}
+ if(e.data===2||e.data===5){var retry=currentId;if(retry)createDirectIframe(retry,'api-error')}
 }
 
 function isBedtime(){
@@ -193,7 +214,7 @@ function updateUsageUI(){
 }
 
 function showPlayer(){$('kidsHome').classList.add('hidden');$('hero').classList.add('hidden');$('playerSection').classList.remove('hidden')}
-function showHome(){if($('playerSection'))$('playerSection').classList.remove('player-booting');if(immersiveFull)exitImmersiveFullscreen();if($('parentPanel'))$('parentPanel').classList.add('hidden');parentOpen=false;$('playerSection').classList.add('hidden');$('hero').classList.remove('hidden');$('kidsHome').classList.remove('hidden');renderRows();updateUsageUI()}
+function showHome(){clearPlayerFallbackTimer();if(playerMode==='iframe')sendDirectCommand('pauseVideo');else if(player&&playerReady){try{player.pauseVideo()}catch(e){}}if($('playerSection'))$('playerSection').classList.remove('player-booting');if(immersiveFull)exitImmersiveFullscreen();if($('parentPanel'))$('parentPanel').classList.add('hidden');parentOpen=false;$('playerSection').classList.add('hidden');$('hero').classList.remove('hidden');$('kidsHome').classList.remove('hidden');renderRows();updateUsageUI()}
 function selectVideo(id,list){
  if(!canPlay()||!id)return;
 
@@ -515,7 +536,7 @@ document.addEventListener('DOMContentLoaded',function(){
  $('brandHomeBtn').onclick=showHome;
  $('profileBtn').onclick=toggleProfile;$('homeBtn').onclick=showHome;$('parentBtn').onclick=openParent;$('closeParentBtn').onclick=closeParent;$('backToHomeBtn').onclick=showHome;$('kidModeBtn').onclick=setKidMode;
  $('heroPlayBtn').onclick=function(){var rec=availableVideos().filter(function(v){return v.recommended}),p=profile(),v=rec[0]||(p.recent.length?videoById(p.recent[0]):availableVideos()[0]);if(v)selectVideo(v.id,availableVideos())};
- $('prevBtn').onclick=prevVideo;$('nextBtn').onclick=nextVideo;$('playBtn').onclick=function(){if(!canPlay())return;if(!player||!playerReady){if(currentId)playSelectedId(currentId);return}player.getPlayerState()===YT.PlayerState.PLAYING?player.pauseVideo():player.playVideo()};$('favBtn').onclick=toggleFav;
+ $('prevBtn').onclick=prevVideo;$('nextBtn').onclick=nextVideo;$('playBtn').onclick=function(){if(!canPlay())return;if(playerMode==='iframe'){sendDirectCommand('playVideo');return}if(!player||!playerReady){if(currentId)playSelectedId(currentId);return}player.getPlayerState()===YT.PlayerState.PLAYING?player.pauseVideo():player.playVideo()};$('favBtn').onclick=toggleFav;
  $('fullBtn').onclick=toggleImmersiveFullscreen;
  $('addBtn').onclick=addVideo;$('batchAddBtn').onclick=batchAdd;
  $('savePinBtn').onclick=function(){var p=$('pinInput').value.trim();if(!/^\d{4,6}$/.test(p)){alert('請輸入 4～6 位數 PIN');return}state.pin=p;save();$('pinInput').value='';alert('PIN 已更新')};

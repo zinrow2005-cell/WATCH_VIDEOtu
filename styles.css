@@ -425,3 +425,14 @@ body.ft-no-scroll{overflow:hidden!important;touch-action:none}
  .kid-controls button{min-height:46px}
  .related-section{margin-top:8px}
 }
+
+/* V1.5.6.6 stability overrides */
+#player,#ytDirectFrame{width:100%;height:100%;min-height:0;background:#000}
+.player-stage{aspect-ratio:16/9;min-height:0}
+.player-stage #player{height:100%!important;min-height:0!important;aspect-ratio:auto!important}
+.player-stage #player iframe,.player-stage #ytDirectFrame{width:100%!important;height:100%!important;min-height:0!important;border:0!important;display:block!important}
+.player-shell.player-booting .player-stage{position:relative}
+.player-shell.player-booting #player:before{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;content:'正在開啟影片…';color:#cbd5e1;font-size:17px;font-weight:800;z-index:1;pointer-events:none}
+.immersive-fullscreen .player-stage{aspect-ratio:auto!important;flex:1 1 auto!important;height:auto!important;min-height:0!important}
+.immersive-fullscreen .player-stage #player,.immersive-fullscreen .player-stage #ytDirectFrame{height:100%!important;max-height:none!important}
+@media(orientation:landscape) and (max-height:820px){.player-stage #player{max-height:none!important}}
