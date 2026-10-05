@@ -1,124 +1,167 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="zh-Hant">
 <head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover,user-scalable=no">
-  <meta name="apple-mobile-web-app-capable" content="yes">
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-  <meta name="theme-color" content="#111827">
-  <meta name="referrer" content="strict-origin-when-cross-origin">
-  <title>FamilyTube 家庭影音</title>
-  <link rel="manifest" href="manifest.webmanifest">
-  <link rel="apple-touch-icon" href="icons/icon-180.png">
-  <link rel="stylesheet" href="styles.css">
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<meta name="referrer" content="strict-origin-when-cross-origin">
+<title>FamilyTube V1.4</title>
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div class="app-shell">
-    <header class="topbar">
-      <div class="brand">
-        <div class="brand-mark">▶</div>
-        <div>
-          <h1>FamilyTube</h1>
-          <p>家庭影音播放器</p>
-        </div>
-      </div>
-      <div class="top-actions">
-        <button id="focusBtn" class="ghost-btn" type="button">兒童模式</button>
-        <button id="parentBtn" class="ghost-btn" type="button">家長設定</button>
-      </div>
-    </header>
-
-    <main class="layout">
-      <section class="player-panel">
-        <div class="video-frame" id="videoFrame">
-          <div id="player"></div>
-          <div id="playerError" class="player-error hidden"><div class="player-error-card"><strong id="playerErrorTitle">影片無法播放</strong><p id="playerErrorText"></p></div></div>
-          <div id="emptyPlayer" class="empty-player">
-            <div class="empty-icon">▶</div>
-            <h2>先選一部影片</h2>
-            <p>家長可以貼上 YouTube 網址加入家庭影片庫。</p>
-          </div>
-        </div>
-
-        <div class="now-playing">
-          <div class="now-copy">
-            <span class="eyebrow">現在播放</span>
-            <h2 id="nowTitle">尚未選擇影片</h2>
-            <p id="nowMeta">—</p>
-          </div>
-          <div class="control-row">
-            <button id="prevBtn" class="control-btn" type="button">◀ 上一部</button>
-            <button id="playPauseBtn" class="control-btn primary" type="button">播放 / 暫停</button>
-            <button id="nextBtn" class="control-btn" type="button">下一部 ▶</button>
-            <button id="fullscreenBtn" class="control-btn" type="button">全螢幕</button>
-          </div>
-        </div>
-      </section>
-
-      <aside class="library-panel">
-        <div class="library-head">
-          <div>
-            <span class="eyebrow">家庭影片庫</span>
-            <h2>選擇影片</h2>
-          </div>
-          <button id="addBtn" class="round-btn parent-only" type="button" aria-label="新增影片">＋</button>
-        </div>
-
-        <div id="categoryBar" class="category-bar"></div>
-        <div id="videoList" class="video-list"></div>
-      </aside>
-    </main>
+<header class="topbar">
+  <div class="brand">FamilyTube <span>V1.4</span></div>
+  <div class="top-actions">
+    <button id="profileBtn" class="pill">👧 女兒</button>
+    <button id="homeBtn" class="pill">🏠 首頁</button>
+    <button id="parentBtn" class="pill">⚙️ 家長</button>
   </div>
+</header>
 
-  <div id="parentModal" class="modal hidden" aria-hidden="true">
-    <div class="modal-card">
-      <div class="modal-head">
-        <div>
-          <span class="eyebrow">家長專區</span>
-          <h2>新增 YouTube 影片</h2>
-        </div>
-        <button class="icon-btn" id="closeModal" type="button">✕</button>
+<main>
+  <section id="hero" class="hero">
+    <div class="hero-copy">
+      <div class="eyebrow">家庭兒童影音中心</div>
+      <h1 id="heroTitle">今天想看什麼？</h1>
+      <p id="heroText">從下面的大圖卡選一部影片開始。</p>
+      <div class="hero-actions">
+        <button id="heroPlayBtn" class="primary">▶ 播放推薦</button>
+        <button id="kidModeBtn" class="secondary">🧒 兒童模式</button>
       </div>
-      <label>YouTube 網址
-        <input id="urlInput" type="url" inputmode="url" placeholder="https://www.youtube.com/watch?v=...">
-      </label>
-      <label>顯示名稱
-        <input id="titleInput" type="text" placeholder="例如：英文兒歌 01">
-      </label>
-      <label>分類
-        <input id="categoryInput" type="text" placeholder="例如：英文、兒歌、故事">
-      </label>
-      <button id="saveVideoBtn" class="save-btn" type="button">加入影片庫</button>
-      <p id="formMsg" class="form-msg"></p>
+    </div>
+  </section>
+
+  <section id="playerSection" class="player-shell hidden">
+    <div class="player-top">
+      <button id="backToHomeBtn" class="ghost">← 回首頁</button>
+      <div id="nowPlaying" class="now-playing">尚未選擇影片</div>
+    </div>
+    <div id="player"></div>
+    <div class="controls">
+      <button id="prevBtn">⏮ 上一部</button>
+      <button id="playBtn">▶ / ⏸</button>
+      <button id="nextBtn">下一部 ⏭</button>
+      <button id="favBtn">☆ 最愛</button>
+      <button id="fullBtn">⛶ 全螢幕</button>
+    </div>
+  </section>
+
+  <section id="kidsHome">
+    <div id="categoryStrip" class="category-strip">
+      <button data-filter="all" class="category-chip active">全部</button>
+      <button data-filter="英文" class="category-chip">🔤 英文</button>
+      <button data-filter="兒歌" class="category-chip">🎵 兒歌</button>
+      <button data-filter="卡通" class="category-chip">🐻 卡通</button>
+      <button data-filter="故事" class="category-chip">📚 故事</button>
+      <button data-filter="學習" class="category-chip">🧠 學習</button>
+    </div>
+
+    <div id="dynamicRows"></div>
+  </section>
+
+  <section id="parentPanel" class="parent-panel hidden">
+    <div class="parent-head">
+      <div>
+        <div class="eyebrow dark">家長專區</div>
+        <h2>影片庫與系統管理</h2>
+      </div>
+      <button id="closeParentBtn" class="secondary">關閉</button>
+    </div>
+
+    <div class="admin-grid">
+      <div class="admin-card">
+        <h3>新增影片</h3>
+        <input id="urlInput" placeholder="貼上 YouTube 網址">
+        <input id="titleInput" placeholder="影片名稱（可不填）">
+        <select id="categoryInput">
+          <option>英文</option><option>兒歌</option><option>卡通</option>
+          <option>故事</option><option>學習</option><option>其他</option>
+        </select>
+        <button id="addBtn">＋ 加入影片</button>
+      </div>
+
+      <div class="admin-card">
+        <h3>觀看時間</h3>
+        <select id="timeLimit">
+          <option value="0">不限時</option>
+          <option value="15">15 分鐘</option>
+          <option value="30">30 分鐘</option>
+          <option value="45">45 分鐘</option>
+          <option value="60">60 分鐘</option>
+        </select>
+        <div id="timerText" class="status-text">不限時</div>
+      </div>
+
+      <div class="admin-card">
+        <h3>PIN 設定</h3>
+        <input id="pinInput" inputmode="numeric" maxlength="6" placeholder="4～6 位數 PIN">
+        <button id="savePinBtn">儲存 PIN</button>
+      </div>
+
+      <div class="admin-card">
+        <h3>YouTube API</h3>
+        <input id="apiKeyInput" type="password" placeholder="YouTube Data API Key（選填）">
+        <button id="saveApiKeyBtn">儲存 API Key</button>
+        <div class="hint">不填也可播放、貼網址與批次加入。</div>
+      </div>
+
+      <div class="admin-card wide-card">
+        <h3>智慧批次加入</h3>
+        <textarea id="batchInput" rows="5" placeholder="每行貼一個 YouTube 網址"></textarea>
+        <select id="batchCategory">
+          <option>英文</option><option>兒歌</option><option>卡通</option>
+          <option>故事</option><option>學習</option><option>其他</option>
+        </select>
+        <button id="batchAddBtn">＋ 批次加入</button>
+        <div id="batchStatus" class="hint"></div>
+      </div>
+
+      <div class="admin-card wide-card">
+        <h3>YouTube 搜尋</h3>
+        <div class="inline">
+          <input id="searchInput" placeholder="例如：幼兒英文 ABC">
+          <button id="searchBtn">搜尋</button>
+        </div>
+        <div id="searchStatus" class="hint">需要 API Key。</div>
+        <div id="searchResults" class="search-results"></div>
+      </div>
+
+      <div class="admin-card wide-card">
+        <h3>匯入 YouTube 播放清單</h3>
+        <input id="playlistInput" placeholder="貼上播放清單網址或 Playlist ID">
+        <select id="playlistCategory">
+          <option>英文</option><option>兒歌</option><option>卡通</option>
+          <option>故事</option><option>學習</option><option>其他</option>
+        </select>
+        <button id="playlistImportBtn">匯入播放清單</button>
+        <div id="playlistStatus" class="hint">需要 API Key。</div>
+      </div>
+
+      <div class="admin-card">
+        <h3>資料備份</h3>
+        <button id="exportBtn">匯出備份</button>
+        <label class="file-btn">匯入備份<input id="importInput" type="file" accept="application/json"></label>
+      </div>
+    </div>
+
+    <h3 class="manage-title">影片庫排序與編輯</h3>
+    <div class="hint">iPad 建議使用「↑ / ↓」調整排序。</div>
+    <div id="manageList" class="manage-list"></div>
+  </section>
+</main>
+
+<div id="modal" class="modal hidden">
+  <div class="modal-card">
+    <h3>輸入家長 PIN</h3>
+    <input id="modalInput" inputmode="numeric" maxlength="6">
+    <div class="modal-actions">
+      <button id="modalCancel">取消</button>
+      <button id="modalOk">確定</button>
     </div>
   </div>
+</div>
 
-  <div id="settingsModal" class="modal hidden" aria-hidden="true">
-    <div class="modal-card">
-      <div class="modal-head">
-        <div>
-          <span class="eyebrow">家長設定</span>
-          <h2>播放與安全</h2>
-        </div>
-        <button class="icon-btn" id="closeSettings" type="button">✕</button>
-      </div>
-      <label class="switch-row">
-        <span>播完自動下一部</span>
-        <input id="autoplayToggle" type="checkbox" checked>
-      </label>
-      <label class="switch-row">
-        <span>開啟兒童模式時隱藏管理功能</span>
-        <input id="kidLockToggle" type="checkbox" checked>
-      </label>
-      <button id="exportBtn" class="secondary-action" type="button">匯出影片清單</button>
-      <button id="importBtn" class="secondary-action" type="button">匯入影片清單</button>
-      <input id="importFile" type="file" accept="application/json" class="hidden">
-      <button id="resetBtn" class="danger-action" type="button">清除本機資料</button>
-      <p class="small-note">資料目前儲存在這台裝置的瀏覽器內，不需要帳號。</p>
-    </div>
-  </div>
-
-  <script src="https://www.youtube.com/iframe_api"></script>
-  <script src="app.js"></script>
+<script src="https://www.youtube.com/iframe_api"></script>
+<script src="app.js"></script>
 </body>
 </html>
