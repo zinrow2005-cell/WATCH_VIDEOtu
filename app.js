@@ -1,8 +1,8 @@
 (function(){
 'use strict';
-var STORAGE='familytube_v152';
-var SEARCH_MODE='local';
-var OLD_KEYS=['familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v153';
+var SEARCH_MODE='youtube';
+var OLD_KEYS=['familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var DEFAULT={
  videos:[{id:'M7lc1UVf-VE',title:'YouTube 播放測試',category:'學習',channel:'YouTube',recommended:true,addedAt:Date.now()}],
  profiles:{
@@ -193,7 +193,23 @@ function openParent(){
  askPin(function(ok){if(ok){parentOpen=true;$('kidsHome').classList.add('hidden');$('hero').classList.add('hidden');$('playerSection').classList.add('hidden');$('parentPanel').classList.remove('hidden');loadParentFields();renderManage()}});
 }
 function closeParent(){parentOpen=false;$('parentPanel').classList.add('hidden');showHome()}
-function setKidMode(){if(!kidMode){kidMode=true;$('parentBtn').classList.add('hidden');$('kidModeBtn').textContent='🧒 兒童模式：開'}else askPin(function(ok){if(ok){kidMode=false;$('parentBtn').classList.remove('hidden');$('kidModeBtn').textContent='🧒 兒童模式'}})}
+function setKidMode(){
+ if(!kidMode){
+  kidMode=true;
+  $('parentBtn').classList.add('hidden');
+  $('kidModeBtn').textContent='🧒 兒童模式：開';
+  setSearchMode('youtube');
+ }else{
+  askPin(function(ok){
+   if(ok){
+    kidMode=false;
+    $('parentBtn').classList.remove('hidden');
+    $('kidModeBtn').textContent='🧒 兒童模式';
+    setSearchMode('youtube');
+   }
+  });
+ }
+}
 function loadParentFields(){
  $('profileSelect').value=state.activeProfile;var p=profile();$('profileNameInput').value=p.name;selectedAvatar=p.avatar||'🙂';
  document.querySelectorAll('.avatar-grid button').forEach(function(b){b.classList.toggle('active',b.dataset.avatar===selectedAvatar)});
@@ -284,9 +300,16 @@ function setSearchMode(mode){
  SEARCH_MODE=mode;
  $('localSearchTab').classList.toggle('active',mode==='local');
  $('youtubeSearchTab').classList.toggle('active',mode==='youtube');
- $('homeSearchHint').textContent=mode==='local'
-   ?'搜尋你已加入 FamilyTube 的影片。'
-   :(apiKey()?'搜尋 YouTube，可直接加入 FamilyTube。':'要搜尋 YouTube，請先到「家長」設定 YouTube API Key。');
+ $('homeSearchInput').placeholder=mode==='youtube'
+   ?'搜尋 YouTube，例如：恐龍、ABC、兒歌'
+   :'搜尋我的影片，例如：ABC、故事';
+ if(mode==='youtube'){
+  $('homeSearchHint').innerHTML=apiKey()
+    ?'<strong>YouTube 搜尋已啟用。</strong> 小孩可直接搜尋並播放。'
+    :'<span class="api-err">需要先由家長設定一次 YouTube API Key，設定後兒童模式即可直接搜尋。</span>';
+ }else{
+  $('homeSearchHint').textContent='搜尋你已加入 FamilyTube 的影片。';
+ }
  $('homeSearchResults').innerHTML='';
 }
 
@@ -334,21 +357,35 @@ function renderHomeSearchResults(items,source){
     id:item.id&&item.id.videoId,
     title:item.snippet&&item.snippet.title,
     channel:item.snippet&&item.snippet.channelTitle,
-    category:'其他'
+    category:'YouTube 搜尋'
   }:item;
   if(!v||!v.id)return;
+
   var card=document.createElement('div');card.className='home-result';
-  card.innerHTML='<img src="'+thumb(v.id)+'"><div class="home-result-body"><h3>'+esc(v.title||'YouTube 影片')+'</h3><div class="meta">'+esc(v.channel||v.category||'')+'</div>'+
-   (isYT?'<button>＋ 加入 FamilyTube</button>':'')+'</div>';
-  if(isYT){
-   card.querySelector('button').onclick=function(e){
-    e.stopPropagation();
-    if(addVideoObject({id:v.id,title:v.title||'YouTube 影片',channel:v.channel||'',category:'其他'})){
+  card.innerHTML='<img src="'+thumb(v.id)+'"><div class="home-result-body"><h3>'+esc(v.title||'YouTube 影片')+'</h3>'+
+    '<div class="meta">'+esc(v.channel||v.category||'')+'</div>'+
+    '<button class="play-now">▶ 直接播放</button>'+
+    (isYT && !kidMode ? '<button class="parent-add">＋ 加入 FamilyTube</button>' : '')+
+    '</div>';
+
+  card.querySelector('.play-now').onclick=function(e){
+   e.stopPropagation();
+   var temp={id:v.id,title:v.title||'YouTube 影片',channel:v.channel||'',category:'YouTube 搜尋'};
+   selectVideo(v.id,[temp]);
+  };
+
+  if(isYT && !kidMode){
+   var addBtn=card.querySelector('.parent-add');
+   if(addBtn){
+    addBtn.onclick=function(e){
+     e.stopPropagation();
+     if(addVideoObject({id:v.id,title:v.title||'YouTube 影片',channel:v.channel||'',category:'其他'})){
       save();renderAll();this.textContent='✓ 已加入';this.disabled=true;
-    }else{this.textContent='已存在';this.disabled=true}
-   };
-  }else{
-   card.onclick=function(){selectVideo(v.id,availableVideos())};
+     }else{
+      this.textContent='已存在';this.disabled=true;
+     }
+    };
+   }
   }
   root.appendChild(card);
  });
@@ -356,6 +393,7 @@ function renderHomeSearchResults(items,source){
 function doHomeSearch(){
  var q=$('homeSearchInput').value.trim();
  if(!q){$('homeSearchResults').innerHTML='';return}
+
  if(SEARCH_MODE==='local'){
   var needle=q.toLowerCase();
   var items=availableVideos().filter(function(v){
@@ -367,18 +405,29 @@ function doHomeSearch(){
   $('homeSearchHint').textContent='找到 '+items.length+' 部 FamilyTube 影片。';
   return;
  }
+
  if(!apiKey()){
-  $('homeSearchHint').innerHTML='<span class="api-err">請先進入「家長」設定 YouTube API Key。</span>';return;
+  $('homeSearchHint').innerHTML='<span class="api-err">YouTube 搜尋尚未啟用。請家長先到「家長 → YouTube API」設定 API Key 一次。</span>';
+  $('homeSearchResults').innerHTML='';
+  return;
  }
- $('homeSearchHint').textContent='搜尋 YouTube 中…';
- fetchJSON(apiUrl('search',{part:'snippet',type:'video',videoEmbeddable:'true',safeSearch:'strict',maxResults:'12',q:q}))
+
+ $('homeSearchHint').textContent='正在搜尋 YouTube…';
+ fetchJSON(apiUrl('search',{
+   part:'snippet',
+   type:'video',
+   videoEmbeddable:'true',
+   safeSearch:'strict',
+   maxResults:'20',
+   q:q
+ }))
  .then(function(j){
    var items=j.items||[];
    renderHomeSearchResults(items,'youtube');
-   $('homeSearchHint').textContent='YouTube 找到 '+items.length+' 部可嵌入影片。';
+   $('homeSearchHint').innerHTML='<strong>找到 '+items.length+' 部 YouTube 影片。</strong> 點「直接播放」即可觀看。';
  })
  .catch(function(e){
-   $('homeSearchHint').innerHTML='<span class="api-err">搜尋失敗：'+esc(e.message)+'</span>';
+   $('homeSearchHint').innerHTML='<span class="api-err">YouTube 搜尋失敗：'+esc(e.message)+'</span>';
  });
 }
 
@@ -413,6 +462,6 @@ document.addEventListener('DOMContentLoaded',function(){
  $('exportBtn').onclick=exportData;$('importInput').onchange=function(){if(this.files[0])importData(this.files[0])};
  $('modalCancel').onclick=function(){closeModal(false)};$('modalOk').onclick=function(){closeModal($('modalInput').value===state.pin)};
  if('serviceWorker' in navigator&&location.protocol.indexOf('http')===0)navigator.serviceWorker.register('sw.js').catch(function(){});
- renderAll();setSearchMode('local');showHome();
+ renderAll();setSearchMode('youtube');showHome();
 });
 })();

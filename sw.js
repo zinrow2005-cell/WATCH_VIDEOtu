@@ -1,5 +1,5 @@
-const CACHE='familytube-v152';
-const ASSETS=['./','index.html','styles.css?v=152','app.js?v=152','manifest.webmanifest'];
+const CACHE='familytube-v153';
+const ASSETS=['./','index.html','styles.css?v=153','app.js?v=153','manifest.webmanifest'];
 self.addEventListener('install',e=>{
  self.skipWaiting();
  e.waitUntil(caches.open(CACHE).then(c=>c.addAll(ASSETS)));
@@ -13,8 +13,6 @@ self.addEventListener('fetch',e=>{
   return;
  }
  e.respondWith(fetch(e.request).then(r=>{
-   const copy=r.clone();
-   caches.open(CACHE).then(c=>c.put(e.request,copy));
-   return r;
+   const copy=r.clone();caches.open(CACHE).then(c=>c.put(e.request,copy));return r;
  }).catch(()=>caches.match(e.request)));
 });

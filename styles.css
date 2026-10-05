@@ -239,3 +239,20 @@ main{max-width:1280px!important;margin:0 auto!important;padding:18px!important}
  #player{min-height:420px!important}
  .kid-controls button{min-height:54px!important;font-size:18px!important}
 }
+
+/* V1.5.3 child YouTube search */
+.home-search-results{grid-template-columns:repeat(5,minmax(0,1fr))}
+.home-result{transition:transform .12s ease,box-shadow .12s ease}
+.home-result:hover{transform:translateY(-2px);box-shadow:0 10px 24px rgba(0,0,0,.22)}
+.home-result .play-now{
+ width:100%;border:0;border-radius:10px;padding:10px;margin-top:8px;
+ background:#fff;color:#111827;font-weight:900;font-size:14px
+}
+.home-result .parent-add{
+ width:100%;border:0;border-radius:10px;padding:9px;margin-top:6px;
+ background:#273449;color:#fff;font-weight:800;font-size:12px
+}
+.search-hint strong{color:#fff}
+@media(max-width:1100px){.home-search-results{grid-template-columns:repeat(4,minmax(0,1fr))}}
+@media(max-width:900px){.home-search-results{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:650px){.home-search-results{grid-template-columns:repeat(2,minmax(0,1fr))}}
