@@ -526,3 +526,7 @@ body.ft-no-scroll .mini-player-close{display:none!important}
   width:min(360px,42vw)!important;
  }
 }
+
+/* V1.5.6.10 search stability */
+#homeSearchBtn:disabled{opacity:.55;cursor:wait}
+.search-loading{min-height:64px;display:flex;align-items:center;justify-content:center}
