@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#0b1220">
-<title>WATCH_VIDEOtu V1.5.6.8</title>
+<title>WATCH_VIDEOtu V1.5.6.9</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=1568">
+<link rel="stylesheet" href="styles.css?v=1569">
 </head>
 <body>
 <header class="topbar">
@@ -54,7 +54,8 @@
         <div id="nowPlaying" class="now-playing">尚未選擇影片</div>
       </div>
     </div>
-    <div class="player-stage"><div id="player"></div></div>
+    <div id="playerMiniSpacer" class="player-mini-spacer"></div>
+    <div id="playerStage" class="player-stage"><div id="player"></div></div>
     <div class="controls kid-controls">
       <button id="prevBtn">⏮ 上一部</button>
       <button id="playBtn">▶ / ⏸</button>
@@ -71,6 +72,7 @@
       <div id="relatedGrid" class="related-grid"></div>
     </div>
   </section>
+<button id="miniPlayerClose" class="mini-player-close" aria-label="關閉縮小播放器">×</button>
 
   <section id="homeSearch" class="home-search">
     <div class="search-box">
@@ -161,6 +163,6 @@
 </div>
 
 <script src="https://www.youtube.com/iframe_api"></script>
-<script src="app.js?v=1568"></script>
+<script src="app.js?v=1569"></script>
 </body>
 </html>

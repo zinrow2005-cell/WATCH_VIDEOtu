@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-var STORAGE='familytube_v1568';
-var OLD_KEYS=['familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v1569';
+var OLD_KEYS=['familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var DEFAULT={
  videos:[{id:'M7lc1UVf-VE',title:'YouTube 播放測試',category:'學習',channel:'YouTube',recommended:true,addedAt:Date.now()}],
  profiles:{
@@ -257,7 +257,46 @@ function updateUsageUI(){
  if($('watchStatus'))$('watchStatus').textContent='今日已看 '+used+' 分鐘'+(rem===Infinity?'':'，剩餘 '+Math.ceil(rem/60)+' 分鐘');
 }
 
-function showPlayer(){$('kidsHome').classList.add('hidden');$('hero').classList.add('hidden');$('playerSection').classList.remove('hidden')}
+
+function isPlayerActuallyPlaying(){
+ try{return !!(player&&player.getPlayerState&&player.getPlayerState()===YT.PlayerState.PLAYING)}catch(e){return !!currentId}
+}
+function setMiniPlayer(on){
+ if(!$('playerSection')||!$('playerStage'))return;
+ if(immersiveFull||miniPlayerSuppressed||!currentId)on=false;
+ miniPlayerActive=!!on;
+ $('playerSection').classList.toggle('mini-active',miniPlayerActive);
+}
+function updateMiniPlayerOnScroll(){
+ if(!$('playerSection')||$('playerSection').classList.contains('hidden')){setMiniPlayer(false);return}
+ if(immersiveFull||miniPlayerSuppressed||!currentId){setMiniPlayer(false);return}
+ var stage=$('playerMiniSpacer')||$('playerStage');
+ if(!stage)return;
+ var rect=stage.getBoundingClientRect();
+ var threshold=70;
+ var leftViewport = rect.bottom < threshold;
+ if(leftViewport && isPlayerActuallyPlaying())setMiniPlayer(true);
+ else if(rect.top < window.innerHeight && rect.bottom > 0)setMiniPlayer(false);
+}
+function bindMiniPlayerScroll(){
+ if(miniScrollBound)return;
+ miniScrollBound=true;
+ var ticking=false;
+ function onScroll(){
+  if(ticking)return;
+  ticking=true;
+  window.requestAnimationFrame(function(){ticking=false;updateMiniPlayerOnScroll()});
+ }
+ window.addEventListener('scroll',onScroll,{passive:true});
+ window.addEventListener('resize',onScroll);
+}
+function closeMiniPlayer(){
+ miniPlayerSuppressed=true;
+ setMiniPlayer(false);
+ try{if(player&&player.pauseVideo)player.pauseVideo()}catch(e){}
+}
+
+function showPlayer(){miniPlayerSuppressed=false;$('kidsHome').classList.add('hidden');$('hero').classList.add('hidden');$('playerSection').classList.remove('hidden');bindMiniPlayerScroll();setTimeout(updateMiniPlayerOnScroll,60)}
 
 function stopPlaybackForHome(){
  // 1) Normal YouTube IFrame API player.
@@ -299,6 +338,7 @@ function stopPlaybackForHome(){
 }
 
 function showHome(){
+ setMiniPlayer(false);miniPlayerSuppressed=false;
  stopPlaybackForHome();clearPlayerFallbackTimer();if(playerMode==='iframe')sendDirectCommand('pauseVideo');else if(player&&playerReady){try{player.pauseVideo()}catch(e){}}if($('playerSection'))$('playerSection').classList.remove('player-booting');if(immersiveFull)exitImmersiveFullscreen();if($('parentPanel'))$('parentPanel').classList.add('hidden');parentOpen=false;$('playerSection').classList.add('hidden');$('hero').classList.remove('hidden');$('kidsHome').classList.remove('hidden');renderRows();updateUsageUI()}
 function selectVideo(id,list){
  if(!canPlay()||!id)return;
@@ -357,6 +397,11 @@ function renderRows(filter){
   addRow('我的最愛',p.favorites.map(videoById).filter(function(v){return v&&allowedVideo(v)}).slice(0,20),'只屬於 '+p.name+' 的收藏',{badge:'★ 最愛'});
   addRow('最近觀看',p.recent.map(videoById).filter(function(v){return v&&allowedVideo(v)}).slice(0,16),'最近點過的影片',{badge:'最近看過'});
   addRow('最近加入',all.slice().sort(function(a,b){return (b.addedAt||0)-(a.addedAt||0)}).slice(0,16),'家長最近新增的內容',{badge:'新加入'});
+  /* AUTO_CATEGORY_HOME_ROWS */
+  ['英文','兒歌','卡通','故事','學習','自然／動物'].forEach(function(cat){
+   var items=all.filter(function(v){return v.category===cat}).slice(0,20);
+   if(items.length)addRow(cat,items,'自動分類影片',{badge:cat});
+  });
   ['英文','兒歌','卡通','故事','學習'].forEach(function(cat){addRow(cat+'專區',all.filter(function(v){return v.category===cat}).slice(0,20),'',{badge:cat})});
  }else addRow(filter+'專區',all.filter(function(v){return v.category===filter}),'',{badge:filter});
  if(!root.children.length)root.innerHTML='<section class="media-row"><div class="row-head"><h2>目前沒有可顯示的影片</h2></div></section>';
@@ -479,6 +524,7 @@ function updateStoredVideoMetaFromPlayer(){
 
 
 function enterImmersiveFullscreen(){
+ setMiniPlayer(false);
  var el=$('playerSection');
  immersiveFull=true;
  el.classList.add('immersive-fullscreen');
@@ -502,7 +548,7 @@ function exitImmersiveFullscreen(){
  immersiveFull=false;
  $('playerSection').classList.remove('immersive-fullscreen');
  document.body.classList.remove('ft-no-scroll');
- $('fullBtn').textContent='⛶ 全螢幕';
+ $('fullBtn').textContent='⛶ 全螢幕';setTimeout(updateMiniPlayerOnScroll,80);
  try{
   if(document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen().catch(function(){});
   else if(document.webkitFullscreenElement&&document.webkitExitFullscreen)document.webkitExitFullscreen();
@@ -617,6 +663,8 @@ window.addEventListener('pagehide',function(){
 });
 
 document.addEventListener('DOMContentLoaded',function(){
+ if($('miniPlayerClose'))$('miniPlayerClose').onclick=closeMiniPlayer;
+ bindMiniPlayerScroll();
  document.querySelectorAll('.category-chip').forEach(function(b){b.onclick=function(){applyFilter(b.dataset.filter)}});
  document.querySelectorAll('.avatar-grid button').forEach(function(b){b.onclick=function(){selectedAvatar=b.dataset.avatar;document.querySelectorAll('.avatar-grid button').forEach(function(x){x.classList.toggle('active',x.dataset.avatar===selectedAvatar)})}});
  $('homeSearchBtn').onclick=function(){runInternalSearch(true)};$('quickPlayBtn').onclick=quickPlayHome;$('quickAddBtn').onclick=quickAddHome;
