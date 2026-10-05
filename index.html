@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="strict-origin-when-cross-origin">
-<title>FamilyTube V1.5.6.1</title>
+<title>FamilyTube V1.5.6.2</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=1561">
+<link rel="stylesheet" href="styles.css?v=1562">
 </head>
 <body>
 <header class="topbar">
-  <div class="brand">FamilyTube <span>V1.5.6.1</span></div>
+  <div class="brand">FamilyTube <span>V1.5.6.2</span></div>
   <div class="top-actions">
     <button id="profileBtn" class="pill">👧 女兒</button>
     <button id="homeBtn" class="pill">🏠 首頁</button>
@@ -49,6 +49,13 @@
       <button id="fullBtn">⛶ 全螢幕</button>
     </div>
     <div id="watchStatus" class="watch-status"></div>
+    <section id="relatedSection" class="related-section">
+      <div class="related-head">
+        <h2>你可能也喜歡</h2>
+        <span id="relatedStatus">播放影片後會顯示相關內容</span>
+      </div>
+      <div id="relatedGrid" class="related-grid"></div>
+    </section>
   </section>
 
 
@@ -212,6 +219,6 @@
 </div>
 
 <script src="https://www.youtube.com/iframe_api"></script>
-<script src="app.js?v=1561"></script>
+<script src="app.js?v=1562"></script>
 </body>
 </html>
