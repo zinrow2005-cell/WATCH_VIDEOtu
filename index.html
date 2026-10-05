@@ -4,13 +4,13 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="strict-origin-when-cross-origin">
-<title>FamilyTube V1.5.5</title>
+<title>FamilyTube V1.5.6</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=155">
+<link rel="stylesheet" href="styles.css?v=156">
 </head>
 <body>
 <header class="topbar">
-  <div class="brand">FamilyTube <span>V1.5.5</span></div>
+  <div class="brand">FamilyTube <span>V1.5.6</span></div>
   <div class="top-actions">
     <button id="profileBtn" class="pill">👧 女兒</button>
     <button id="homeBtn" class="pill">🏠 首頁</button>
@@ -54,38 +54,30 @@
 
 
   <section id="homeSearch" class="home-search">
-    <div class="search-box">
-      <div class="search-title">🔎 搜尋 YouTube</div>
-      <div class="search-line">
-        <input id="homeSearchInput" placeholder="輸入關鍵字，例如：恐龍、ABC、兒歌">
-        <button id="homeSearchBtn" class="primary search-go">到 YouTube 搜尋</button>
-      </div>
-      <div class="search-hint">
-        不需要 API Key。會開啟 YouTube 搜尋頁，選好影片後把網址貼回下方即可播放。
-      </div>
-
-      <div class="return-box">
-        <div class="quick-add-title">🎬 把 YouTube 影片網址貼回來</div>
-        <div class="quick-add-line">
-          <input id="quickUrlInput" placeholder="貼上 YouTube 影片網址">
-          <select id="quickCategory">
-            <option>英文</option><option>兒歌</option><option>卡通</option>
-            <option>故事</option><option>學習</option><option>其他</option>
-          </select>
-          <button id="quickPlayBtn">直接播放</button>
-          <button id="quickAddBtn">加入片庫</button>
-        </div>
-        <div id="quickAddStatus" class="search-hint"></div>
-        <div id="quickPreview" class="quick-preview hidden">
-          <img id="quickPreviewImg" alt="">
-          <div>
-            <div id="quickPreviewTitle" class="quick-preview-title">YouTube 影片</div>
-            <div id="quickPreviewChannel" class="quick-preview-channel"></div>
-          </div>
-        </div>
-      </div>
+  <div class="search-box">
+    <div class="search-title">🔎 搜尋 YouTube</div>
+    <div class="search-line">
+      <input id="homeSearchInput" placeholder="輸入關鍵字，例如：恐龍、ABC、兒歌">
+      <button id="homeSearchBtn" class="primary search-go">搜尋</button>
     </div>
-  </section>
+    <div id="searchNodeStatus" class="search-hint">不需要 Google Cloud / API Key。搜尋結果會直接顯示在 FamilyTube。</div>
+    <div class="search-options">
+      <select id="searchDuration"><option value="">全部長度</option><option value="short">短片</option><option value="medium">中等</option><option value="long">長片</option></select>
+      <button id="searchMoreBtn" class="secondary hidden">載入更多</button>
+    </div>
+    <div id="homeSearchResults" class="home-search-results"></div>
+    <div class="return-box">
+      <div class="quick-add-title">🎬 也可以直接貼 YouTube 影片網址</div>
+      <div class="quick-add-line">
+        <input id="quickUrlInput" placeholder="貼上 YouTube 影片網址">
+        <select id="quickCategory"><option>英文</option><option>兒歌</option><option>卡通</option><option>故事</option><option>學習</option><option>其他</option></select>
+        <button id="quickPlayBtn">直接播放</button><button id="quickAddBtn">加入片庫</button>
+      </div>
+      <div id="quickAddStatus" class="search-hint"></div>
+      <div id="quickPreview" class="quick-preview hidden"><img id="quickPreviewImg" alt=""><div><div id="quickPreviewTitle" class="quick-preview-title">YouTube 影片</div><div id="quickPreviewChannel" class="quick-preview-channel"></div></div></div>
+    </div>
+  </div>
+</section>
 
   <section id="kidsHome">
     <div id="categoryStrip" class="category-strip">
@@ -220,6 +212,6 @@
 </div>
 
 <script src="https://www.youtube.com/iframe_api"></script>
-<script src="app.js?v=155"></script>
+<script src="app.js?v=156"></script>
 </body>
 </html>
