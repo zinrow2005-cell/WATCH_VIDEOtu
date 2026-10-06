@@ -534,3 +534,224 @@ body.watch-mode.watch-fullscreen .kid-controls{
  .manage-row .extra-field,
  .manage-row .row-buttons{grid-column:2!important}
 }
+
+
+/* ==========================================================
+   V1.5.6.66 — PHONE / TABLET STABILITY PATCH
+   ========================================================== */
+
+/* Quick TV region rail must NEVER appear on desktop. */
+.tv-mobile-quick-rail{display:none!important}
+
+/* ---------- iPad / small tablet portrait: 701–900 ---------- */
+@media(min-width:701px) and (max-width:900px) and (orientation:portrait){
+ .topbar{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  grid-template-areas:
+   "brand actions"
+   "modes modes"!important;
+  gap:7px!important;
+  padding:
+   calc(8px + var(--safe-top))
+   max(10px,var(--safe-right))
+   8px
+   max(10px,var(--safe-left))!important;
+ }
+
+ .brand-videotu{grid-area:brand!important;min-width:0!important}
+ .top-actions{grid-area:actions!important}
+ .mode-switch{
+  grid-area:modes!important;
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  width:100%!important;
+  max-width:100%!important;
+  gap:5px!important;
+ }
+ .mode-btn{
+  width:100%!important;
+  min-width:0!important;
+  padding:8px 5px!important;
+  font-size:11px!important;
+ }
+
+ /* VIDEO: content first; sidebars below instead of squeezed 3-column. */
+ body.watch-mode .watch-layout{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:9px!important;
+ }
+ body.watch-mode .watch-center{order:1!important;width:100%!important;min-width:0!important}
+ body.watch-mode .library-sidebar{
+  order:2!important;
+  width:100%!important;
+  max-width:100%!important;
+  position:relative!important;
+  top:auto!important;
+ }
+ body.watch-mode .related-sidebar{
+  order:3!important;
+  width:100%!important;
+  max-width:100%!important;
+  position:relative!important;
+  top:auto!important;
+ }
+ body.watch-mode .sidebar-filters{
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  overflow-x:auto!important;
+  gap:6px!important;
+  -webkit-overflow-scrolling:touch!important;
+ }
+ body.watch-mode .side-filter{flex:0 0 auto!important;min-width:92px!important}
+
+ /* MUSIC: horizontal nav, now-playing, then station content. */
+ .music-layout{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:9px!important;
+ }
+ .music-sidebar{
+  order:1!important;
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  gap:6px!important;
+  overflow-x:auto!important;
+  width:100%!important;
+ }
+ .music-now-panel{order:2!important;width:100%!important}
+ .music-main{order:3!important;width:100%!important;min-width:0!important}
+ .music-nav{flex:0 0 auto!important;min-width:112px!important}
+
+ /* KTV: horizontal nav + main + queue, avoids 180/center/260 squeeze. */
+ .ktv-shell{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:9px!important;
+ }
+ .ktv-sidebar{
+  order:1!important;
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  overflow-x:auto!important;
+  gap:6px!important;
+  width:100%!important;
+  position:relative!important;
+  top:auto!important;
+ }
+ .ktv-main{order:2!important;width:100%!important;min-width:0!important}
+ .ktv-queue-panel{
+  order:3!important;
+  width:100%!important;
+  max-width:100%!important;
+  position:relative!important;
+  top:auto!important;
+ }
+ .ktv-nav{flex:0 0 auto!important;min-width:112px!important}
+ .ktv-song-grid{grid-template-columns:1fr 1fr!important}
+}
+
+/* ---------- TV PORTRAIT phone + small tablet ---------- */
+@media(max-width:900px) and (orientation:portrait){
+ body.tv-mode-active{overflow-y:auto!important}
+
+ .tv-embed-shell{
+  display:block!important;
+  width:100%!important;
+ }
+
+ .tv-embed-sidebar{
+  display:none!important;
+ }
+
+ .tv-embed-main{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:8px!important;
+  width:100%!important;
+ }
+
+ .tv-embed-toolbar{order:1!important}
+ .tv-embed-wrap{
+  order:2!important;
+  width:100%!important;
+  height:68svh!important;
+  min-height:480px!important;
+ }
+ .tv-mobile-quick-rail{
+  order:3!important;
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:7px!important;
+  width:100%!important;
+  max-width:100%!important;
+  margin:0 0 12px!important;
+ }
+ .tv-quick-country{
+  display:flex!important;
+  align-items:center!important;
+  gap:7px!important;
+  min-width:0!important;
+  min-height:44px!important;
+  padding:9px!important;
+ }
+}
+
+/* ---------- TV LANDSCAPE phone + tablet ---------- */
+@media(max-width:1180px) and (orientation:landscape){
+ body.tv-mode-active .tv-embed-sidebar{
+  display:none!important;
+ }
+
+ body.tv-mode-active .tv-embed-main{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) min(29vw,280px)!important;
+  grid-template-areas:
+   "toolbar toolbar"
+   "screen rail"!important;
+  gap:8px!important;
+ }
+
+ body.tv-mode-active .tv-embed-toolbar{grid-area:toolbar!important}
+ body.tv-mode-active .tv-embed-wrap{
+  grid-area:screen!important;
+  height:calc(100dvh - 130px)!important;
+  min-height:300px!important;
+ }
+
+ body.tv-mode-active .tv-mobile-quick-rail{
+  grid-area:rail!important;
+  display:flex!important;
+  flex-direction:column!important;
+  gap:6px!important;
+  width:100%!important;
+  height:calc(100dvh - 130px)!important;
+  overflow-y:auto!important;
+  padding-right:2px!important;
+  -webkit-overflow-scrolling:touch!important;
+ }
+
+ body.tv-mode-active .tv-quick-country{
+  flex:0 0 auto!important;
+  width:100%!important;
+  min-height:40px!important;
+  text-align:left!important;
+ }
+}
+
+/* Avoid phone/tablet quick rail rules affecting desktop. */
+@media(min-width:1181px){
+ .tv-mobile-quick-rail{display:none!important}
+}
+
+/* Fullscreen remains highest-priority and independent. */
+body.watch-mode.watch-fullscreen .library-sidebar,
+body.watch-mode.watch-fullscreen .related-sidebar{
+ display:none!important;
+}
+body.watch-mode.watch-fullscreen #playerSection .watch-center{
+ display:grid!important;
+ grid-template-rows:minmax(0,1fr) auto!important;
+ height:100%!important;
+}

@@ -1,0 +1,24 @@
+WATCH_VIDEOtu V1.5.6.66 — Phone / Tablet Stability
+
+已找到並修正：
+1. V65 刪除桌機上方重複地區列時，連手機橫式需要的快速地區元件一起刪除。
+   - V66 重新加入同一 mobile-only 元件。
+   - Desktop 永遠 display:none。
+   - 手機/平板直立：地區列表放在 TV 下方，可往下滑選。
+   - 手機/平板橫式：直播左側，地區快速列右側。
+
+2. iPad portrait 701–900px：
+   - Header 改兩列，四模式獨立一列。
+   - 影片三欄改內容優先單欄，左右側欄移下方。
+   - 音樂改橫向 nav + Now Playing + 內容。
+   - KTV 改橫向 nav + 主內容 + 待唱清單。
+   - KTV 歌曲可用 2 欄卡片。
+
+3. Fullscreen 規則再次提高優先級，避免 tablet layout 干擾。
+
+Static QA:
+- app.js PASS
+- ktv_singers.js PASS
+- ktv_songs.js PASS
+- sw.js PASS
+- duplicate IDs 0
