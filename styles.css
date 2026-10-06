@@ -2028,3 +2028,33 @@ body.tv-sidebar-collapsed .tv-sidebar-toggle{display:block!important;width:38px!
  .ktv-song-category-bar{scroll-snap-type:x proximity}
  .ktv-song-cat{scroll-snap-align:start}
 }
+
+/* V1.5.6.45 KTV full singer supplementation */
+.ktv-source-badge{
+ display:inline-flex;
+ align-items:center;
+ margin-left:6px;
+ padding:2px 6px;
+ border-radius:999px;
+ font-size:8px;
+ font-weight:950;
+ vertical-align:middle;
+}
+.ktv-source-badge.local{
+ background:rgba(39,200,120,.18);
+ color:#69e7a6;
+ border:1px solid rgba(105,231,166,.28);
+}
+.ktv-source-badge.online{
+ background:rgba(74,150,255,.18);
+ color:#8cc0ff;
+ border:1px solid rgba(140,192,255,.28);
+}
+.ktv-refresh-singer{
+ white-space:nowrap;
+}
+@media(max-width:700px){
+ .ktv-refresh-singer{
+  min-width:110px;
+ }
+}
