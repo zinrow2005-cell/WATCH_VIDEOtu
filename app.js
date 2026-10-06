@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-var STORAGE='familytube_v15636';
-var OLD_KEYS=['familytube_v15635','familytube_v15634','familytube_v15633','familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v15637';
+var OLD_KEYS=['familytube_v15636','familytube_v15635','familytube_v15634','familytube_v15633','familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var DEFAULT={
  videos:[{id:'M7lc1UVf-VE',title:'YouTube 播放測試',category:'學習',channel:'YouTube',recommended:true,addedAt:Date.now()}],
  profiles:{
@@ -13,7 +13,8 @@ var DEFAULT={
  playback:{loopCurrent:false},
  whitelist:{enabled:false,channels:[]},
  music:{favorites:[],recent:[],volume:0.85},
- ktv:{queue:[],recent:[],favorites:[],singCount:{}}
+ ktv:{queue:[],recent:[],favorites:[],singCount:{}},
+ tv:{favorites:[],recent:[],lastCountry:'tw'}
 };
 var state=load(),player=null,currentId=null,currentList=[],currentIndex=-1,parentOpen=false,kidMode=false,modalCb=null;
 var usageTick=null,lastUsageStamp=0,selectedAvatar='👧',quickMeta={id:'',title:'',channel:''},immersiveFull=false,relatedBusy=false,relatedItems=[];
@@ -41,7 +42,7 @@ function load(){
    if(!p.usage)p.usage={};
   });
   if(!v.bedtime)v.bedtime=clone(DEFAULT.bedtime);if(!v.playback)v.playback=clone(DEFAULT.playback);
-  if(!v.whitelist)v.whitelist=clone(DEFAULT.whitelist);if(!v.music)v.music=clone(DEFAULT.music);if(!v.music.favorites)v.music.favorites=[];if(!v.music.recent)v.music.recent=[];if(typeof v.music.volume!=='number')v.music.volume=0.85;if(!v.ktv)v.ktv=clone(DEFAULT.ktv);if(!v.ktv.queue)v.ktv.queue=[];if(!v.ktv.recent)v.ktv.recent=[];if(!v.ktv.favorites)v.ktv.favorites=[];if(!v.ktv.singCount)v.ktv.singCount={};
+  if(!v.whitelist)v.whitelist=clone(DEFAULT.whitelist);if(!v.music)v.music=clone(DEFAULT.music);if(!v.music.favorites)v.music.favorites=[];if(!v.music.recent)v.music.recent=[];if(typeof v.music.volume!=='number')v.music.volume=0.85;if(!v.ktv)v.ktv=clone(DEFAULT.ktv);if(!v.ktv.queue)v.ktv.queue=[];if(!v.ktv.recent)v.ktv.recent=[];if(!v.ktv.favorites)v.ktv.favorites=[];if(!v.ktv.singCount)v.ktv.singCount={};if(!v.tv)v.tv=clone(DEFAULT.tv);if(!v.tv.favorites)v.tv.favorites=[];if(!v.tv.recent)v.tv.recent=[];if(!v.tv.lastCountry)v.tv.lastCountry='tw';
   if(!v.videos)v.videos=[];
   v.videos.forEach(function(x,i){
    if(!x.addedAt)x.addedAt=Date.now()-i*1000;
@@ -81,6 +82,7 @@ var radioCategory='popular';
 var musicModeActive=false,musicItems=[],musicCurrent=null,musicIndex=-1,musicBusy=false,musicNav='search';
 
 function showVideoMode(){
+ leaveTvMode();
  leaveKtvMode();
  document.body.classList.remove('music-mode-active');
  musicModeActive=false;
@@ -94,6 +96,7 @@ function showVideoMode(){
 }
 
 function showMusicMode(){
+ leaveTvMode();
  leaveKtvMode();
  document.body.classList.add('music-mode-active');
  if(immersiveFull)exitImmersiveFullscreen();
@@ -475,6 +478,7 @@ var KTV_HOT=[
 ];
 
 function showKtvMode(){
+ leaveTvMode();
  if(immersiveFull)exitImmersiveFullscreen();
  stopPlaybackForHome();
  stopMusic();
@@ -730,6 +734,228 @@ function searchKtv(forceQuery){
   ktvBusy=false;$('ktvStatus').textContent='目前搜尋來源沒有回應，請稍後再試。';
   renderKtvSongs([],'搜尋結果','');
  });
+}
+
+
+var tvModeActive=false,tvNav='countries',tvCountry='tw',tvChannels=[],tvCurrent=null,tvBusy=false;
+
+var TV_COUNTRIES=[
+ {code:'tw',name:'台灣',flag:'🇹🇼'},{code:'jp',name:'日本',flag:'🇯🇵'},{code:'kr',name:'韓國',flag:'🇰🇷'},
+ {code:'us',name:'美國',flag:'🇺🇸'},{code:'gb',name:'英國',flag:'🇬🇧'},{code:'fr',name:'法國',flag:'🇫🇷'},
+ {code:'de',name:'德國',flag:'🇩🇪'},{code:'it',name:'義大利',flag:'🇮🇹'},{code:'es',name:'西班牙',flag:'🇪🇸'},
+ {code:'ca',name:'加拿大',flag:'🇨🇦'},{code:'au',name:'澳洲',flag:'🇦🇺'},{code:'nz',name:'紐西蘭',flag:'🇳🇿'},
+ {code:'sg',name:'新加坡',flag:'🇸🇬'},{code:'my',name:'馬來西亞',flag:'🇲🇾'},{code:'th',name:'泰國',flag:'🇹🇭'},
+ {code:'ph',name:'菲律賓',flag:'🇵🇭'},{code:'id',name:'印尼',flag:'🇮🇩'},{code:'in',name:'印度',flag:'🇮🇳'},
+ {code:'hk',name:'香港',flag:'🇭🇰'},{code:'mo',name:'澳門',flag:'🇲🇴'},{code:'br',name:'巴西',flag:'🇧🇷'},
+ {code:'mx',name:'墨西哥',flag:'🇲🇽'},{code:'ar',name:'阿根廷',flag:'🇦🇷'},{code:'za',name:'南非',flag:'🇿🇦'}
+];
+
+function leaveTvMode(){
+ tvModeActive=false;
+ document.body.classList.remove('tv-mode-active');
+ if($('tvMode'))$('tvMode').classList.add('hidden');
+ if($('tvModeBtn'))$('tvModeBtn').classList.remove('active');
+ stopTvPlayback();
+}
+
+function showTvMode(){
+ if(immersiveFull)exitImmersiveFullscreen();
+ leaveKtvMode();
+ stopPlaybackForHome();
+ stopMusic();
+ tvModeActive=true;
+ musicModeActive=false;
+ document.body.classList.remove('watch-mode','music-mode-active','ktv-mode-active');
+ document.body.classList.add('tv-mode-active');
+ if($('hero'))$('hero').classList.add('hidden');
+ if($('kidsHome'))$('kidsHome').classList.add('hidden');
+ if($('playerSection'))$('playerSection').classList.add('hidden');
+ if($('musicMode'))$('musicMode').classList.add('hidden');
+ if($('ktvMode'))$('ktvMode').classList.add('hidden');
+ if($('parentPanel'))$('parentPanel').classList.add('hidden');
+ if($('tvMode'))$('tvMode').classList.remove('hidden');
+ $('videoModeBtn').classList.remove('active');
+ $('musicModeBtn').classList.remove('active');
+ $('ktvModeBtn').classList.remove('active');
+ $('tvModeBtn').classList.add('active');
+ renderTvCountries('');
+ renderTvNav(tvNav);
+ if(!tvChannels.length)loadTvCountry(state.tv.lastCountry||'tw');
+ try{window.scrollTo(0,0)}catch(e){}
+}
+
+function countryName(code){
+ for(var i=0;i<TV_COUNTRIES.length;i++)if(TV_COUNTRIES[i].code===code)return TV_COUNTRIES[i];
+ return {code:code,name:code.toUpperCase(),flag:'🌐'};
+}
+
+function renderTvCountries(filter){
+ var root=$('tvCountryList');if(!root)return;
+ var q=String(filter||'').toLowerCase();
+ root.innerHTML='';
+ TV_COUNTRIES.filter(function(c){
+  return !q||c.name.toLowerCase().indexOf(q)>=0||c.code.indexOf(q)>=0;
+ }).forEach(function(c){
+  var b=document.createElement('button');
+  b.type='button';b.className='tv-country'+(c.code===tvCountry?' active':'');
+  b.innerHTML='<span>'+c.flag+'</span><b>'+esc(c.name)+'</b>';
+  b.onclick=function(){loadTvCountry(c.code)};
+  root.appendChild(b);
+ });
+}
+
+function fetchTextTimeout(url,ms){
+ return new Promise(function(resolve,reject){
+  var done=false;
+  var timer=setTimeout(function(){if(done)return;done=true;reject(new Error('timeout'))},ms||8000);
+  fetch(url,{cache:'no-store'}).then(function(r){
+   if(!r.ok)throw new Error('HTTP '+r.status);
+   return r.text();
+  }).then(function(t){
+   if(done)return;done=true;clearTimeout(timer);resolve(t);
+  },function(e){
+   if(done)return;done=true;clearTimeout(timer);reject(e);
+  });
+ });
+}
+
+function parseM3U(text){
+ var lines=String(text||'').split(/\r?\n/),out=[],meta=null;
+ for(var i=0;i<lines.length;i++){
+  var line=lines[i].trim();
+  if(!line)continue;
+  if(line.indexOf('#EXTINF:')===0){
+   var name=(line.split(',').slice(1).join(',')||'Live TV').trim();
+   function attr(k){
+    var m=line.match(new RegExp(k+'="([^"]*)"','i'));
+    return m?m[1]:'';
+   }
+   meta={
+    name:name,
+    id:attr('tvg-id'),
+    logo:attr('tvg-logo'),
+    group:attr('group-title'),
+    language:attr('tvg-language')
+   };
+  }else if(line.charAt(0)!=='#'&&meta){
+   meta.url=line;
+   out.push(meta);
+   meta=null;
+  }
+ }
+ return out.filter(function(x){return x&&x.url});
+}
+
+function loadTvCountry(code){
+ if(tvBusy)return;
+ tvBusy=true;tvCountry=code||'tw';state.tv.lastCountry=tvCountry;save();
+ renderTvCountries($('tvCountrySearch')?$('tvCountrySearch').value:'');
+ var c=countryName(tvCountry);
+ $('tvPageTitle').textContent=c.flag+' '+c.name+' 電視';
+ $('tvPageSub').textContent='公開網路直播頻道；部分頻道可能因地區限制或來源中斷而無法播放。';
+ $('tvStatus').textContent='正在載入 '+c.name+' 頻道…';
+ var url='https://iptv-org.github.io/iptv/countries/'+encodeURIComponent(tvCountry)+'.m3u';
+ fetchTextTimeout(url,9000).then(function(text){
+  tvBusy=false;
+  tvChannels=parseM3U(text).map(function(x,i){
+   x.key=(x.id||x.name||'ch')+'_'+i;x.country=tvCountry;return x;
+  });
+  $('tvStatus').textContent='已載入 '+tvChannels.length+' 個 '+c.name+' 頻道';
+  renderTvChannels(tvChannels);
+ }).catch(function(){
+  tvBusy=false;tvChannels=[];
+  $('tvStatus').textContent='目前無法取得 '+c.name+' 頻道清單，請稍後再試或換其他國家。';
+  renderTvChannels([]);
+ });
+}
+
+function renderTvChannels(items){
+ var root=$('tvChannelGrid');if(!root)return;
+ var q=String($('tvChannelSearch')?$('tvChannelSearch').value:'').toLowerCase();
+ var list=(items||[]).filter(function(ch){
+  return !q||String(ch.name||'').toLowerCase().indexOf(q)>=0||String(ch.group||'').toLowerCase().indexOf(q)>=0;
+ });
+ $('tvChannelCount').textContent=list.length+' 個';
+ $('tvListTitle').textContent=tvNav==='favorites'?'我的最愛':tvNav==='recent'?'最近觀看':'頻道';
+ root.innerHTML='';
+ if(!list.length){root.innerHTML='<div class="tv-empty">目前沒有可顯示的頻道</div>';return}
+ list.slice(0,250).forEach(function(ch){
+  var card=document.createElement('button');card.type='button';card.className='tv-channel-card';
+  var logo=ch.logo||'icons/icon-192.png';
+  card.innerHTML='<img src="'+esc(logo)+'" alt=""><span class="tv-channel-copy"><b>'+esc(ch.name||'Live TV')+'</b><small>'+esc(ch.group||ch.language||countryName(ch.country||tvCountry).name)+'</small></span><span class="tv-live-badge">LIVE</span>';
+  var im=card.querySelector('img');im.onerror=function(){this.onerror=null;this.src='icons/icon-192.png'};
+  card.onclick=function(){playTvChannel(ch)};
+  root.appendChild(card);
+ });
+}
+
+function rememberTvRecent(ch){
+ if(!ch)return;
+ var arr=(state.tv.recent||[]).filter(function(x){return x&&x.url!==ch.url});
+ arr.unshift(ch);state.tv.recent=arr.slice(0,40);save();
+}
+
+function tvFavoriteIndex(ch){
+ var arr=state.tv.favorites||[];
+ for(var i=0;i<arr.length;i++)if(arr[i]&&arr[i].url===ch.url)return i;
+ return -1;
+}
+function updateTvFavBtn(){
+ if(!$('tvFavBtn'))return;
+ var yes=tvCurrent&&tvFavoriteIndex(tvCurrent)>=0;
+ $('tvFavBtn').textContent=yes?'★ 已收藏':'☆ 收藏';
+ $('tvFavBtn').classList.toggle('active',!!yes);
+}
+function toggleTvFavorite(){
+ if(!tvCurrent)return;
+ var idx=tvFavoriteIndex(tvCurrent);
+ if(idx>=0)state.tv.favorites.splice(idx,1);else state.tv.favorites.unshift(tvCurrent);
+ save();updateTvFavBtn();
+ if(tvNav==='favorites')renderTvChannels(state.tv.favorites||[]);
+}
+
+function stopTvPlayback(){
+ try{$('tvVideo').pause()}catch(e){}
+ try{$('tvVideo').removeAttribute('src');$('tvVideo').load()}catch(e){}
+ try{$('tvIframe').src='about:blank'}catch(e){}
+ if($('tvPlayerPanel'))$('tvPlayerPanel').classList.add('hidden');
+}
+
+function playTvChannel(ch){
+ if(!ch||!ch.url)return;
+ tvCurrent=ch;rememberTvRecent(ch);
+ $('tvPlayerTitle').textContent=ch.name||'Live TV';
+ $('tvPlayerMeta').textContent=[countryName(ch.country||tvCountry).name,ch.group,ch.language].filter(Boolean).join(' · ');
+ $('tvPlayerPanel').classList.remove('hidden');
+ updateTvFavBtn();
+ var u=String(ch.url||'');
+ var v=$('tvVideo'),f=$('tvIframe');
+ v.classList.remove('hidden');f.classList.add('hidden');f.src='about:blank';
+ try{v.pause()}catch(e){}
+ if(/^https?:\/\/(www\.)?(youtube\.com|youtu\.be)/i.test(u)){
+  var id='';
+  var m=u.match(/[?&]v=([^&]+)/);if(m)id=m[1];
+  if(!id){m=u.match(/youtu\.be\/([^?&/]+)/);if(m)id=m[1]}
+  if(id){
+   v.classList.add('hidden');f.classList.remove('hidden');
+   f.src='https://www.youtube.com/embed/'+encodeURIComponent(id)+'?autoplay=1&playsinline=1&rel=0';
+   return;
+  }
+ }
+ v.src=u;
+ var p=v.play();
+ if(p&&p.catch)p.catch(function(){
+  $('tvStatus').textContent='此頻道目前無法直接播放，可能是來源中斷或瀏覽器限制。';
+ });
+ try{$('tvPlayerPanel').scrollIntoView({behavior:'smooth',block:'start'})}catch(e){}
+}
+
+function renderTvNav(nav){
+ tvNav=nav||'countries';
+ document.querySelectorAll('.tv-nav').forEach(function(b){b.classList.toggle('active',b.dataset.tvnav===tvNav)});
+ if(tvNav==='favorites')renderTvChannels(state.tv.favorites||[]);
+ else if(tvNav==='recent')renderTvChannels(state.tv.recent||[]);
+ else renderTvChannels(tvChannels);
 }
 
 var AUTO_CATEGORY_RULES=[
@@ -1834,6 +2060,15 @@ function bindUiSafely(){
 }
 
 document.addEventListener('DOMContentLoaded',function(){
+ if($('tvModeBtn'))$('tvModeBtn').onclick=showTvMode;
+ document.querySelectorAll('.tv-nav').forEach(function(b){b.onclick=function(){renderTvNav(b.dataset.tvnav)}});
+ if($('tvCountrySearch'))$('tvCountrySearch').oninput=function(){renderTvCountries(this.value)};
+ if($('tvChannelSearch'))$('tvChannelSearch').oninput=function(){renderTvNav(tvNav)};
+ if($('tvRefreshBtn'))$('tvRefreshBtn').onclick=function(){loadTvCountry(tvCountry)};
+ if($('tvFavBtn'))$('tvFavBtn').onclick=toggleTvFavorite;
+ if($('tvClosePlayerBtn'))$('tvClosePlayerBtn').onclick=stopTvPlayback;
+ renderTvCountries('');
+
  if($('ktvClosePlayerBtn'))$('ktvClosePlayerBtn').onclick=closeKtvPlayer;
  if($('ktvReplayBtn'))$('ktvReplayBtn').onclick=replayKtvCurrent;
  if($('ktvPlayerCutBtn'))$('ktvPlayerCutBtn').onclick=cutKtvSong;
