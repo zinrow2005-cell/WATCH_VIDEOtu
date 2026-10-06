@@ -2,8 +2,8 @@ var watchFullscreenScrollY=0;
 var miniPlayerSuppressUntil=0;
 (function(){
 'use strict';
-var STORAGE='familytube_v15654';
-var OLD_KEYS=['familytube_v15653','familytube_v15652','familytube_v15651','familytube_v15650','familytube_v15649','familytube_v15648','familytube_v15647','familytube_v15646','familytube_v15645','familytube_v15644','familytube_v15643','familytube_v15642','familytube_v15641','familytube_v15640','familytube_v15639','familytube_v15638','familytube_v15637','familytube_v15636','familytube_v15635','familytube_v15634','familytube_v15633','familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v15655';
+var OLD_KEYS=['familytube_v15654','familytube_v15653','familytube_v15652','familytube_v15651','familytube_v15650','familytube_v15649','familytube_v15648','familytube_v15647','familytube_v15646','familytube_v15645','familytube_v15644','familytube_v15643','familytube_v15642','familytube_v15641','familytube_v15640','familytube_v15639','familytube_v15638','familytube_v15637','familytube_v15636','familytube_v15635','familytube_v15634','familytube_v15633','familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var DEFAULT={
  videos:[{id:'M7lc1UVf-VE',title:'YouTube 播放測試',category:'學習',channel:'YouTube',recommended:true,addedAt:Date.now()}],
  profiles:{
@@ -1125,6 +1125,7 @@ function stopTvPlayback(){
 }
 
 function leaveTvMode(){
+ tvPortraitMiniDismissed=false;setTvPortraitMini(false);
  tvPaused=false;updateTvPauseBtn();
  tvModeActive=false;
  document.body.classList.remove('tv-mode-active');document.body.classList.remove('tv-fullscreen');
@@ -1135,6 +1136,7 @@ function leaveTvMode(){
 }
 
 function showTvMode(){
+ tvPortraitMiniDismissed=false;setTvPortraitMini(false);
  if(immersiveFull)exitImmersiveFullscreen();
  leaveKtvMode();
  stopPlaybackForHome();
@@ -1155,6 +1157,7 @@ function showTvMode(){
  if($('ktvModeBtn'))$('ktvModeBtn').classList.remove('active');
  if($('tvModeBtn'))$('tvModeBtn').classList.add('active');
  renderTvCountries('');
+ renderTvMobileQuickRail();
  renderTvNav(tvNav);
  if(!tvCurrentUrl)loadTvCountry(state.tv.lastCountry||'tw');
  if(window.innerWidth<=820)setTvSidebarCollapsed(true);else if(window.innerWidth<=1100)setTvSidebarCollapsed(true);else setTvSidebarCollapsed(false);
@@ -1166,6 +1169,52 @@ function countryName(code){
   if(TV_COUNTRIES[i].code===code)return TV_COUNTRIES[i];
  }
  return {code:code,name:String(code||'').toUpperCase(),flag:'🌐'};
+}
+
+
+var tvPortraitMini=false,tvPortraitMiniDismissed=false,tvMiniTicking=false;
+
+function renderTvMobileQuickRail(){
+ var root=$('tvMobileQuickRail');if(!root)return;
+ root.innerHTML='';
+ TV_COUNTRIES.forEach(function(c){
+  var b=document.createElement('button');
+  b.type='button';
+  b.className='tv-quick-country'+(c.code===tvCountry?' active':'');
+  b.innerHTML='<span>'+c.flag+'</span><b>'+esc(c.name)+'</b>';
+  b.onclick=function(){loadTvCountry(c.code)};
+  root.appendChild(b);
+ });
+}
+
+function setTvPortraitMini(on){
+ if(window.innerWidth>820||window.innerWidth>window.innerHeight)on=false;
+ tvPortraitMini=!!on;
+ document.body.classList.toggle('tv-portrait-mini',tvPortraitMini);
+ if($('tvMiniCloseBtn'))$('tvMiniCloseBtn').classList.toggle('hidden',!tvPortraitMini);
+}
+
+function evaluateTvPortraitMini(){
+ tvMiniTicking=false;
+ if(!tvModeActive||window.innerWidth>820||window.innerWidth>window.innerHeight||tvPortraitMiniDismissed){
+  setTvPortraitMini(false);return;
+ }
+ var wrap=$('tvEmbedWrap');if(!wrap)return;
+ var r=wrap.getBoundingClientRect();
+ var vh=window.innerHeight||document.documentElement.clientHeight||0;
+ var total=Math.max(1,r.height);
+ var visible=Math.max(0,Math.min(vh,r.bottom)-Math.max(0,r.top));
+ var visibleRatio=Math.max(0,Math.min(1,visible/total));
+ var hiddenRatio=1-visibleRatio;
+ if(!tvPortraitMini&&hiddenRatio>=0.72)setTvPortraitMini(true);
+ else if(tvPortraitMini&&visibleRatio>=0.50)setTvPortraitMini(false);
+}
+
+function requestTvPortraitMiniEval(){
+ if(tvMiniTicking)return;
+ tvMiniTicking=true;
+ if(window.requestAnimationFrame)window.requestAnimationFrame(evaluateTvPortraitMini);
+ else setTimeout(evaluateTvPortraitMini,16);
 }
 
 function renderTvCountries(filter){
