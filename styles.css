@@ -956,3 +956,33 @@ body.watch-mode #kidsHome{display:none!important;}
 body.watch-mode #playerSection{display:block!important;margin-top:0!important;}
 body.watch-mode main{padding-top:8px!important;}
 @media(max-width:600px){body.watch-mode main{padding-top:4px!important;}}
+
+/* V1.5.6.24 sidebar quick-select: one item per row */
+.sidebar-filters{
+ display:flex!important;
+ flex-direction:column!important;
+ gap:7px!important;
+ width:100%!important;
+}
+.side-filter{
+ width:100%!important;
+ display:flex!important;
+ align-items:center!important;
+ justify-content:flex-start!important;
+ min-height:40px!important;
+ padding:9px 11px!important;
+ text-align:left!important;
+ white-space:nowrap!important;
+}
+@media(max-width:1000px){
+ .sidebar-filters{
+  display:flex!important;
+  flex-direction:column!important;
+  overflow:visible!important;
+  padding-bottom:0!important;
+ }
+ .side-filter{
+  flex:0 0 auto!important;
+  width:100%!important;
+ }
+}
