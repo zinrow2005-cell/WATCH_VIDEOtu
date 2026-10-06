@@ -1430,3 +1430,18 @@ body.music-mode-active .home-search-box{
  }
  .radio-cat{flex:0 0 auto}
 }
+
+/* V1.5.6.33 simplified radio mode */
+.music-playlist-panel,
+.playlist-modal-card,
+.playlist-modal-list,
+.playlist-pick,
+.music-add-playlist,
+.playlist-list,
+.playlist-card,
+.playlist-card-head,
+.playlist-items,
+.playlist-item{
+ display:none!important;
+}
+.music-card-actions{display:block!important}

@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-var STORAGE='familytube_v15632';
-var OLD_KEYS=['familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v15633';
+var OLD_KEYS=['familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var DEFAULT={
  videos:[{id:'M7lc1UVf-VE',title:'YouTube 播放測試',category:'學習',channel:'YouTube',recommended:true,addedAt:Date.now()}],
  profiles:{
@@ -12,7 +12,7 @@ var DEFAULT={
  bedtime:{enabled:false,start:'21:00',end:'07:00'},
  playback:{loopCurrent:false},
  whitelist:{enabled:false,channels:[]},
- music:{favorites:[],recent:[],volume:0.85,playlists:[]}
+ music:{favorites:[],recent:[],volume:0.85}
 };
 var state=load(),player=null,currentId=null,currentList=[],currentIndex=-1,parentOpen=false,kidMode=false,modalCb=null;
 var usageTick=null,lastUsageStamp=0,selectedAvatar='👧',quickMeta={id:'',title:'',channel:''},immersiveFull=false,relatedBusy=false,relatedItems=[];
@@ -40,7 +40,7 @@ function load(){
    if(!p.usage)p.usage={};
   });
   if(!v.bedtime)v.bedtime=clone(DEFAULT.bedtime);if(!v.playback)v.playback=clone(DEFAULT.playback);
-  if(!v.whitelist)v.whitelist=clone(DEFAULT.whitelist);if(!v.music)v.music=clone(DEFAULT.music);if(!v.music.favorites)v.music.favorites=[];if(!v.music.recent)v.music.recent=[];if(!v.music.playlists)v.music.playlists=[];if(typeof v.music.volume!=='number')v.music.volume=0.85;
+  if(!v.whitelist)v.whitelist=clone(DEFAULT.whitelist);if(!v.music)v.music=clone(DEFAULT.music);if(!v.music.favorites)v.music.favorites=[];if(!v.music.recent)v.music.recent=[];if(typeof v.music.volume!=='number')v.music.volume=0.85;
   if(!v.videos)v.videos=[];
   v.videos.forEach(function(x,i){
    if(!x.addedAt)x.addedAt=Date.now()-i*1000;
@@ -302,9 +302,9 @@ function renderMusicItems(items){
   var card=document.createElement('button');
   card.type='button';card.className='music-card';
   var art=(st.favicon&&st.favicon.indexOf('https://')===0)?st.favicon:'icons/icon-192.png';
-  card.innerHTML='<img src="'+esc(art)+'" alt=""><span class="music-card-copy"><b>'+esc(st.name)+'</b><small class="music-station-desc">'+esc(stationDescription(st))+'</small></span><span class="music-card-actions"><span class="music-card-play">▶</span><button type="button" class="music-add-playlist" title="加入播放清單">＋</button></span>';
+  card.innerHTML='<img src="'+esc(art)+'" alt=""><span class="music-card-copy"><b>'+esc(st.name)+'</b><small class="music-station-desc">'+esc(stationDescription(st))+'</small></span><span class="music-card-play">▶</span>';
   var im=card.querySelector('img');im.onerror=function(){this.onerror=null;this.src='icons/icon-192.png'};
-  card.onclick=function(){playMusicStation(st,idx,musicItems)};card.querySelector('.music-add-playlist').onclick=function(e){e.stopPropagation();openPlaylistModal(st)};
+  card.onclick=function(){playMusicStation(st,idx,musicItems)};
   frag.appendChild(card);
  });
  root.appendChild(frag);
@@ -313,113 +313,10 @@ function renderMusicItems(items){
 function renderMusicNav(which){
  musicNav=which||'search';
  document.querySelectorAll('.music-nav').forEach(function(b){b.classList.toggle('active',b.dataset.musicnav===musicNav)});
- if($('musicPlaylistPanel'))$('musicPlaylistPanel').classList.toggle('hidden',musicNav!=='playlists');
- if($('musicResults'))$('musicResults').classList.toggle('hidden',musicNav==='playlists');
+ if($('musicResults'))$('musicResults').classList.remove('hidden');
  if(musicNav==='favorites')renderMusicItems(state.music.favorites||[]);
  else if(musicNav==='recent')renderMusicItems(state.music.recent||[]);
- else if(musicNav==='playlists')renderPlaylistList();
-}
-
-
-var playlistModalStation=null;
-
-function playlistById(id){
- var arr=state.music.playlists||[];
- for(var i=0;i<arr.length;i++){if(arr[i]&&arr[i].id===id)return arr[i]}
- return null;
-}
-
-function createPlaylist(name){
- name=String(name||'').trim();
- if(!name)return null;
- var pl={id:'pl_'+Date.now()+'_'+Math.floor(Math.random()*10000),name:name,items:[],createdAt:Date.now()};
- state.music.playlists.push(pl);
- save();
- renderPlaylistList();
- return pl;
-}
-
-function renamePlaylist(id){
- var pl=playlistById(id);if(!pl)return;
- var n=prompt('播放清單名稱',pl.name);
- if(n===null)return;
- n=String(n).trim();if(!n)return;
- pl.name=n;save();renderPlaylistList();
-}
-
-function deletePlaylist(id){
- var pl=playlistById(id);if(!pl)return;
- if(!confirm('確定刪除播放清單「'+pl.name+'」？'))return;
- state.music.playlists=(state.music.playlists||[]).filter(function(x){return x.id!==id});
- save();renderPlaylistList();renderMusicNav('playlists');
-}
-
-function addStationToPlaylist(st,id){
- if(!st||!id)return;
- var pl=playlistById(id);if(!pl)return;
- if(!pl.items)pl.items=[];
- var exists=pl.items.some(function(x){return x&&x.stationuuid===st.stationuuid});
- if(!exists)pl.items.push(st);
- save();renderPlaylistList();
-}
-
-function removeStationFromPlaylist(id,stationId){
- var pl=playlistById(id);if(!pl)return;
- pl.items=(pl.items||[]).filter(function(x){return x&&x.stationuuid!==stationId});
- save();renderPlaylistList();
- if(musicNav==='playlists')renderPlaylistList();
-}
-
-function openPlaylistModal(st){
- playlistModalStation=st;
- var root=$('playlistModalList');root.innerHTML='';
- var arr=state.music.playlists||[];
- if(!arr.length){
-  root.innerHTML='<div class="music-empty">還沒有播放清單，請先新增一個。</div>';
- }else{
-  arr.forEach(function(pl){
-   var b=document.createElement('button');
-   b.type='button';b.className='playlist-pick';
-   b.textContent='📂 '+pl.name+' ('+(pl.items||[]).length+')';
-   b.onclick=function(){
-    addStationToPlaylist(st,pl.id);
-    $('playlistModal').classList.add('hidden');
-   };
-   root.appendChild(b);
-  });
- }
- $('playlistModal').classList.remove('hidden');
-}
-
-function renderPlaylistList(){
- var root=$('playlistList');if(!root)return;
- root.innerHTML='';
- var arr=state.music.playlists||[];
- if(!arr.length){
-  root.innerHTML='<div class="music-empty">尚未建立播放清單</div>';
-  return;
- }
- arr.forEach(function(pl){
-  var sec=document.createElement('div');
-  sec.className='playlist-card';
-  sec.innerHTML='<div class="playlist-card-head"><div><b>'+esc(pl.name)+'</b><small>'+(pl.items||[]).length+' 首</small></div><div class="playlist-card-actions"><button class="playlist-play">▶ 播放</button><button class="playlist-rename">✎</button><button class="playlist-delete">🗑</button></div></div><div class="playlist-items"></div>';
-  sec.querySelector('.playlist-play').onclick=function(){
-   var items=pl.items||[];
-   if(items.length)playMusicStation(items[0],0,items);
-  };
-  sec.querySelector('.playlist-rename').onclick=function(){renamePlaylist(pl.id)};
-  sec.querySelector('.playlist-delete').onclick=function(){deletePlaylist(pl.id)};
-  var list=sec.querySelector('.playlist-items');
-  (pl.items||[]).forEach(function(st,idx){
-   var row=document.createElement('div');
-   row.className='playlist-item';
-   row.innerHTML='<button class="playlist-item-main" type="button"><span>'+esc(st.name)+'</span><small>'+esc(st.countrycode||st.tags||'')+'</small></button><button class="playlist-item-remove" type="button">×</button>';
-   row.querySelector('.playlist-item-main').onclick=function(){playMusicStation(st,idx,pl.items||[])};
-   row.querySelector('.playlist-item-remove').onclick=function(){removeStationFromPlaylist(pl.id,st.stationuuid)};
-   list.appendChild(row);
-  });
-  root.appendChild(sec);
- });
+ else if(musicNav==='search'&&(!musicItems||!musicItems.length))loadRadioCategory(radioCategory);
 }
 
 
@@ -1620,16 +1517,7 @@ function bindUiSafely(){
 document.addEventListener('DOMContentLoaded',function(){
  document.querySelectorAll('.radio-cat').forEach(function(b){
   b.onclick=function(){loadRadioCategory(b.dataset.radioCat)};
- });
-
- if($('newPlaylistBtn'))$('newPlaylistBtn').onclick=function(){
-  var n=prompt('新的播放清單名稱');
-  if(n!==null)createPlaylist(n);
- };
- if($('playlistModalCancel'))$('playlistModalCancel').onclick=function(){$('playlistModal').classList.add('hidden')};
- renderPlaylistList();
-
- if($('videoModeBtn'))$('videoModeBtn').onclick=showVideoMode;
+ });if($('videoModeBtn'))$('videoModeBtn').onclick=showVideoMode;
  if($('musicModeBtn'))$('musicModeBtn').onclick=showMusicMode;
  if($('musicSearchBtn'))$('musicSearchBtn').onclick=searchMusic;
  if($('musicSearchInput'))$('musicSearchInput').onkeydown=function(e){if(e.key==='Enter')searchMusic()};
