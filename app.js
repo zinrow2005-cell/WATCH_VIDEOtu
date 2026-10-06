@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-var STORAGE='familytube_v15646';
-var OLD_KEYS=['familytube_v15645','familytube_v15644','familytube_v15643','familytube_v15642','familytube_v15641','familytube_v15640','familytube_v15639','familytube_v15638','familytube_v15637','familytube_v15636','familytube_v15635','familytube_v15634','familytube_v15633','familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v15647';
+var OLD_KEYS=['familytube_v15646','familytube_v15645','familytube_v15644','familytube_v15643','familytube_v15642','familytube_v15641','familytube_v15640','familytube_v15639','familytube_v15638','familytube_v15637','familytube_v15636','familytube_v15635','familytube_v15634','familytube_v15633','familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var DEFAULT={
  videos:[{id:'M7lc1UVf-VE',title:'YouTube 播放測試',category:'學習',channel:'YouTube',recommended:true,addedAt:Date.now()}],
  profiles:{
@@ -861,54 +861,71 @@ function cutKtvSong(){
  }
 }
 
+
+function findKnownKtvSinger(q){
+ var n=normalizeKtvText(q);
+ if(!n)return null;
+ for(var i=0;i<KTV_SINGERS.length;i++){
+  if(normalizeKtvText(KTV_SINGERS[i].name)===n)return KTV_SINGERS[i];
+ }
+ return null;
+}
+
 function searchKtv(forceQuery){
  if(ktvBusy)return;
  var q=String(forceQuery||$('ktvSearchInput').value||'').trim();
  if(!q)return;
 
- var local=searchLocalKtvSongs(q,ktvSearchType);
+ var knownSinger=findKnownKtvSinger(q);
+ var treatAsSinger=(ktvSearchType==='artist'||!!knownSinger);
+ var local=searchLocalKtvSongs(q,treatAsSinger?'artist':ktvSearchType);
 
- // Artist mode: local results are only the first layer; always continue online.
- if(ktvSearchType==='artist'){
+ // If the typed text exactly matches a known singer, always do singer supplementation,
+ // even when the user leaves the search mode on "全部".
+ if(treatAsSinger){
   ktvBusy=true;
-  if(local.length){
-   $('ktvSingerPanel').classList.add('hidden');
-   $('ktvSongPanel').classList.remove('hidden');
-   renderKtvSongs(local,q+' 的歌曲',local.length+' 首本機歌曲 · 正在補更多');
-   $('ktvStatus').textContent='先顯示 '+local.length+' 首本機歌曲，正在搜尋更多 '+q+' KTV…';
-  }else{
-   $('ktvSingerPanel').classList.add('hidden');
-   $('ktvSongPanel').classList.remove('hidden');
-   renderKtvSongs([],q+' 的歌曲','正在搜尋網路 KTV');
-   $('ktvStatus').textContent='本機沒有 '+q+' 的歌曲，正在搜尋網路 KTV…';
-  }
+  var singerObj=knownSinger||{name:q,region:'華語'};
 
-  var singerObj={name:q,region:'華語'};
-  for(var i=0;i<KTV_SINGERS.length;i++){
-   if(normalizeKtvText(KTV_SINGERS[i].name)===normalizeKtvText(q)){
-    singerObj=KTV_SINGERS[i];break;
-   }
+  // Visually switch to artist mode so the user can understand why more results are fetched.
+  ktvSearchType='artist';
+  document.querySelectorAll('.ktv-search-type').forEach(function(x){
+   x.classList.toggle('active',x.dataset.ktvtype==='artist');
+  });
+
+  $('ktvSingerPanel').classList.add('hidden');
+  $('ktvSongPanel').classList.remove('hidden');
+
+  if(local.length){
+   renderKtvSongs(local,singerObj.name+' 的歌曲',local.length+' 首本機歌曲 · 正在補更多');
+   $('ktvStatus').textContent='已辨識「'+singerObj.name+'」為歌手；先顯示 '+local.length+' 首本機歌曲，正在搜尋更多 KTV…';
+  }else{
+   renderKtvSongs([],singerObj.name+' 的歌曲','正在搜尋網路 KTV');
+   $('ktvStatus').textContent='已辨識「'+singerObj.name+'」為歌手；正在搜尋網路 KTV…';
   }
 
   onlineSingerSongs(singerObj).then(function(online){
    ktvBusy=false;
    var merged=mergeKtvSongLists(local,online);
    ktvSearchResults=merged.slice();
+
    renderKtvSongs(
     merged,
-    q+' 的歌曲',
-    local.length+' 首本機 · '+online.length+' 筆網路補充（多組關鍵字）'
+    singerObj.name+' 的歌曲',
+    local.length+' 首本機 · '+online.length+' 筆網路補充'
    );
-   $('ktvStatus').textContent='已整理 '+merged.length+' 筆 '+q+' KTV 結果（本機 '+local.length+' ＋ 網路 '+online.length+'）';
+
+   $('ktvStatus').textContent=
+    '已辨識歌手 '+singerObj.name+'：本機 '+local.length+
+    ' 首＋網路 '+online.length+' 筆，共 '+merged.length+' 筆結果';
   }).catch(function(){
    ktvBusy=false;
-   renderKtvSongs(local,q+' 的歌曲',local.length+' 首本機歌曲');
+   renderKtvSongs(local,singerObj.name+' 的歌曲',local.length+' 首本機歌曲');
    $('ktvStatus').textContent='網路補歌暫時失敗，目前先顯示 '+local.length+' 首本機歌曲。';
   });
   return;
  }
 
- // Song/all mode: local exact-ish results stay fast.
+ // Non-singer queries keep the fast local-first behavior.
  if(local.length){
   ktvSearchResults=local.slice();
   $('ktvSingerPanel').classList.add('hidden');

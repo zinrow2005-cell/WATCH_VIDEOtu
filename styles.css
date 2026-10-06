@@ -2061,3 +2061,10 @@ body.tv-sidebar-collapsed .tv-sidebar-toggle{display:block!important;width:38px!
 
 /* V1.5.6.46 singer full supplementation */
 .ktv-source-badge.online{box-shadow:0 0 0 1px rgba(140,192,255,.06) inset}
+
+/* V1.5.6.47 singer auto-detect */
+.ktv-auto-detect-hint{
+ margin-top:7px;
+ color:#8fa7c2;
+ font-size:9px;
+}
