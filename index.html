@@ -26,7 +26,7 @@
       <circle cx="50" cy="14" r="6" fill="#fff"/><path d="M50 10.7v6.6M46.7 14h6.6" stroke="#ff174d" stroke-width="2.4" stroke-linecap="round"/>
     </svg>
   </span>
-  <span class="brand-copy"><strong>WATCH_VIDEO<span>tu  <span class="brand-version">V1.5.6.48</span>
+  <span class="brand-copy"><strong>WATCH_VIDEO<span>tu  <span class="brand-version">V1.5.6.50</span>
 </span></strong><small>Kids Video Hub</small></span>
 </button>
 <div class="mode-switch" id="modeSwitch">
@@ -94,7 +94,7 @@
         <div id="playerMiniSpacer" class="player-mini-spacer"></div>
         <div id="playerStage" class="player-stage"><div id="player"></div></div>
         <div class="controls kid-controls">
-          <button id="prevBtn">⏮ 上一部</button>
+          <button id="prevBtn">⏮ 上一部觀看</button>
           <button id="playBtn">▶ / ⏸</button>
           <button id="nextBtn">下一部 ⏭</button>
           <button id="favBtn">☆ 最愛</button>
@@ -338,36 +338,16 @@
 <button class="ktv-singer-filter" data-singer-filter="mainland">中國大陸</button>
 <button class="ktv-singer-filter" data-singer-filter="taiwanese">台語</button>
         </div>
-        <div id="ktvSingerLetterBar" class="ktv-singer-letter-bar">
-          <button class="ktv-letter active" data-letter="all">全部</button>
-          <button class="ktv-letter" data-letter="zh">中文</button>
-          <button class="ktv-letter" data-letter="A">A</button>
-          <button class="ktv-letter" data-letter="B">B</button>
-          <button class="ktv-letter" data-letter="C">C</button>
-          <button class="ktv-letter" data-letter="D">D</button>
-          <button class="ktv-letter" data-letter="E">E</button>
-          <button class="ktv-letter" data-letter="F">F</button>
-          <button class="ktv-letter" data-letter="G">G</button>
-          <button class="ktv-letter" data-letter="H">H</button>
-          <button class="ktv-letter" data-letter="I">I</button>
-          <button class="ktv-letter" data-letter="J">J</button>
-          <button class="ktv-letter" data-letter="K">K</button>
-          <button class="ktv-letter" data-letter="L">L</button>
-          <button class="ktv-letter" data-letter="M">M</button>
-          <button class="ktv-letter" data-letter="N">N</button>
-          <button class="ktv-letter" data-letter="O">O</button>
-          <button class="ktv-letter" data-letter="P">P</button>
-          <button class="ktv-letter" data-letter="Q">Q</button>
-          <button class="ktv-letter" data-letter="R">R</button>
-          <button class="ktv-letter" data-letter="S">S</button>
-          <button class="ktv-letter" data-letter="T">T</button>
-          <button class="ktv-letter" data-letter="U">U</button>
-          <button class="ktv-letter" data-letter="V">V</button>
-          <button class="ktv-letter" data-letter="W">W</button>
-          <button class="ktv-letter" data-letter="X">X</button>
-          <button class="ktv-letter" data-letter="Y">Y</button>
-          <button class="ktv-letter" data-letter="Z">Z</button>
-        </div>
+        <div class="ktv-letter-groups">
+  <div class="ktv-index-title">中文注音</div>
+  <div class="ktv-letter-bar ktv-zhuyin-bar">
+    <button class="ktv-letter active" data-letter="all">全部</button>
+    <button class="ktv-letter" data-letter="zh">中文</button>
+    <button class="ktv-letter" data-letter="ㄅ">ㄅ</button><button class="ktv-letter" data-letter="ㄆ">ㄆ</button><button class="ktv-letter" data-letter="ㄇ">ㄇ</button><button class="ktv-letter" data-letter="ㄈ">ㄈ</button><button class="ktv-letter" data-letter="ㄉ">ㄉ</button><button class="ktv-letter" data-letter="ㄊ">ㄊ</button><button class="ktv-letter" data-letter="ㄋ">ㄋ</button><button class="ktv-letter" data-letter="ㄌ">ㄌ</button><button class="ktv-letter" data-letter="ㄍ">ㄍ</button><button class="ktv-letter" data-letter="ㄎ">ㄎ</button><button class="ktv-letter" data-letter="ㄏ">ㄏ</button><button class="ktv-letter" data-letter="ㄐ">ㄐ</button><button class="ktv-letter" data-letter="ㄑ">ㄑ</button><button class="ktv-letter" data-letter="ㄒ">ㄒ</button><button class="ktv-letter" data-letter="ㄓ">ㄓ</button><button class="ktv-letter" data-letter="ㄔ">ㄔ</button><button class="ktv-letter" data-letter="ㄕ">ㄕ</button><button class="ktv-letter" data-letter="ㄖ">ㄖ</button><button class="ktv-letter" data-letter="ㄗ">ㄗ</button><button class="ktv-letter" data-letter="ㄘ">ㄘ</button><button class="ktv-letter" data-letter="ㄙ">ㄙ</button><button class="ktv-letter" data-letter="ㄧ">ㄧ</button><button class="ktv-letter" data-letter="ㄨ">ㄨ</button><button class="ktv-letter" data-letter="ㄩ">ㄩ</button><button class="ktv-letter" data-letter="ㄚ">ㄚ</button><button class="ktv-letter" data-letter="ㄛ">ㄛ</button><button class="ktv-letter" data-letter="ㄜ">ㄜ</button><button class="ktv-letter" data-letter="ㄝ">ㄝ</button><button class="ktv-letter" data-letter="ㄞ">ㄞ</button><button class="ktv-letter" data-letter="ㄟ">ㄟ</button><button class="ktv-letter" data-letter="ㄠ">ㄠ</button><button class="ktv-letter" data-letter="ㄡ">ㄡ</button><button class="ktv-letter" data-letter="ㄢ">ㄢ</button><button class="ktv-letter" data-letter="ㄣ">ㄣ</button><button class="ktv-letter" data-letter="ㄤ">ㄤ</button><button class="ktv-letter" data-letter="ㄥ">ㄥ</button><button class="ktv-letter" data-letter="ㄦ">ㄦ</button>
+  </div>
+  <div class="ktv-index-title">英文／外文</div>
+  <div class="ktv-letter-bar ktv-alpha-bar"><button class="ktv-letter" data-letter="A">A</button><button class="ktv-letter" data-letter="B">B</button><button class="ktv-letter" data-letter="C">C</button><button class="ktv-letter" data-letter="D">D</button><button class="ktv-letter" data-letter="E">E</button><button class="ktv-letter" data-letter="F">F</button><button class="ktv-letter" data-letter="G">G</button><button class="ktv-letter" data-letter="H">H</button><button class="ktv-letter" data-letter="I">I</button><button class="ktv-letter" data-letter="J">J</button><button class="ktv-letter" data-letter="K">K</button><button class="ktv-letter" data-letter="L">L</button><button class="ktv-letter" data-letter="M">M</button><button class="ktv-letter" data-letter="N">N</button><button class="ktv-letter" data-letter="O">O</button><button class="ktv-letter" data-letter="P">P</button><button class="ktv-letter" data-letter="Q">Q</button><button class="ktv-letter" data-letter="R">R</button><button class="ktv-letter" data-letter="S">S</button><button class="ktv-letter" data-letter="T">T</button><button class="ktv-letter" data-letter="U">U</button><button class="ktv-letter" data-letter="V">V</button><button class="ktv-letter" data-letter="W">W</button><button class="ktv-letter" data-letter="X">X</button><button class="ktv-letter" data-letter="Y">Y</button><button class="ktv-letter" data-letter="Z">Z</button></div>
+</div>
         
         <div class="ktv-section-head"><h2>歌手選單</h2><span>點選歌手後顯示可搜尋歌曲</span></div>
         <div id="ktvSingerGrid" class="ktv-singer-grid"></div>
@@ -447,9 +427,9 @@
 <div id="modal" class="modal hidden">
   <div class="modal-card"><h3>輸入家長 PIN</h3><input id="modalInput" inputmode="numeric" maxlength="6"><div class="modal-actions"><button id="modalCancel">取消</button><button id="modalOk">確定</button></div></div>
 </div>
-<script defer src="ktv_singers.js?v=15648"></script>
-<script defer src="ktv_songs.js?v=15648"></script>
-<script defer src="app.js?v=15648"></script>
+<script defer src="ktv_singers.js?v=15650"></script>
+<script defer src="ktv_songs.js?v=15650"></script>
+<script defer src="app.js?v=15650"></script>
 
 </body>
 </html>

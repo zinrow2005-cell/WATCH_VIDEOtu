@@ -1,7 +1,8 @@
+var watchFullscreenScrollY=0;
 (function(){
 'use strict';
-var STORAGE='familytube_v15648';
-var OLD_KEYS=['familytube_v15647','familytube_v15646','familytube_v15645','familytube_v15644','familytube_v15643','familytube_v15642','familytube_v15641','familytube_v15640','familytube_v15639','familytube_v15638','familytube_v15637','familytube_v15636','familytube_v15635','familytube_v15634','familytube_v15633','familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v15650';
+var OLD_KEYS=['familytube_v15649','familytube_v15648','familytube_v15647','familytube_v15646','familytube_v15645','familytube_v15644','familytube_v15643','familytube_v15642','familytube_v15641','familytube_v15640','familytube_v15639','familytube_v15638','familytube_v15637','familytube_v15636','familytube_v15635','familytube_v15634','familytube_v15633','familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var DEFAULT={
  videos:[{id:'M7lc1UVf-VE',title:'YouTube 播放測試',category:'學習',channel:'YouTube',recommended:true,addedAt:Date.now()}],
  profiles:{
@@ -423,6 +424,7 @@ function setupMediaSessionActions(){
 var ktvModeActive=false,ktvNav='hot',ktvSearchType='all',ktvSearchResults=[],ktvBusy=false,ktvCurrent=null,ktvSingerFilter='all',ktvSingerLetter='all';
 var ktvCurrentSinger=null;
 
+var KTV_ZHUYIN_INITIAL_MAP={"丁":"ㄉ","五":"ㄨ","任":"ㄖ","伍":"ㄨ","何":"ㄏ","信":"ㄒ","側":"ㄘ","優":"ㄧ","光":"ㄍ","八":"ㄅ","刀":"ㄉ","劉":"ㄌ","動":"ㄉ","卓":"ㄓ","南":"ㄋ","原":"ㄩ","古":"ㄍ","吳":"ㄨ","告":"ㄍ","周":"ㄓ","品":"ㄆ","單":"ㄉ","四":"ㄙ","姜":"ㄐ","孟":"ㄇ","孫":"ㄙ","宇":"ㄩ","家":"ㄐ","容":"ㄖ","小":"ㄒ","尤":"ㄧ","希":"ㄒ","庾":"ㄩ","張":"ㄓ","彭":"ㄆ","徐":"ㄒ","怕":"ㄆ","戴":"ㄉ","房":"ㄈ","持":"ㄔ","新":"ㄒ","方":"ㄈ","施":"ㄕ","旺":"ㄨ","曹":"ㄘ","曾":"ㄘ","朴":"ㄆ","李":"ㄌ","杜":"ㄉ","林":"ㄌ","柏":"ㄅ","梁":"ㄌ","梅":"ㄇ","楊":"ㄧ","毛":"ㄇ","江":"ㄐ","汪":"ㄨ","洪":"ㄏ","游":"ㄧ","溫":"ㄨ","滅":"ㄇ","潘":"ㄆ","炎":"ㄧ","無":"ㄨ","熊":"ㄒ","王":"ㄨ","玖":"ㄐ","理":"ㄌ","田":"ㄊ","畢":"ㄅ","痛":"ㄊ","瘦":"ㄕ","白":"ㄅ","盧":"ㄌ","秀":"ㄒ","童":"ㄊ","米":"ㄇ","羅":"ㄌ","羽":"ㄩ","翁":"ㄨ","老":"ㄌ","胡":"ㄏ","艾":"ㄞ","范":"ㄈ","茄":"ㄐ","草":"ㄘ","荒":"ㄏ","莫":"ㄇ","華":"ㄏ","萬":"ㄨ","葉":"ㄧ","蔡":"ㄘ","蕭":"ㄒ","薛":"ㄒ","藤":"ㄊ","蘇":"ㄙ","衛":"ㄨ","袁":"ㄩ","許":"ㄒ","詹":"ㄓ","謝":"ㄒ","譚":"ㄊ","費":"ㄈ","趙":"ㄓ","辛":"ㄒ","逃":"ㄊ","那":"ㄋ","邱":"ㄑ","郁":"ㄩ","郭":"ㄍ","鄧":"ㄉ","鄭":"ㄓ","閻":"ㄧ","關":"ㄍ","陳":"ㄔ","陶":"ㄊ","隔":"ㄍ","韋":"ㄨ","順":"ㄕ","顏":"ㄧ","飛":"ㄈ","馬":"ㄇ","高":"ㄍ","魏":"ㄨ","鳳":"ㄈ","麋":"ㄇ","黃":"ㄏ","黎":"ㄌ","鼓":"ㄍ","齊":"ㄑ","龍":"ㄌ"};
 var KTV_SINGERS=(typeof KTV_SINGERS_DB!=='undefined'&&KTV_SINGERS_DB&&KTV_SINGERS_DB.length)?KTV_SINGERS_DB.slice():[];
 var KTV_SONGS=(typeof KTV_SONGS_DB!=='undefined'&&KTV_SONGS_DB&&KTV_SONGS_DB.length)?KTV_SONGS_DB.slice():[];
 
@@ -687,15 +689,19 @@ function renderKtvSingers(){
   else if(['taiwan','hongkong','mainland','taiwanese'].indexOf(ktvSingerFilter)<0&&s.type!==ktvSingerFilter)return false;
  }
   if(ktvSingerLetter==='all')return true;
-  var first=String(s.name||'').charAt(0).toUpperCase();
-  if(ktvSingerLetter==='zh')return !/^[A-Z]$/.test(first);
-  return first===ktvSingerLetter;
+  var firstRaw=String(s.name||'').charAt(0);
+  var first=firstRaw.toUpperCase();
+  if(ktvSingerLetter==='zh')return !/^[A-Z0-9]$/.test(first);
+  if(/^[A-Z]$/.test(ktvSingerLetter))return first===ktvSingerLetter;
+  return (KTV_ZHUYIN_INITIAL_MAP[firstRaw]||'')===ktvSingerLetter;
  });
  if(!list.length){root.innerHTML='<div class="ktv-empty">這個分類目前沒有歌手</div>';return}
  list.forEach(function(s){
   var b=document.createElement('button');b.type='button';b.className='ktv-singer';
   var songCount=localSongsByArtist(s.name).length;
-  b.innerHTML='<span class="ktv-singer-avatar">'+esc(s.name.charAt(0))+'</span><b>'+esc(s.name)+'</b><small>'+esc((s.area?s.area+' · ':'')+s.region)+(songCount?' · '+songCount+' 首':'')+'</small>';
+  var firstChar=s.name.charAt(0);
+  var zhInitial=KTV_ZHUYIN_INITIAL_MAP[firstChar]||'';
+  b.innerHTML='<span class="ktv-singer-avatar">'+esc(firstChar)+'</span><b>'+esc(s.name)+'</b><small>'+esc((zhInitial?zhInitial+' · ':'')+(s.area?s.area+' · ':'')+s.region)+(songCount?' · '+songCount+' 首':'')+'</small>';
   b.onclick=function(){
    $('ktvSearchInput').value=s.name;
    ktvSearchType='artist';
@@ -1508,22 +1514,46 @@ function updateMiniPlayerOnScroll(){
  else if(rect.top < window.innerHeight && rect.bottom > 0)setMiniPlayer(false);
 }
 function bindMiniPlayerScroll(){
- try{
-  if(miniScrollBound)return;
-  miniScrollBound=true;
-  var ticking=false;
-  function onScroll(){
-   if(ticking)return;
-   ticking=true;
-   var raf=window.requestAnimationFrame||function(fn){return setTimeout(fn,16)};
-   raf(function(){ticking=false;updateMiniPlayerOnScroll()});
+ var target=$('playerStage')||$('playerSection');
+ if(!target)return;
+ var lastMini=false;
+ var ticking=false;
+
+ function evaluateMini(){
+  ticking=false;
+  if(!currentVideo||immersiveFull||document.body.classList.contains('watch-scroll-lock')){
+   if(lastMini){closeMiniPlayer();lastMini=false}
+   return;
   }
-  try{window.addEventListener('scroll',onScroll,{passive:true})}
-  catch(e){window.addEventListener('scroll',onScroll,false)}
-  window.addEventListener('resize',onScroll,false);
- }catch(e){
-  miniScrollBound=false;
+  var r=target.getBoundingClientRect();
+  var vh=window.innerHeight||document.documentElement.clientHeight||0;
+  var total=Math.max(1,r.height);
+  var visibleTop=Math.max(0,r.top);
+  var visibleBottom=Math.min(vh,r.bottom);
+  var visible=Math.max(0,visibleBottom-visibleTop);
+  var visibleRatio=Math.max(0,Math.min(1,visible/total));
+  var hiddenRatio=1-visibleRatio;
+
+  // Enter mini only after at least 70% of the main player has left the viewport.
+  // Exit after 45% becomes visible again to prevent rapid flicker near the threshold.
+  if(!lastMini&&hiddenRatio>=0.70){
+   openMiniPlayer();
+   lastMini=true;
+  }else if(lastMini&&visibleRatio>=0.45){
+   closeMiniPlayer();
+   lastMini=false;
+  }
  }
+
+ function requestEval(){
+  if(ticking)return;
+  ticking=true;
+  if(window.requestAnimationFrame)window.requestAnimationFrame(evaluateMini);
+  else setTimeout(evaluateMini,16);
+ }
+ window.addEventListener('scroll',requestEval,{passive:true});
+ window.addEventListener('resize',requestEval);
+ requestEval();
 }
 function closeMiniPlayer(){
  miniPlayerSuppressed=true;
@@ -1665,6 +1695,54 @@ function selectVideo(id,list){
  updateHero();
 }
 function addRecent(id){var p=profile();p.recent=p.recent.filter(function(x){return x!==id});p.recent.unshift(id);p.recent=p.recent.slice(0,40);save()}
+
+function currentProfileRecentIds(){
+ try{
+  var p=activeProfile();
+  return (p&&p.recent)?p.recent.slice():[];
+ }catch(e){return []}
+}
+function previousWatchedVideo(){
+ var ids=currentProfileRecentIds();
+ var currentId=currentVideo&&currentVideo.id;
+ if(!ids.length)return null;
+ var currentIndex=-1;
+ for(var i=0;i<ids.length;i++){
+  if(String(ids[i])===String(currentId)){currentIndex=i;break}
+ }
+ if(currentIndex>=0){
+  for(var j=currentIndex+1;j<ids.length;j++){
+   for(var k=0;k<state.videos.length;k++){
+    if(String(state.videos[k].id)===String(ids[j]))return state.videos[k];
+   }
+  }
+ }
+ for(var a=0;a<ids.length;a++){
+  if(String(ids[a])===String(currentId))continue;
+  for(var b=0;b<state.videos.length;b++){
+   if(String(state.videos[b].id)===String(ids[a]))return state.videos[b];
+  }
+ }
+ return null;
+}
+function nextRelatedVideo(){
+ if(relatedItems&&relatedItems.length){
+  for(var i=0;i<relatedItems.length;i++){
+   if(!currentVideo||String(relatedItems[i].id)!==String(currentVideo.id))return relatedItems[i];
+  }
+ }
+ return null;
+}
+function playPreviousWatched(){
+ var v=previousWatchedVideo();
+ if(v){playVideo(v);return}
+}
+function playNextRelated(){
+ var v=nextRelatedVideo();
+ if(v){playVideo(v);return}
+ nextVideo();
+}
+
 function nextVideo(){if(!currentList.length)return;if(currentIndex<0)currentIndex=0;else currentIndex=(currentIndex+1)%currentList.length;selectVideo(currentList[currentIndex].id,currentList)}
 function prevVideo(){if(!currentList.length)return;if(currentIndex<0)currentIndex=0;else currentIndex=(currentIndex-1+currentList.length)%currentList.length;selectVideo(currentList[currentIndex].id,currentList)}
 
@@ -2175,6 +2253,9 @@ function updateStoredVideoMetaFromPlayer(){
 
 
 function enterImmersiveFullscreen(){
+ watchFullscreenScrollY=window.pageYOffset||document.documentElement.scrollTop||0;
+ document.body.classList.add('watch-scroll-lock');
+
  setMiniPlayer(false);
  immersiveFull=true;
  document.body.classList.add('watch-fullscreen');
@@ -2190,6 +2271,9 @@ function exitImmersiveFullscreen(){
  $('playerSection').classList.remove('immersive-fullscreen');
  $('fullBtn').textContent='⛶ 全螢幕';
  setTimeout(updateMiniPlayerOnScroll,80);
+
+ document.body.classList.remove('watch-scroll-lock');
+ try{window.scrollTo(0,watchFullscreenScrollY||0)}catch(e){}
 }
 function toggleImmersiveFullscreen(){immersiveFull?exitImmersiveFullscreen():enterImmersiveFullscreen()}
 function currentVideoContext(id){
@@ -2325,6 +2409,10 @@ function bindUiSafely(){
 }
 
 document.addEventListener('DOMContentLoaded',function(){
+ document.addEventListener('touchmove',function(e){
+  if(document.body.classList.contains('watch-scroll-lock'))e.preventDefault();
+ },{passive:false});
+
  document.querySelectorAll('.ktv-song-cat').forEach(function(b){
   b.onclick=function(){
    var cat=b.dataset.songCat||'';
