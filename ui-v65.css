@@ -445,3 +445,12 @@ textarea:focus{
   min-width:0!important;
  }
 }
+
+/* V1.5.6.67 faster category paint */
+#dynamicRows .media-row{
+ contain:layout style;
+}
+#dynamicRows .media-scroller{
+ content-visibility:auto;
+ contain-intrinsic-size:260px;
+}

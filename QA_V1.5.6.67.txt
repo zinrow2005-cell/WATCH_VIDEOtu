@@ -1,0 +1,27 @@
+WATCH_VIDEOtu V1.5.6.67 — Fast Seven Categories
+
+問題原因：
+- 跨列去重把已出現在「兒童推薦」的影片，也從分類列排除。
+- 某些分類固定影片較少，因此整列變空，看起來只剩 4 大分類。
+- 首頁同時啟動 7 類網路搜尋，手機/iPad 進影片模式時容易感覺慢。
+
+修正：
+1. 七大分類固定永遠顯示：
+   英文、兒歌、卡通、故事、學習、自然／動物、數字／顏色。
+2. 七大分類本機影片同步立即渲染，不等待網路。
+3. 跨列去重不再隱藏分類主列，只限制「更多」網路列。
+4. 七類網路搜尋每類延遲 240ms 依序啟動，避免瞬間 7 類一起發送。
+5. 支援 requestIdleCallback，瀏覽器有空閒時才補網路結果。
+6. 推薦搜尋結果寫入 localStorage，6 小時內重新進影片模式直接使用快取。
+7. 單一分類頁仍快速載入，80ms 後補搜尋。
+8. 加入 content-visibility/contain，長首頁減少初始繪製負擔。
+
+目前 sidebar filters:
+favorites, recent, recommended, 英文, 兒歌, 卡通, 故事, 學習, 自然／動物, 數字／顏色
+
+程式檢查：
+- app.js PASS
+- ktv_singers.js PASS
+- ktv_songs.js PASS
+- sw.js PASS
+- duplicate IDs 0
