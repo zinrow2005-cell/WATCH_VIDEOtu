@@ -1296,3 +1296,36 @@ body.watch-fullscreen .mini-player-close{
  .music-cover{width:88px}
  .music-controls{grid-template-columns:repeat(3,minmax(0,1fr))}
 }
+
+/* V1.5.6.30 music playlists */
+.music-card-actions{display:flex;align-items:center;gap:4px}
+.music-add-playlist{
+ width:28px;height:28px;border-radius:8px;border:0;background:#1b2a42;color:#fff;
+ padding:0;font-size:16px
+}
+.music-playlist-panel{
+ margin-bottom:12px;padding:14px;border-radius:16px;background:#0d1625;border:1px solid rgba(255,255,255,.08)
+}
+.music-playlist-panel.hidden{display:none!important}
+.playlist-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.playlist-head h2{margin:3px 0 0}
+.playlist-list{display:grid;gap:10px}
+.playlist-card{border-radius:13px;background:#111d2f;border:1px solid rgba(255,255,255,.07);padding:10px}
+.playlist-card-head{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.playlist-card-head b{display:block}
+.playlist-card-head small{display:block;color:#8192aa;margin-top:3px}
+.playlist-card-actions{display:flex;gap:5px}
+.playlist-card-actions button{padding:7px 8px}
+.playlist-items{display:grid;gap:5px;margin-top:8px}
+.playlist-item{display:grid;grid-template-columns:minmax(0,1fr) 30px;gap:5px}
+.playlist-item-main{display:flex;justify-content:space-between;gap:8px;background:#0c1523;color:#fff;border:0;border-radius:9px;padding:8px;text-align:left}
+.playlist-item-main span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.playlist-item-main small{color:#8091a8}
+.playlist-item-remove{border:0;border-radius:8px;background:#2b1b24;color:#ff9cab}
+.playlist-modal-list{display:grid;gap:7px;max-height:55vh;overflow:auto}
+.playlist-pick{width:100%;text-align:left;padding:10px;border-radius:9px;background:#152136;color:#fff;border:1px solid rgba(255,255,255,.08)}
+@media(max-width:650px){
+ .playlist-card-head{align-items:flex-start;flex-direction:column}
+ .playlist-card-actions{width:100%}
+ .playlist-card-actions button{flex:1}
+}

@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#0b1220">
-<title>WATCH_VIDEOtu V1.5.6.29</title>
+<title>WATCH_VIDEOtu V1.5.6.30</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=15629">
+<link rel="stylesheet" href="styles.css?v=15630">
 
-<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=15629">
-<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png?v=15629">
-<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-180.png?v=15629">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=15630">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png?v=15630">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-180.png?v=15630">
 <meta name="apple-mobile-web-app-title" content="WATCH_VIDEOtu">
 
 </head>
@@ -26,7 +26,7 @@
       <circle cx="50" cy="14" r="6" fill="#fff"/><path d="M50 10.7v6.6M46.7 14h6.6" stroke="#ff174d" stroke-width="2.4" stroke-linecap="round"/>
     </svg>
   </span>
-  <span class="brand-copy"><strong>WATCH_VIDEO<span>tu  <span class="brand-version">V1.5.6.29</span>
+  <span class="brand-copy"><strong>WATCH_VIDEO<span>tu  <span class="brand-version">V1.5.6.30</span>
 </span></strong><small>Kids Video Hub</small></span>
 </button>
 <div class="mode-switch" id="modeSwitch">
@@ -209,6 +209,7 @@
       <button class="music-nav active" data-musicnav="search">🔎 搜尋</button>
       <button class="music-nav" data-musicnav="favorites">★ 我的收藏</button>
       <button class="music-nav" data-musicnav="recent">🕘 最近播放</button>
+<button class="music-nav" data-musicnav="playlists">📂 播放清單</button>
       <div class="music-note">網路串流模式，不需要先下載音樂檔。</div>
     </aside>
 
@@ -226,7 +227,18 @@
         <div id="musicSearchStatus" class="search-hint"></div>
       </div>
 
-      <div id="musicResults" class="music-results"></div>
+      
+      <div id="musicPlaylistPanel" class="music-playlist-panel hidden">
+        <div class="playlist-head">
+          <div>
+            <div class="eyebrow">PLAYLISTS</div>
+            <h2>我的播放清單</h2>
+          </div>
+          <button id="newPlaylistBtn" type="button">＋ 新增播放清單</button>
+        </div>
+        <div id="playlistList" class="playlist-list"></div>
+      </div>
+<div id="musicResults" class="music-results"></div>
     </section>
 
     <aside class="music-now-panel">
@@ -259,6 +271,15 @@
 <div id="modal" class="modal hidden">
   <div class="modal-card"><h3>輸入家長 PIN</h3><input id="modalInput" inputmode="numeric" maxlength="6"><div class="modal-actions"><button id="modalCancel">取消</button><button id="modalOk">確定</button></div></div>
 </div>
-<script defer src="app.js?v=15629"></script>
+<script defer src="app.js?v=15630"></script>
+
+<div id="playlistModal" class="modal hidden">
+  <div class="modal-card playlist-modal-card">
+    <h3>加入播放清單</h3>
+    <div id="playlistModalList" class="playlist-modal-list"></div>
+    <div class="modal-actions"><button id="playlistModalCancel">取消</button></div>
+  </div>
+</div>
+
 </body>
 </html>
