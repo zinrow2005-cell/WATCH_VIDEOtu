@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#0b1220">
-<title>WATCH_VIDEOtu V1.5.6.28</title>
+<title>WATCH_VIDEOtu V1.5.6.29</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=15628">
+<link rel="stylesheet" href="styles.css?v=15629">
 
-<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=15628">
-<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png?v=15628">
-<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-180.png?v=15628">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=15629">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png?v=15629">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-180.png?v=15629">
 <meta name="apple-mobile-web-app-title" content="WATCH_VIDEOtu">
 
 </head>
@@ -26,9 +26,14 @@
       <circle cx="50" cy="14" r="6" fill="#fff"/><path d="M50 10.7v6.6M46.7 14h6.6" stroke="#ff174d" stroke-width="2.4" stroke-linecap="round"/>
     </svg>
   </span>
-  <span class="brand-copy"><strong>WATCH_VIDEO<span>tu  <span class="brand-version">V1.5.6.28</span>
+  <span class="brand-copy"><strong>WATCH_VIDEO<span>tu  <span class="brand-version">V1.5.6.29</span>
 </span></strong><small>Kids Video Hub</small></span>
 </button>
+<div class="mode-switch" id="modeSwitch">
+  <button id="videoModeBtn" class="mode-btn active" type="button">🎬 影片</button>
+  <button id="musicModeBtn" class="mode-btn" type="button">🎵 音樂</button>
+</div>
+
   <div class="top-actions">
     <button id="profileBtn" class="pill">👧 女兒</button>
     <button id="homeBtn" class="pill">🏠 首頁</button>
@@ -196,11 +201,64 @@
     <div class="hint">可設定家長推薦與頻道名稱；iPad 建議使用 ↑ / ↓ 調整排序。</div>
     <div id="manageList" class="manage-list"></div>
 </section>
+
+<section id="musicMode" class="music-mode hidden">
+  <div class="music-layout">
+    <aside class="music-sidebar">
+      <div class="music-sidebar-title">🎵 音樂模式</div>
+      <button class="music-nav active" data-musicnav="search">🔎 搜尋</button>
+      <button class="music-nav" data-musicnav="favorites">★ 我的收藏</button>
+      <button class="music-nav" data-musicnav="recent">🕘 最近播放</button>
+      <div class="music-note">網路串流模式，不需要先下載音樂檔。</div>
+    </aside>
+
+    <section class="music-main">
+      <div class="music-search-panel">
+        <div>
+          <div class="eyebrow">BACKGROUND AUDIO</div>
+          <h1>網路音樂</h1>
+          <p>搜尋電台、音樂類型或關鍵字，直接串流播放。</p>
+        </div>
+        <div class="music-search-row">
+          <input id="musicSearchInput" type="search" placeholder="例如：Jazz、Classical、Taiwan、Mandarin">
+          <button id="musicSearchBtn" type="button">搜尋音樂</button>
+        </div>
+        <div id="musicSearchStatus" class="search-hint"></div>
+      </div>
+
+      <div id="musicResults" class="music-results"></div>
+    </section>
+
+    <aside class="music-now-panel">
+      <div class="music-now-card">
+        <img id="musicCover" class="music-cover" src="icons/icon-512.png" alt="">
+        <div class="music-now-copy">
+          <div class="music-now-label">正在播放</div>
+          <h2 id="musicTitle">尚未選擇音樂</h2>
+          <div id="musicMeta" class="music-meta">搜尋後點擊播放</div>
+        </div>
+        <audio id="musicAudio" preload="none"></audio>
+        <div class="music-controls">
+          <button id="musicPrevBtn" type="button">⏮</button>
+          <button id="musicPlayBtn" type="button">▶</button>
+          <button id="musicNextBtn" type="button">⏭</button>
+          <button id="musicFavBtn" type="button">☆ 收藏</button>
+          <button id="musicStopBtn" type="button">■ 停止</button>
+        </div>
+        <div class="music-volume">
+          <span>音量</span>
+          <input id="musicVolume" type="range" min="0" max="1" step="0.05" value="0.85">
+        </div>
+        <div class="music-bg-hint">手機／平板鎖屏後，若系統允許背景音訊，會繼續播放並顯示鎖屏控制。</div>
+      </div>
+    </aside>
+  </div>
+</section>
 </main>
 
 <div id="modal" class="modal hidden">
   <div class="modal-card"><h3>輸入家長 PIN</h3><input id="modalInput" inputmode="numeric" maxlength="6"><div class="modal-actions"><button id="modalCancel">取消</button><button id="modalOk">確定</button></div></div>
 </div>
-<script defer src="app.js?v=15628"></script>
+<script defer src="app.js?v=15629"></script>
 </body>
 </html>

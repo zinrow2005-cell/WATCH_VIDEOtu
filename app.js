@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-var STORAGE='familytube_v15628';
-var OLD_KEYS=['familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v15629';
+var OLD_KEYS=['familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var DEFAULT={
  videos:[{id:'M7lc1UVf-VE',title:'YouTube 播放測試',category:'學習',channel:'YouTube',recommended:true,addedAt:Date.now()}],
  profiles:{
@@ -11,7 +11,8 @@ var DEFAULT={
  activeProfile:'daughter',pin:'1234',
  bedtime:{enabled:false,start:'21:00',end:'07:00'},
  playback:{loopCurrent:false},
- whitelist:{enabled:false,channels:[]}
+ whitelist:{enabled:false,channels:[]},
+ music:{favorites:[],recent:[],volume:0.85}
 };
 var state=load(),player=null,currentId=null,currentList=[],currentIndex=-1,parentOpen=false,kidMode=false,modalCb=null;
 var usageTick=null,lastUsageStamp=0,selectedAvatar='👧',quickMeta={id:'',title:'',channel:''},immersiveFull=false,relatedBusy=false,relatedItems=[];
@@ -39,7 +40,7 @@ function load(){
    if(!p.usage)p.usage={};
   });
   if(!v.bedtime)v.bedtime=clone(DEFAULT.bedtime);if(!v.playback)v.playback=clone(DEFAULT.playback);
-  if(!v.whitelist)v.whitelist=clone(DEFAULT.whitelist);
+  if(!v.whitelist)v.whitelist=clone(DEFAULT.whitelist);if(!v.music)v.music=clone(DEFAULT.music);if(!v.music.favorites)v.music.favorites=[];if(!v.music.recent)v.music.recent=[];if(typeof v.music.volume!=='number')v.music.volume=0.85;
   if(!v.videos)v.videos=[];
   v.videos.forEach(function(x,i){
    if(!x.addedAt)x.addedAt=Date.now()-i*1000;
@@ -52,6 +53,237 @@ function load(){
 }
 function save(){localStorage.setItem(STORAGE,JSON.stringify(state))}
 function profile(){return state.profiles[state.activeProfile]}
+
+
+var RADIO_SERVERS=[
+ 'https://all.api.radio-browser.info',
+ 'https://de1.api.radio-browser.info'
+];
+var musicModeActive=false,musicItems=[],musicCurrent=null,musicIndex=-1,musicBusy=false,musicNav='search';
+
+function showVideoMode(){
+ musicModeActive=false;
+ if($('musicMode'))$('musicMode').classList.add('hidden');
+ if($('videoModeBtn'))$('videoModeBtn').classList.add('active');
+ if($('musicModeBtn'))$('musicModeBtn').classList.remove('active');
+ if($('hero'))$('hero').classList.remove('hidden');
+ if($('kidsHome'))$('kidsHome').classList.remove('hidden');
+ if($('playerSection'))$('playerSection').classList.add('hidden');
+ showHome();
+}
+
+function showMusicMode(){
+ if(immersiveFull)exitImmersiveFullscreen();
+ stopPlaybackForHome();
+ musicModeActive=true;
+ document.body.classList.remove('watch-mode');
+ if($('hero'))$('hero').classList.add('hidden');
+ if($('kidsHome'))$('kidsHome').classList.add('hidden');
+ if($('playerSection'))$('playerSection').classList.add('hidden');
+ if($('parentPanel'))$('parentPanel').classList.add('hidden');
+ if($('musicMode'))$('musicMode').classList.remove('hidden');
+ if($('videoModeBtn'))$('videoModeBtn').classList.remove('active');
+ if($('musicModeBtn'))$('musicModeBtn').classList.add('active');
+ renderMusicNav(musicNav);
+ try{window.scrollTo(0,0)}catch(e){}
+}
+
+function musicKey(s){return String((s&&s.stationuuid)||'')}
+
+function musicFavoriteIndex(id){
+ var a=state.music.favorites||[];
+ for(var i=0;i<a.length;i++){if(a[i]&&a[i].stationuuid===id)return i}
+ return -1;
+}
+function isMusicFavorite(id){return musicFavoriteIndex(id)>=0}
+
+function rememberMusicRecent(st){
+ if(!st||!st.stationuuid)return;
+ var arr=(state.music.recent||[]).filter(function(x){return x&&x.stationuuid!==st.stationuuid});
+ arr.unshift(st);
+ state.music.recent=arr.slice(0,40);
+ save();
+}
+
+function toggleMusicFavorite(){
+ if(!musicCurrent)return;
+ var idx=musicFavoriteIndex(musicCurrent.stationuuid);
+ if(idx>=0)state.music.favorites.splice(idx,1);
+ else state.music.favorites.unshift(musicCurrent);
+ save();
+ updateMusicFavBtn();
+ if(musicNav==='favorites')renderMusicItems(state.music.favorites||[]);
+}
+
+function updateMusicFavBtn(){
+ if(!$('musicFavBtn'))return;
+ var yes=musicCurrent&&isMusicFavorite(musicCurrent.stationuuid);
+ $('musicFavBtn').textContent=yes?'★ 已收藏':'☆ 收藏';
+ $('musicFavBtn').classList.toggle('active',!!yes);
+}
+
+function radioFetch(url,ms){
+ return new Promise(function(resolve,reject){
+  var done=false;
+  var timer=setTimeout(function(){if(done)return;done=true;reject(new Error('timeout'))},ms||5000);
+  fetch(url,{method:'GET',mode:'cors',cache:'no-store'}).then(function(r){
+   if(!r.ok)throw new Error('HTTP '+r.status);
+   return r.json();
+  }).then(function(j){
+   if(done)return;done=true;clearTimeout(timer);resolve(j);
+  },function(e){
+   if(done)return;done=true;clearTimeout(timer);reject(e);
+  });
+ });
+}
+
+function fetchRadioSearch(q){
+ var i=0;
+ function next(){
+  if(i>=RADIO_SERVERS.length)return Promise.reject(new Error('目前音樂搜尋來源沒有回應'));
+  var base=RADIO_SERVERS[i++];
+  var query='name='+encodeURIComponent(q)+'&tag='+encodeURIComponent(q)+'&limit=40&hidebroken=true&order=clickcount&reverse=true';
+  return radioFetch(base+'/json/stations/search?'+query,5500).then(function(items){
+   if(!Array.isArray(items)||!items.length)throw new Error('empty');
+   return items;
+  }).catch(function(){return next()});
+ }
+ return next();
+}
+
+function normalizeStation(x){
+ return {
+  stationuuid:String(x.stationuuid||''),
+  name:String(x.name||'Unknown Station'),
+  url:String(x.url_resolved||x.url||''),
+  homepage:String(x.homepage||''),
+  favicon:String(x.favicon||''),
+  tags:String(x.tags||''),
+  countrycode:String(x.countrycode||''),
+  codec:String(x.codec||''),
+  bitrate:parseInt(x.bitrate||0,10)||0
+ };
+}
+
+function renderMusicItems(items){
+ musicItems=(items||[]).filter(function(x){return x&&x.stationuuid&&x.url});
+ var root=$('musicResults');if(!root)return;
+ root.innerHTML='';
+ if(!musicItems.length){
+  root.innerHTML='<div class="music-empty">目前沒有內容</div>';return;
+ }
+ var frag=document.createDocumentFragment();
+ musicItems.forEach(function(st,idx){
+  var card=document.createElement('button');
+  card.type='button';card.className='music-card';
+  var art=(st.favicon&&st.favicon.indexOf('https://')===0)?st.favicon:'icons/icon-192.png';
+  card.innerHTML='<img src="'+esc(art)+'" alt=""><span class="music-card-copy"><b>'+esc(st.name)+'</b><small>'+esc([st.countrycode,st.tags].filter(Boolean).join(' · '))+'</small></span><span class="music-card-play">▶</span>';
+  var im=card.querySelector('img');im.onerror=function(){this.onerror=null;this.src='icons/icon-192.png'};
+  card.onclick=function(){playMusicStation(st,idx,musicItems)};
+  frag.appendChild(card);
+ });
+ root.appendChild(frag);
+}
+
+function renderMusicNav(which){
+ musicNav=which||'search';
+ document.querySelectorAll('.music-nav').forEach(function(b){b.classList.toggle('active',b.dataset.musicnav===musicNav)});
+ if(musicNav==='favorites')renderMusicItems(state.music.favorites||[]);
+ else if(musicNav==='recent')renderMusicItems(state.music.recent||[]);
+}
+
+function searchMusic(){
+ if(musicBusy)return;
+ var q=$('musicSearchInput').value.trim();
+ if(!q){$('musicSearchInput').focus();return}
+ musicBusy=true;
+ $('musicSearchBtn').disabled=true;
+ $('musicSearchStatus').textContent='正在搜尋網路音樂來源…';
+ fetchRadioSearch(q).then(function(arr){
+  musicBusy=false;$('musicSearchBtn').disabled=false;
+  var seen={},items=[];
+  arr.forEach(function(x){
+   var st=normalizeStation(x);
+   if(st.stationuuid&&!seen[st.stationuuid]&&st.url){seen[st.stationuuid]=1;items.push(st)}
+  });
+  $('musicSearchStatus').textContent='找到 '+items.length+' 個可播放來源';
+  musicNav='search';renderMusicNav('search');renderMusicItems(items);
+ },function(err){
+  musicBusy=false;$('musicSearchBtn').disabled=false;
+  $('musicSearchStatus').textContent=err&&err.message?err.message:'搜尋失敗';
+  renderMusicItems([]);
+ });
+}
+
+function setMusicSession(st){
+ if(!('mediaSession' in navigator)||!st)return;
+ try{
+  var art=(st.favicon&&st.favicon.indexOf('https://')===0)?st.favicon:(location.origin+location.pathname.replace(/[^\/]*$/,'')+'icons/icon-512.png');
+  navigator.mediaSession.metadata=new MediaMetadata({
+   title:st.name||'網路音樂',
+   artist:st.tags||st.countrycode||'WATCH_VIDEOtu',
+   album:'WATCH_VIDEOtu Music',
+   artwork:[
+    {src:art,sizes:'512x512'},
+    {src:location.origin+location.pathname.replace(/[^\/]*$/,'')+'icons/icon-192.png',sizes:'192x192',type:'image/png'}
+   ]
+  });
+ }catch(e){}
+}
+
+function playMusicStation(st,idx,list){
+ if(!st||!st.url)return;
+ var audio=$('musicAudio');
+ musicCurrent=st;
+ musicItems=(list&&list.length)?list.slice():musicItems;
+ musicIndex=typeof idx==='number'?idx:musicItems.findIndex(function(x){return x.stationuuid===st.stationuuid});
+ $('musicTitle').textContent=st.name;
+ $('musicMeta').textContent=[st.countrycode,st.tags,st.codec,(st.bitrate?st.bitrate+' kbps':'')].filter(Boolean).join(' · ');
+ $('musicCover').src=(st.favicon&&st.favicon.indexOf('https://')===0)?st.favicon:'icons/icon-512.png';
+ $('musicCover').onerror=function(){this.onerror=null;this.src='icons/icon-512.png'};
+ audio.src=st.url;
+ audio.volume=state.music.volume||0.85;
+ setMusicSession(st);
+ rememberMusicRecent(st);
+ updateMusicFavBtn();
+ audio.play().then(function(){
+  $('musicPlayBtn').textContent='⏸';
+  if('mediaSession' in navigator)navigator.mediaSession.playbackState='playing';
+ }).catch(function(){
+  $('musicSearchStatus').textContent='這個來源目前無法播放，請換另一個。';
+ });
+}
+
+function toggleMusicPlay(){
+ var a=$('musicAudio');
+ if(!a.src)return;
+ if(a.paused)a.play();else a.pause();
+}
+function stopMusic(){
+ var a=$('musicAudio');a.pause();
+ try{a.currentTime=0}catch(e){}
+ $('musicPlayBtn').textContent='▶';
+ if('mediaSession' in navigator)navigator.mediaSession.playbackState='none';
+}
+function nextMusic(){
+ if(!musicItems.length)return;
+ musicIndex=(musicIndex+1+musicItems.length)%musicItems.length;
+ playMusicStation(musicItems[musicIndex],musicIndex,musicItems);
+}
+function prevMusic(){
+ if(!musicItems.length)return;
+ musicIndex=(musicIndex-1+musicItems.length)%musicItems.length;
+ playMusicStation(musicItems[musicIndex],musicIndex,musicItems);
+}
+
+function setupMediaSessionActions(){
+ if(!('mediaSession' in navigator))return;
+ try{navigator.mediaSession.setActionHandler('play',function(){$('musicAudio').play()})}catch(e){}
+ try{navigator.mediaSession.setActionHandler('pause',function(){$('musicAudio').pause()})}catch(e){}
+ try{navigator.mediaSession.setActionHandler('stop',stopMusic)}catch(e){}
+ try{navigator.mediaSession.setActionHandler('nexttrack',nextMusic)}catch(e){}
+ try{navigator.mediaSession.setActionHandler('previoustrack',prevMusic)}catch(e){}
+}
 
 var AUTO_CATEGORY_RULES=[
  {name:'英文',words:['abc','alphabet','phonics','english','英文','單字','vocabulary','letter','letters','spelling','learn english','英語']},
@@ -1155,6 +1387,28 @@ function bindUiSafely(){
 }
 
 document.addEventListener('DOMContentLoaded',function(){
+ if($('videoModeBtn'))$('videoModeBtn').onclick=showVideoMode;
+ if($('musicModeBtn'))$('musicModeBtn').onclick=showMusicMode;
+ if($('musicSearchBtn'))$('musicSearchBtn').onclick=searchMusic;
+ if($('musicSearchInput'))$('musicSearchInput').onkeydown=function(e){if(e.key==='Enter')searchMusic()};
+ if($('musicPlayBtn'))$('musicPlayBtn').onclick=toggleMusicPlay;
+ if($('musicStopBtn'))$('musicStopBtn').onclick=stopMusic;
+ if($('musicNextBtn'))$('musicNextBtn').onclick=nextMusic;
+ if($('musicPrevBtn'))$('musicPrevBtn').onclick=prevMusic;
+ if($('musicFavBtn'))$('musicFavBtn').onclick=toggleMusicFavorite;
+ if($('musicVolume')){
+  $('musicVolume').value=String(state.music.volume||0.85);
+  $('musicVolume').oninput=function(){state.music.volume=parseFloat(this.value)||0;$('musicAudio').volume=state.music.volume;save()};
+ }
+ document.querySelectorAll('.music-nav').forEach(function(b){b.onclick=function(){renderMusicNav(b.dataset.musicnav)}});
+ if($('musicAudio')){
+  $('musicAudio').volume=state.music.volume||0.85;
+  $('musicAudio').addEventListener('play',function(){$('musicPlayBtn').textContent='⏸';if('mediaSession' in navigator)navigator.mediaSession.playbackState='playing'});
+  $('musicAudio').addEventListener('pause',function(){$('musicPlayBtn').textContent='▶';if('mediaSession' in navigator)navigator.mediaSession.playbackState='paused'});
+  $('musicAudio').addEventListener('error',function(){$('musicSearchStatus').textContent='目前串流來源中斷，請換另一個來源。'});
+ }
+ setupMediaSessionActions();
+
  if($('loopBtn'))$('loopBtn').onclick=toggleLoopPlayback;
  updateLoopBtn();
  if($('loopCurrentEnabled'))$('loopCurrentEnabled').checked=!!(state.playback&&state.playback.loopCurrent);
@@ -1181,7 +1435,7 @@ document.addEventListener('DOMContentLoaded',function(){
  $('quickUrlInput').addEventListener('keydown',function(e){if(e.key==='Enter'||e.keyCode===13)quickPlayHome()});
  $('quickUrlInput').addEventListener('input',function(){setTimeout(inspectQuickUrl,80)});
  $('quickUrlInput').addEventListener('paste',function(){setTimeout(inspectQuickUrl,150)});
- $('brandHomeBtn').onclick=showHome;
+ $('brandHomeBtn').onclick=showVideoMode;
  $('profileBtn').onclick=toggleProfile;$('homeBtn').onclick=showHome;$('parentBtn').onclick=openParent;$('closeParentBtn').onclick=closeParent;$('backToHomeBtn').onclick=showHome;$('kidModeBtn').onclick=setKidMode;
  $('heroPlayBtn').onclick=function(){var rec=availableVideos().filter(function(v){return v.recommended}),p=profile(),v=rec[0]||(p.recent.length?videoById(p.recent[0]):availableVideos()[0]);if(v)selectVideo(v.id,availableVideos())};
  $('prevBtn').onclick=prevVideo;$('nextBtn').onclick=nextVideo;$('playBtn').onclick=function(){if(!canPlay())return;if(playerMode==='iframe'){sendDirectCommand('playVideo');return}if(!player||!playerReady){if(currentId)playSelectedId(currentId);return}player.getPlayerState()===YT.PlayerState.PLAYING?player.pauseVideo():player.playVideo()};$('favBtn').onclick=toggleFav;
