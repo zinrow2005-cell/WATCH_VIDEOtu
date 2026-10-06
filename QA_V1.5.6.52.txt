@@ -1,0 +1,25 @@
+WATCH_VIDEOtu V1.5.6.52 Mobile QA
+
+已確認的根本問題與修正
+1. index.html 的 styles.css 快取參數長期停留在 v=15642 -> 已修正為 v=15652。
+2. app.js 會註冊 sw.js，但舊包沒有 sw.js -> 已建立正式 Service Worker。
+3. 手機 topbar 為桌機單列 flex，390px 下必然互相擠壓 -> 改為兩列 grid。
+4. 音樂模式手機版播放控制原本位於結果清單之後 -> 改為 sidebar / now playing / results 順序。
+5. Radio Browser 固定伺服器可能失效 -> 新增 /json/servers 動態伺服器探索 + de2/fi1 fallback。
+6. HTTPS GitHub Pages 遇到 HTTP 電台串流會被阻擋 -> 手機清單只保留 HTTPS 可播放串流。
+7. 電台失敗沒有直接重試入口 -> 新增「重新載入」。
+8. KTV 手機三欄擠壓 -> 改成直向單欄順序。
+9. TV 手機 toolbar 按鈕擠壓 -> 改成兩欄按鈕 grid。
+10. iOS input 小於 16px 會自動縮放頁面 -> 手機 input/select/textarea 固定至少 16px。
+
+程式檢查
+- app.js syntax: PASS
+- ktv_singers.js syntax: PASS
+- ktv_songs.js syntax: PASS
+- sw.js syntax: PASS
+- DOM 缺失: 0
+- 重複 ID: 0
+
+限制
+- 本執行環境的 Chromium 被管理政策禁止開啟 localhost/file/data URL，因此無法完成真正像素級瀏覽器點擊測試。
+- 已完成 DOM/JS/CSS 靜態檢查與啟動結構修正。
