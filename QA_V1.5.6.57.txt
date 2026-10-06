@@ -1,0 +1,22 @@
+WATCH_VIDEOtu V1.5.6.57 — Mobile PWA Update Fix
+
+問題：
+- 桌機顯示新版本，但手機主畫面 PWA 仍顯示舊版本。
+- 原因為舊 Service Worker / HTML 快取仍控制手機版。
+
+修正：
+1. SW 註冊改為 sw.js?v=15657 + updateViaCache:'none'
+2. 每次啟動主動 reg.update()
+3. waiting worker 自動 SKIP_WAITING
+4. controllerchange 後自動重新載入一次
+5. HTML/navigation 改 network-first + cache:'no-store'
+6. 舊 cache activate 時自動刪除
+7. 靜態 CSS/JS/KTV DB 使用版本化 URL 15657
+
+程式檢查：
+- app.js PASS
+- ktv_singers.js PASS
+- ktv_songs.js PASS
+- sw.js PASS
+- DOM missing 0
+- duplicate IDs 0
