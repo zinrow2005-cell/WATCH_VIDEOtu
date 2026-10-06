@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-var STORAGE='familytube_v15642';
-var OLD_KEYS=['familytube_v15641','familytube_v15640','familytube_v15639','familytube_v15638','familytube_v15637','familytube_v15636','familytube_v15635','familytube_v15634','familytube_v15633','familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v15643';
+var OLD_KEYS=['familytube_v15642','familytube_v15641','familytube_v15640','familytube_v15639','familytube_v15638','familytube_v15637','familytube_v15636','familytube_v15635','familytube_v15634','familytube_v15633','familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var DEFAULT={
  videos:[{id:'M7lc1UVf-VE',title:'YouTube 播放測試',category:'學習',channel:'YouTube',recommended:true,addedAt:Date.now()}],
  profiles:{
@@ -423,6 +423,7 @@ function setupMediaSessionActions(){
 var ktvModeActive=false,ktvNav='hot',ktvSearchType='all',ktvSearchResults=[],ktvBusy=false,ktvCurrent=null,ktvSingerFilter='all',ktvSingerLetter='all';
 
 var KTV_SINGERS=(typeof KTV_SINGERS_DB!=='undefined'&&KTV_SINGERS_DB&&KTV_SINGERS_DB.length)?KTV_SINGERS_DB.slice():[];
+var KTV_SONGS=(typeof KTV_SONGS_DB!=='undefined'&&KTV_SONGS_DB&&KTV_SONGS_DB.length)?KTV_SONGS_DB.slice():[];
 
 var KTV_HOT=[
  {title:'晴天',artist:'周杰倫',region:'華語'},
@@ -541,6 +542,33 @@ function renderKtvNav(nav){
  }
 }
 
+
+function normalizeKtvText(s){return String(s||'').toLowerCase().replace(/\s+/g,'').replace(/[()（）\-_.·]/g,'')}
+function localSongsByArtist(name){
+ var n=normalizeKtvText(name);
+ return KTV_SONGS.filter(function(s){return normalizeKtvText(s.artist)===n});
+}
+function searchLocalKtvSongs(q,type){
+ var n=normalizeKtvText(q);if(!n)return [];
+ return KTV_SONGS.filter(function(s){
+  var t=normalizeKtvText(s.title),a=normalizeKtvText(s.artist);
+  if(type==='song')return t.indexOf(n)>=0;
+  if(type==='artist')return a.indexOf(n)>=0;
+  return t.indexOf(n)>=0||a.indexOf(n)>=0||(a+t).indexOf(n)>=0;
+ }).slice(0,80);
+}
+function showSingerSongs(singer){
+ var list=localSongsByArtist(singer.name);
+ $('ktvSingerPanel').classList.add('hidden');
+ $('ktvSongPanel').classList.remove('hidden');
+ if(list.length){
+  renderKtvSongs(list,singer.name+' 的歌曲',list.length+' 首本機歌曲');
+  $('ktvStatus').textContent='已找到 '+list.length+' 首 '+singer.name+' 的歌曲';
+ }else{
+  $('ktvSearchInput').value=singer.name;ktvSearchType='artist';searchKtv(singer.name);
+ }
+}
+
 function renderKtvSingers(){
  var root=$('ktvSingerGrid');if(!root)return;
  root.innerHTML='';
@@ -565,7 +593,7 @@ function renderKtvSingers(){
    $('ktvSearchInput').value=s.name;
    ktvSearchType='artist';
    document.querySelectorAll('.ktv-search-type').forEach(function(x){x.classList.toggle('active',x.dataset.ktvtype==='artist')});
-   searchKtv(s.name);
+   showSingerSongs(s);
   };
   root.appendChild(b);
  });
@@ -740,23 +768,25 @@ function cutKtvSong(){
 
 function searchKtv(forceQuery){
  if(ktvBusy)return;
- var q=String(forceQuery||$('ktvSearchInput').value||'').trim();
- if(!q)return;
- ktvBusy=true;
- $('ktvStatus').textContent='正在搜尋 KTV 歌曲…';
+ var q=String(forceQuery||$('ktvSearchInput').value||'').trim();if(!q)return;
+ var local=searchLocalKtvSongs(q,ktvSearchType);
+ if(local.length){
+  ktvSearchResults=local.slice();
+  $('ktvSingerPanel').classList.add('hidden');$('ktvSongPanel').classList.remove('hidden');
+  $('ktvStatus').textContent='本機歌曲資料庫找到 '+local.length+' 首';
+  renderKtvSongs(local,'搜尋結果','優先顯示本機 KTV 歌曲');
+  return;
+ }
+ ktvBusy=true;$('ktvStatus').textContent='本機資料庫沒有結果，正在搜尋網路 KTV 歌曲…';
  var query=q;
  if(ktvSearchType==='artist')query=q+' KTV karaoke';
  else if(ktvSearchType==='song')query=q+' KTV 伴奏';
  else query=q+' KTV karaoke 伴奏';
  fetchSearchWithFallback(query,1).then(function(res){
-  ktvBusy=false;
-  var items=(res&&res.items)||[];
-  ktvSearchResults=items.map(function(v){
-   return {title:v.title,artist:v.channel||'',id:v.id,videoId:v.id,region:'',image:v.image||''};
-  });
-  $('ktvSingerPanel').classList.add('hidden');
-  $('ktvSongPanel').classList.remove('hidden');
-  $('ktvStatus').textContent='找到 '+ktvSearchResults.length+' 個可點選結果';
+  ktvBusy=false;var items=(res&&res.items)||[];
+  ktvSearchResults=items.map(function(v){return {title:v.title,artist:v.channel||'',id:v.id,videoId:v.id,region:'',image:v.image||'',tag:'網路結果'}});
+  $('ktvSingerPanel').classList.add('hidden');$('ktvSongPanel').classList.remove('hidden');
+  $('ktvStatus').textContent='網路找到 '+ktvSearchResults.length+' 個可點選結果';
   renderKtvSongs(ktvSearchResults,'搜尋結果','點「＋ 點歌」加入待唱清單');
  }).catch(function(){
   ktvBusy=false;$('ktvStatus').textContent='目前搜尋來源沒有回應，請稍後再試。';
@@ -2073,6 +2103,16 @@ function bindUiSafely(){
 }
 
 document.addEventListener('DOMContentLoaded',function(){
+ document.querySelectorAll('.ktv-song-cat').forEach(function(b){
+  b.onclick=function(){
+   var cat=b.dataset.songCat||'';
+   var list=KTV_SONGS.filter(function(s){return s.tag===cat||s.region===cat||s.era===cat});
+   $('ktvSingerPanel').classList.add('hidden');$('ktvSongPanel').classList.remove('hidden');
+   renderKtvSongs(list,cat+'歌曲',list.length+' 首');
+   $('ktvStatus').textContent='已顯示 '+list.length+' 首 '+cat+' 歌曲';
+  };
+ });
+
  if($('tvSidebarToggleBtn'))$('tvSidebarToggleBtn').onclick=toggleTvSidebar;
  if($('tvPauseBtn'))$('tvPauseBtn').onclick=toggleTvPause;
  updateTvPauseBtn();
