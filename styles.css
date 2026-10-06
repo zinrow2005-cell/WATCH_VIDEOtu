@@ -949,11 +949,10 @@ body:has(#playerSection:not(.hidden)) .content{
  }
 }
 
-/* V1.5.6.23: playback-first view, no hero occupying screen */
-body.watch-playing #hero,
-#hero.hidden {display:none!important;visibility:hidden!important}
-body.watch-playing #kidsHome,
-body.watch-playing #homeSearch {display:none!important}
-body.watch-playing #playerSection {display:block!important}
-body.watch-playing main {padding-top:8px!important}
-body.watch-playing #playerSection {margin-top:0!important}
+/* V1.5.6.23: playback-only layout. The older .hero display:flex!important
+   rule was overriding generic .hidden; give explicit selectors precedence. */
+#hero.hidden,body.watch-mode #hero{display:none!important;visibility:hidden!important;}
+body.watch-mode #kidsHome{display:none!important;}
+body.watch-mode #playerSection{display:block!important;margin-top:0!important;}
+body.watch-mode main{padding-top:8px!important;}
+@media(max-width:600px){body.watch-mode main{padding-top:4px!important;}}

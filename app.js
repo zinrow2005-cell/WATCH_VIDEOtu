@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-var STORAGE='familytube_v15622';
-var OLD_KEYS=['familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v15623';
+var OLD_KEYS=['familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var DEFAULT={
  videos:[{id:'M7lc1UVf-VE',title:'YouTube 播放測試',category:'學習',channel:'YouTube',recommended:true,addedAt:Date.now()}],
  profiles:{
@@ -389,12 +389,7 @@ function bindSidebar(){
  });
 }
 
-function showPlayer(){
- document.body.classList.add('watch-playing');
- setMiniPlayer(false);
- miniPlayerSuppressed=false;$('kidsHome').classList.add('hidden');$('hero').classList.add('hidden');$('playerSection').classList.remove('hidden');renderSidebar(sidebarFilter);bindMiniPlayerScroll();
- try{window.scrollTo(0,0)}catch(e){}
- setTimeout(updateMiniPlayerOnScroll,60)}
+function showPlayer(){document.body.classList.add('watch-mode');miniPlayerSuppressed=false;$('kidsHome').classList.add('hidden');$('hero').classList.add('hidden');$('playerSection').classList.remove('hidden');renderSidebar(sidebarFilter);bindMiniPlayerScroll();setTimeout(updateMiniPlayerOnScroll,60);setTimeout(function(){if(currentId&&$('playerSection')&&!$('playerSection').classList.contains('hidden')){try{window.scrollTo(0,0)}catch(e){}}},0)}
 
 function stopPlaybackForHome(){
  // 1) Normal YouTube IFrame API player.
@@ -436,7 +431,7 @@ function stopPlaybackForHome(){
 }
 
 function showHome(){
- document.body.classList.remove('watch-playing');
+ document.body.classList.remove('watch-mode');
  setMiniPlayer(false);miniPlayerSuppressed=false;
  stopPlaybackForHome();clearPlayerFallbackTimer();if(playerMode==='iframe')sendDirectCommand('pauseVideo');else if(player&&playerReady){try{player.pauseVideo()}catch(e){}}if($('playerSection'))$('playerSection').classList.remove('player-booting');if(immersiveFull)exitImmersiveFullscreen();if($('parentPanel'))$('parentPanel').classList.add('hidden');parentOpen=false;$('playerSection').classList.add('hidden');$('hero').classList.remove('hidden');$('kidsHome').classList.remove('hidden');renderRows();updateUsageUI()}
 function playInsideWatchVideo(v,list){if(!v||!v.id)return;selectVideo(v.id,list&&list.length?list:[v])}
