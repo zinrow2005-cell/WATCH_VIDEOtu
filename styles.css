@@ -3540,3 +3540,22 @@ body.watch-fullscreen .watch-right{
 @media(max-width:700px){
  .side-filter[data-sidefilter="數字／顏色"]{min-width:112px!important}
 }
+
+/* V1.5.6.59 remove redundant kid-mode button */
+.hero-actions-single{
+ grid-template-columns:minmax(220px,420px)!important;
+ justify-content:start!important;
+}
+.hero-actions-single #heroPlayBtn{
+ width:100%!important;
+}
+@media(max-width:700px){
+ .hero-actions-single{
+  display:block!important;
+  width:100%!important;
+ }
+ .hero-actions-single #heroPlayBtn{
+  width:100%!important;
+  min-height:46px!important;
+ }
+}

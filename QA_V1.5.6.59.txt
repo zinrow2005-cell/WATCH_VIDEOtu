@@ -1,0 +1,19 @@
+WATCH_VIDEOtu V1.5.6.59
+
+本版完成：
+1. 新增「妙妙犬布麗 Bluey｜天天都好玩」到兒童推薦與故事分類。
+2. 故事推薦搜尋關鍵字加入：妙妙犬布麗 / Bluey / YOYOTV / 中文兒童故事。
+3. 卡通推薦也加入 Bluey 關聯搜尋。
+4. 學習與自然分類補強動態搜尋關鍵字。
+5. 完全刪除「兒童模式」按鈕、狀態與 setKidMode 程式。
+6. 首頁只保留「播放兒童推薦」，避免重複的兒童模式概念。
+7. 原本家長 PIN、觀看時間、白名單等家長控制功能保留。
+
+QA：
+- app.js PASS
+- ktv_singers.js PASS
+- ktv_songs.js PASS
+- sw.js PASS
+- DOM missing 0
+- duplicate IDs 0
+- kidMode refs removed
