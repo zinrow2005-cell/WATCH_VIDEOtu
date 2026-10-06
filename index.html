@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#0b1220">
-<title>WATCH_VIDEOtu V1.5.6.16</title>
+<title>WATCH_VIDEOtu V1.5.6.18</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=15616">
+<link rel="stylesheet" href="styles.css?v=15618">
 </head>
 <body>
 <header class="topbar">
@@ -79,9 +79,19 @@
       <div class="search-title">🔎 搜尋 YouTube</div>
       <div class="search-line">
         <input id="homeSearchInput" placeholder="輸入關鍵字，例如：恐龍、ABC、兒歌" autocomplete="off">
-        <button id="homeSearchBtn" class="primary search-go">搜尋 YouTube</button>
+        <button id="homeSearchBtn" class="primary search-go">搜尋</button>
       </div>
-      <div id="searchNodeStatus" class="search-hint">搜尋會開啟 YouTube；找到影片後複製連結，再回來貼上即可播放。</div>
+      <div id="searchNodeStatus" class="search-hint">直接在 WATCH_VIDEOtu 內搜尋，不需要官方 API Key。</div>
+<div class="search-options">
+  <select id="searchDuration" aria-label="影片長度">
+    <option value="">不限長度</option>
+    <option value="short">短片</option>
+    <option value="medium">中等</option>
+    <option value="long">長片</option>
+  </select>
+</div>
+<div id="homeSearchResults" class="home-search-results"></div>
+<button id="searchMoreBtn" class="ghost hidden" type="button">載入更多</button>
       
 
       <div class="return-box">
@@ -155,6 +165,6 @@
 <div id="modal" class="modal hidden">
   <div class="modal-card"><h3>輸入家長 PIN</h3><input id="modalInput" inputmode="numeric" maxlength="6"><div class="modal-actions"><button id="modalCancel">取消</button><button id="modalOk">確定</button></div></div>
 </div>
-<script defer src="app.js?v=15616"></script>
+<script defer src="app.js?v=15618"></script>
 </body>
 </html>
