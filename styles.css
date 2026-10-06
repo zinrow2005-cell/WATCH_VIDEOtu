@@ -1048,3 +1048,33 @@ body.watch-mode main{padding-top:8px!important;}
   grid-template-columns:repeat(2,minmax(0,1fr))!important;
  }
 }
+
+/* V1.5.6.27 favorite sync + responsive player + sidebar edit */
+.watch-center .player-stage,
+.watch-center .player-top,
+.watch-center .kid-controls,
+.watch-center .player-info-row{
+ width:100%!important;max-width:none!important;margin-left:0!important;margin-right:0!important;
+}
+.watch-center .player-stage{aspect-ratio:16/9!important}
+.watch-center #player,.watch-center #player iframe,.watch-center #ytDirectFrame{
+ width:100%!important;height:100%!important;max-height:calc(100vh - 210px)!important;object-fit:contain!important;
+}
+@media(min-width:1400px){
+ .watch-layout{grid-template-columns:clamp(230px,14vw,280px) minmax(700px,1fr) clamp(300px,20vw,380px)!important}
+}
+@media(max-width:1200px){
+ .watch-layout{grid-template-columns:210px minmax(0,1fr) 280px!important}
+}
+@media(max-width:1000px){
+ .watch-layout{grid-template-columns:1fr!important}.watch-center{order:1}.library-sidebar{order:2}.related-sidebar{order:3}
+}
+.search-result-actions .add.active,#favBtn.active{background:#fff!important;color:#111827!important;border-color:#fff!important}
+.sidebar-video-row{position:relative;display:grid;grid-template-columns:minmax(0,1fr) 30px;gap:5px;align-items:center;border-radius:11px;background:#121d2f}
+.sidebar-video-row.playing{box-shadow:inset 3px 0 0 #ff3b6b}
+.sidebar-video-main{width:100%;display:grid;grid-template-columns:86px minmax(0,1fr);gap:8px;align-items:center;border:0;background:transparent;color:#fff;padding:7px;text-align:left;cursor:pointer}
+.sidebar-video-main img{width:86px;aspect-ratio:16/9;object-fit:cover;border-radius:7px}
+.sidebar-edit-btn{width:28px;height:32px;border:0;border-radius:8px;background:#1a2940;color:#fff;font-size:18px;padding:0}
+.sidebar-edit-menu{position:absolute;right:4px;top:36px;z-index:20;min-width:130px;padding:6px;border-radius:10px;background:#0b1320;border:1px solid rgba(255,255,255,.12);box-shadow:0 8px 22px rgba(0,0,0,.35)}
+.sidebar-edit-menu button{width:100%;text-align:left;margin:2px 0;padding:8px;border-radius:8px;font-size:11px}
+.sidebar-edit-menu.hidden{display:none!important}
