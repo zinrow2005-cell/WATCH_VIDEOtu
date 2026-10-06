@@ -1,11 +1,11 @@
-var APP_VERSION='1.5.6.63';
-var APP_BUILD='15663';
+var APP_VERSION='1.5.6.64';
+var APP_BUILD='15664';
 var watchFullscreenScrollY=0;
 var miniPlayerSuppressUntil=0;
 (function(){
 'use strict';
-var STORAGE='familytube_v15663';
-var OLD_KEYS=['familytube_v15662','familytube_v15661','familytube_v15660','familytube_v15659','familytube_v15658','familytube_v15657','familytube_v15656','familytube_v15655','familytube_v15654','familytube_v15653','familytube_v15652','familytube_v15651','familytube_v15650','familytube_v15649','familytube_v15648','familytube_v15647','familytube_v15646','familytube_v15645','familytube_v15644','familytube_v15643','familytube_v15642','familytube_v15641','familytube_v15640','familytube_v15639','familytube_v15638','familytube_v15637','familytube_v15636','familytube_v15635','familytube_v15634','familytube_v15633','familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v15664';
+var OLD_KEYS=['familytube_v15663','familytube_v15662','familytube_v15661','familytube_v15660','familytube_v15659','familytube_v15658','familytube_v15657','familytube_v15656','familytube_v15655','familytube_v15654','familytube_v15653','familytube_v15652','familytube_v15651','familytube_v15650','familytube_v15649','familytube_v15648','familytube_v15647','familytube_v15646','familytube_v15645','familytube_v15644','familytube_v15643','familytube_v15642','familytube_v15641','familytube_v15640','familytube_v15639','familytube_v15638','familytube_v15637','familytube_v15636','familytube_v15635','familytube_v15634','familytube_v15633','familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var CURATED_CHILD_VIDEOS=[{"id":"GqO5yfViGDE","title":"妙妙犬布麗 Bluey｜天天都好玩","category":"故事","channel":"YOYOTV","recommended":true,"curated":true,"addedAt":1791281675560,"categoryManual":true,"autoCategory":false},{"id":"Hg7vNCIjIwk","title":"英文學習推薦｜使用者指定影片","category":"英文","channel":"YouTube Kids / English","recommended":true,"curated":true,"addedAt":1791281272281,"categoryManual":true,"autoCategory":false},{"id":"eegWzglBMh0","title":"ABC Chant｜Lingokids 英文字母歌","category":"英文","channel":"Lingokids","recommended":true,"curated":true,"addedAt":1791281271281,"categoryManual":true,"autoCategory":false},{"id":"-MtVI33De6s","title":"ABC Animals｜字母與動物英文學習","category":"英文","channel":"English Learning","recommended":true,"curated":true,"addedAt":1791281270281,"categoryManual":true,"autoCategory":false},{"id":"Z0xPZ47u4z4","title":"ABC Song｜英文字母歌曲","category":"英文","channel":"English Learning","recommended":true,"curated":true,"addedAt":1791281269281,"categoryManual":true,"autoCategory":false},{"id":"yyew5ojyjg8","title":"朱妮托尼｜TOP 經典兒歌合集","category":"兒歌","channel":"朱妮托尼 中文","recommended":true,"curated":true,"addedAt":1791281268281,"categoryManual":true,"autoCategory":false},{"id":"Ya6YAH3YL2E","title":"朱妮托尼｜兒歌童謠與卡通故事合集","category":"兒歌","channel":"朱妮托尼","recommended":true,"curated":true,"addedAt":1791281267281,"categoryManual":true,"autoCategory":false},{"id":"l1yRTzqGLNA","title":"巧虎｜幼兒安全與生活學習","category":"卡通","channel":"巧虎TV","recommended":true,"curated":true,"addedAt":1791281266281,"categoryManual":true,"autoCategory":false},{"id":"4ScOx5ci-YQ","title":"Bebefinn｜兒歌與幼兒學習合集","category":"學習","channel":"Bebefinn","recommended":true,"curated":true,"addedAt":1791281265281,"categoryManual":true,"autoCategory":false},{"id":"eUunYTYia3I","title":"AMAZING ANIMALS｜兒童動物大自然 1 小時","category":"自然／動物","channel":"Nat Geo Kids","recommended":true,"curated":true,"addedAt":1791281264281,"categoryManual":true,"autoCategory":false},{"id":"y_rH7cllMbU","title":"數字顏色推薦｜使用者指定影片 1","category":"數字／顏色","channel":"YouTube Kids","recommended":true,"curated":true,"addedAt":1791281263281,"categoryManual":true,"autoCategory":false},{"id":"G-NEBETYGDI","title":"數字顏色推薦｜使用者指定影片 2","category":"數字／顏色","channel":"YouTube Kids","recommended":true,"curated":true,"addedAt":1791281262281,"categoryManual":true,"autoCategory":false},{"id":"jM6dykYy0xw","title":"Numbers & Colors for Kids｜數字與顏色","category":"數字／顏色","channel":"Kids Fun House","recommended":true,"curated":true,"addedAt":1791281261281,"categoryManual":true,"autoCategory":false},{"id":"P0C1_bOhPV4","title":"Colorful Compilation｜顏色、字母與數字","category":"數字／顏色","channel":"Super Simple Songs","recommended":true,"curated":true,"addedAt":1791281260281,"categoryManual":true,"autoCategory":false},{"id":"zxIpA5nF_LY","title":"What's Your Favorite Color?｜顏色英文歌","category":"數字／顏色","channel":"Super Simple Songs","recommended":true,"curated":true,"addedAt":1791281259281,"categoryManual":true,"autoCategory":false},{"id":"kDdg2M1_EuE","title":"The Alphabet Is So Much Fun｜ABC 英文字母歌","category":"英文","channel":"Super Simple Songs","recommended":true,"curated":true,"addedAt":0,"categoryManual":true,"autoCategory":false},{"id":"vD98OvvDNEs","title":"The Alphabet Song｜英文字母學習","category":"英文","channel":"Super Simple Songs","recommended":true,"curated":true,"addedAt":0,"categoryManual":true,"autoCategory":false}];
 var DEFAULT={
  videos:CURATED_CHILD_VIDEOS.slice(),
@@ -2017,24 +2017,41 @@ function makeCard(v,opts){
  card.onclick=function(){opts.resume?resumeVideo(v.id,opts.list):selectVideo(v.id,opts.list)};return card;
 }
 function addRow(title,list,sub,opts){
- if(!list||!list.length)return;var sec=document.createElement('section');sec.className='media-row';
+ var root=$('dynamicRows');
+ if(root&&title){
+  var existing=root.querySelector('[data-row-title="'+String(title).replace(/"/g,'&quot;')+'"]');
+  if(existing)return;
+ }
+
+ if(!list||!list.length)return;var sec=document.createElement('section');
+ sec.setAttribute('data-row-title',title||'');sec.className='media-row';
  sec.innerHTML='<div class="row-head"><h2>'+esc(title)+'</h2><span>'+esc(sub||'')+'</span></div>';
  var car=document.createElement('div');car.className='carousel';list.forEach(function(v){car.appendChild(makeCard(v,Object.assign({list:list},opts||{})))});sec.appendChild(car);$('dynamicRows').appendChild(sec);
 }
 function renderRows(filter){
  var root=$('dynamicRows');
+ var renderToken=beginHomeRender();
  root.innerHTML='';
  var p=profile(),all=availableVideos(),shownIds={};
 
- function addUniqueRow(title,list,sub,opts,limit){
-  var arr=uniqueVideoList((list||[]).filter(function(v){return v&&!shownIds[v.id]})).slice(0,limit||SEARCH_RENDER_LIMIT);
-  if(!arr.length)return;
+ function addUniqueRow(key,title,list,sub,opts,limit){
+  if(!homeRenderIsCurrent(renderToken))return;
+  if(!claimHomeRowKey(key,renderToken))return;
+  var arr=uniqueVideoList((list||[]).filter(function(v){
+   return v&&!shownIds[v.id];
+  })).slice(0,limit||SEARCH_RENDER_LIMIT);
+
+  if(!arr.length){
+   delete HOME_RENDER_ROW_KEYS[key];
+   return;
+  }
+
   arr.forEach(function(v){shownIds[v.id]=1});
   addRow(title,arr,sub,opts);
  }
 
  if(filter==='recommended'){
-  addUniqueRow('兒童推薦',all.filter(function(v){return v.recommended}),'精選適合兒童觀看的影片',{badge:'🧒 推薦'},24);
+  addUniqueRow('recommended','兒童推薦',all.filter(function(v){return v.recommended}),'精選適合兒童觀看的影片',{badge:'🧒 推薦'},24);
   return;
  }
 
@@ -2044,11 +2061,12 @@ function renderRows(filter){
    var pr=p.progress[v.id];
    return pr&&pr.current>5&&pr.duration&&pr.current<pr.duration-10;
   });
-  addUniqueRow('繼續觀看',cont,'從上次看到的地方接著看',{resume:true,badge:'繼續'},12);
-  addUniqueRow('兒童推薦',all.filter(function(v){return v.recommended}),'英文、兒歌、卡通、故事、學習、自然與數字顏色',{badge:'🧒 推薦'},20);
-  addUniqueRow('我的最愛',p.favorites.map(videoById).filter(function(v){return v&&allowedVideo(v)}),'只屬於 '+p.name+' 的收藏',{badge:'★ 最愛'},SEARCH_RENDER_LIMIT);
-  addUniqueRow('最近觀看',p.recent.map(videoById).filter(function(v){return v&&allowedVideo(v)}),'最近點過的影片',{badge:'最近看過'},16);
-  addUniqueRow('最近加入',all.slice().sort(function(a,b){return (b.addedAt||0)-(a.addedAt||0)}),'家長最近新增的內容',{badge:'新加入'},16);
+
+  addUniqueRow('continue','繼續觀看',cont,'從上次看到的地方接著看',{resume:true,badge:'繼續'},12);
+  addUniqueRow('recommended','兒童推薦',all.filter(function(v){return v.recommended}),'英文、兒歌、卡通、故事、學習、自然與數字顏色',{badge:'🧒 推薦'},20);
+  addUniqueRow('favorites','我的最愛',p.favorites.map(videoById).filter(function(v){return v&&allowedVideo(v)}),'只屬於 '+p.name+' 的收藏',{badge:'★ 最愛'},SEARCH_RENDER_LIMIT);
+  addUniqueRow('recent','最近觀看',p.recent.map(videoById).filter(function(v){return v&&allowedVideo(v)}),'最近點過的影片',{badge:'最近看過'},16);
+  addUniqueRow('new','最近加入',all.slice().sort(function(a,b){return (b.addedAt||0)-(a.addedAt||0)}),'家長最近新增的內容',{badge:'新加入'},16);
 
   [
    ['英文','🔤 英文','字母、單字、歌曲與基礎英文'],
@@ -2059,19 +2077,28 @@ function renderRows(filter){
    ['自然／動物','🦖 自然／動物','動物、大自然與兒童科普'],
    ['數字／顏色','🔢🌈 數字／顏色','數字、顏色、形狀與基礎認知']
   ].forEach(function(x){
-   renderCategoryWithNetwork(x[0],x[1],x[2],shownIds);
+   renderCategoryWithNetwork(x[0],x[1],x[2],shownIds,renderToken);
   });
+
  }else{
   var local=all.filter(function(v){return v.category===filter});
-  addUniqueRow(filter,local,'兒童分類影片',{badge:filter},SEARCH_RENDER_LIMIT);
+  addUniqueRow('single:'+filter,filter,local,'兒童分類影片',{badge:filter},SEARCH_RENDER_LIMIT);
+
   fetchCategoryRecommendations(filter,false).then(function(network){
-   var merged=mergeLocalAndNetworkCategory(filter,network).filter(function(v){return !shownIds[v.id]});
-   if(merged.length)addUniqueRow('更多'+filter,merged,'自動補充相關兒童影片',{badge:'✨ 更多'},SEARCH_RENDER_LIMIT);
+   if(!homeRenderIsCurrent(renderToken))return;
+   var merged=mergeLocalAndNetworkCategory(filter,network).filter(function(v){
+    return !shownIds[v.id];
+   });
+   if(!merged.length)return;
+   if(!claimHomeRowKey('single-more:'+filter,renderToken))return;
+   merged=merged.slice(0,SEARCH_RENDER_LIMIT);
+   merged.forEach(function(v){shownIds[v.id]=1});
+   addRow('更多'+filter,merged,'自動補充相關兒童影片',{badge:'✨ 更多'});
   });
  }
 
  if(!root.children.length){
-  root.innerHTML='<section class="media-row"><div class="row-head"><h2>正在整理推薦影片…</h2><span>如果是第一次載入，請稍候片刻</span></div></section>';
+  root.innerHTML='<section class="media-row" data-row-key="loading"><div class="row-head"><h2>正在整理推薦影片…</h2><span>如果是第一次載入，請稍候片刻</span></div></section>';
  }
 }
 function updateHero(){
@@ -2525,6 +2552,26 @@ function renderRelated(items){
 }
 
 
+var HOME_RENDER_GENERATION=0;
+var HOME_RENDER_ROW_KEYS={};
+
+function beginHomeRender(){
+ HOME_RENDER_GENERATION+=1;
+ HOME_RENDER_ROW_KEYS={};
+ return HOME_RENDER_GENERATION;
+}
+
+function homeRenderIsCurrent(token){
+ return token===HOME_RENDER_GENERATION;
+}
+
+function claimHomeRowKey(key,token){
+ if(!homeRenderIsCurrent(token))return false;
+ if(HOME_RENDER_ROW_KEYS[key])return false;
+ HOME_RENDER_ROW_KEYS[key]=1;
+ return true;
+}
+
 var CATEGORY_RECOMMENDATION_CACHE={};
 var CATEGORY_RECOMMENDATION_BUSY={};
 var CATEGORY_NETWORK_LIMIT=18;
@@ -2625,18 +2672,28 @@ function mergeLocalAndNetworkCategory(category,network){
  return uniqueVideoList(local.concat(network||[]));
 }
 
-function renderCategoryWithNetwork(category,title,sub,shownIds){
+function renderCategoryWithNetwork(category,title,sub,shownIds,renderToken){
+ if(!homeRenderIsCurrent(renderToken))return;
  var local=availableVideos().filter(function(v){return v.category===category});
  var filteredLocal=local.filter(function(v){return !shownIds[v.id]});
  var initial=filteredLocal.slice(0,SEARCH_RENDER_LIMIT);
- initial.forEach(function(v){shownIds[v.id]=1});
- if(initial.length)addRow(title,initial,sub,{badge:category});
+
+ if(initial.length&&claimHomeRowKey('local:'+category,renderToken)){
+  initial.forEach(function(v){shownIds[v.id]=1});
+  addRow(title,initial,sub,{badge:category});
+ }
 
  fetchCategoryRecommendations(category,false).then(function(network){
+  if(!homeRenderIsCurrent(renderToken))return;
   if(!network||!network.length)return;
-  var merged=mergeLocalAndNetworkCategory(category,network).filter(function(v){return !shownIds[v.id]});
+
+  var merged=mergeLocalAndNetworkCategory(category,network).filter(function(v){
+   return !shownIds[v.id];
+  });
   var extra=merged.slice(0,SEARCH_RENDER_LIMIT);
   if(!extra.length)return;
+
+  if(!claimHomeRowKey('more:'+category,renderToken))return;
   extra.forEach(function(v){shownIds[v.id]=1});
   addRow(title+' · 更多',extra,'自動補充的兒童相關影片',{badge:'✨ 更多'});
  });

@@ -1,0 +1,21 @@
+WATCH_VIDEOtu V1.5.6.64 — Recommendation Row Dedup Fix
+
+問題根因：
+- renderRows() 可能短時間內被呼叫多次。
+- 舊一輪的分類網路搜尋完成後，仍會 append 到新一輪首頁。
+- 因每輪 shownIds 都是獨立物件，造成相同「英文 · 更多」或其他分類重複出現。
+
+修正：
+1. HOME_RENDER_GENERATION：每次首頁渲染產生新 token。
+2. 舊 async 搜尋結果回來時，如果 token 已過期，直接丟棄。
+3. HOME_RENDER_ROW_KEYS：同一輪每個 row key 只能建立一次。
+4. 每個分類的 local / more 分開 claim key。
+5. 單一分類頁的「更多分類」也加入相同防重複。
+6. 保留影片 ID shownIds 去重，避免同支影片跨列重複。
+
+QA：
+- app.js PASS
+- ktv_singers.js PASS
+- ktv_songs.js PASS
+- sw.js PASS
+- duplicate IDs 0
