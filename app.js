@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-var STORAGE='familytube_v15625';
-var OLD_KEYS=['familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v15626';
+var OLD_KEYS=['familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var DEFAULT={
  videos:[{id:'M7lc1UVf-VE',title:'YouTube 播放測試',category:'學習',channel:'YouTube',recommended:true,addedAt:Date.now()}],
  profiles:{
@@ -483,6 +483,7 @@ function selectVideo(id,list){
  addRecent(id);
  renderSidebar(sidebarFilter);
  updateFavBtn();
+ updateLoopBtn();
  updateHero();
 }
 function addRecent(id){var p=profile();p.recent=p.recent.filter(function(x){return x!==id});p.recent.unshift(id);p.recent=p.recent.slice(0,40);save()}
@@ -549,6 +550,23 @@ function toggleFav(){
  }
  updateFavBtn();renderRows();renderSidebar('favorites');
 }
+
+function updateLoopBtn(){
+ var on=!!(state.playback&&state.playback.loopCurrent);
+ if($('loopBtn')){
+  $('loopBtn').textContent=on?'🔁 循環：開':'🔁 循環：關';
+  $('loopBtn').classList.toggle('active',on);
+  $('loopBtn').setAttribute('aria-pressed',on?'true':'false');
+ }
+}
+function toggleLoopPlayback(){
+ if(!state.playback)state.playback={loopCurrent:false};
+ state.playback.loopCurrent=!state.playback.loopCurrent;
+ if($('loopCurrentEnabled'))$('loopCurrentEnabled').checked=state.playback.loopCurrent;
+ save();
+ updateLoopBtn();
+}
+
 function updateFavBtn(){var yes=currentId&&profile().favorites.indexOf(currentId)>=0;$('favBtn').textContent=yes?'★ 已收藏':'☆ 最愛'}
 function resumeVideo(id,list){var pr=profile().progress[id];selectVideo(id,list);if(pr&&pr.current>5&&player)setTimeout(function(){try{player.seekTo(pr.current,true)}catch(e){}},800)}
 function makeCard(v,opts){
@@ -1125,11 +1143,13 @@ function bindUiSafely(){
 }
 
 document.addEventListener('DOMContentLoaded',function(){
+ if($('loopBtn'))$('loopBtn').onclick=toggleLoopPlayback;
+ updateLoopBtn();
  if($('loopCurrentEnabled'))$('loopCurrentEnabled').checked=!!(state.playback&&state.playback.loopCurrent);
  if($('savePlaybackBtn'))$('savePlaybackBtn').onclick=function(){
   if(!state.playback)state.playback={loopCurrent:false};
   state.playback.loopCurrent=!!$('loopCurrentEnabled').checked;
-  save();
+  save();updateLoopBtn();
   alert(state.playback.loopCurrent?'已開啟目前影片循環播放':'已關閉循環；播放結束會接續相關推薦');
  };
 
