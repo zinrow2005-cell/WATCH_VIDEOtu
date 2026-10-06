@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-var STORAGE='familytube_v15630';
-var OLD_KEYS=['familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v15631';
+var OLD_KEYS=['familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var DEFAULT={
  videos:[{id:'M7lc1UVf-VE',title:'YouTube 播放測試',category:'學習',channel:'YouTube',recommended:true,addedAt:Date.now()}],
  profiles:{
@@ -56,12 +56,17 @@ function profile(){return state.profiles[state.activeProfile]}
 
 
 var RADIO_SERVERS=[
- 'https://all.api.radio-browser.info',
- 'https://de1.api.radio-browser.info'
+ 'https://de1.api.radio-browser.info',
+ 'https://de2.api.radio-browser.info',
+ 'https://fi1.api.radio-browser.info',
+ 'https://nl1.api.radio-browser.info',
+ 'https://at1.api.radio-browser.info',
+ 'https://all.api.radio-browser.info'
 ];
 var musicModeActive=false,musicItems=[],musicCurrent=null,musicIndex=-1,musicBusy=false,musicNav='search';
 
 function showVideoMode(){
+ document.body.classList.remove('music-mode-active');
  musicModeActive=false;
  if($('musicMode'))$('musicMode').classList.add('hidden');
  if($('videoModeBtn'))$('videoModeBtn').classList.add('active');
@@ -73,6 +78,7 @@ function showVideoMode(){
 }
 
 function showMusicMode(){
+ document.body.classList.add('music-mode-active');
  if(immersiveFull)exitImmersiveFullscreen();
  stopPlaybackForHome();
  musicModeActive=true;
@@ -138,15 +144,37 @@ function radioFetch(url,ms){
 }
 
 function fetchRadioSearch(q){
- var i=0;
+ var servers=RADIO_SERVERS.slice(),si=0;
+ function unique(items){
+  var seen={},out=[];
+  (items||[]).forEach(function(x){
+   var id=x&&x.stationuuid;
+   if(id&&!seen[id]&&(x.url_resolved||x.url)){seen[id]=1;out.push(x)}
+  });
+  return out;
+ }
+ function tryServer(base){
+  var common='&limit=60&hidebroken=true&order=clickcount&reverse=true';
+  var u1=base+'/json/stations/search?name='+encodeURIComponent(q)+common;
+  var u2=base+'/json/stations/search?tag='+encodeURIComponent(q)+common;
+  return Promise.all([
+   radioFetch(u1,6500).catch(function(){return []}),
+   radioFetch(u2,6500).catch(function(){return []})
+  ]).then(function(parts){
+   var found=unique((parts[0]||[]).concat(parts[1]||[]));
+   if(found.length)return found;
+   // If keyword gives zero results, return popular working stations from this server.
+   return radioFetch(base+'/json/stations/topclick/40?hidebroken=true',6500).then(function(pop){
+    pop=unique(pop);
+    if(pop.length)return pop;
+    throw new Error('empty');
+   });
+  });
+ }
  function next(){
-  if(i>=RADIO_SERVERS.length)return Promise.reject(new Error('目前音樂搜尋來源沒有回應'));
-  var base=RADIO_SERVERS[i++];
-  var query='name='+encodeURIComponent(q)+'&tag='+encodeURIComponent(q)+'&limit=40&hidebroken=true&order=clickcount&reverse=true';
-  return radioFetch(base+'/json/stations/search?'+query,5500).then(function(items){
-   if(!Array.isArray(items)||!items.length)throw new Error('empty');
-   return items;
-  }).catch(function(){return next()});
+  if(si>=servers.length)return Promise.reject(new Error('目前無法連線到網路音樂目錄，請稍後再試'));
+  var base=servers[si++];
+  return tryServer(base).catch(function(){return next()});
  }
  return next();
 }
@@ -170,7 +198,7 @@ function renderMusicItems(items){
  var root=$('musicResults');if(!root)return;
  root.innerHTML='';
  if(!musicItems.length){
-  root.innerHTML='<div class="music-empty">目前沒有內容</div>';return;
+  root.innerHTML='<div class="music-empty">目前沒有內容，請換一個關鍵字試試</div>';return;
  }
  var frag=document.createDocumentFragment();
  musicItems.forEach(function(st,idx){
@@ -304,7 +332,7 @@ function searchMusic(){
  if(!q){$('musicSearchInput').focus();return}
  musicBusy=true;
  $('musicSearchBtn').disabled=true;
- $('musicSearchStatus').textContent='正在搜尋網路音樂來源…';
+ $('musicSearchStatus').textContent='正在搜尋網路電台與音樂串流…';
  fetchRadioSearch(q).then(function(arr){
   musicBusy=false;$('musicSearchBtn').disabled=false;
   var seen={},items=[];
@@ -312,7 +340,7 @@ function searchMusic(){
    var st=normalizeStation(x);
    if(st.stationuuid&&!seen[st.stationuuid]&&st.url){seen[st.stationuuid]=1;items.push(st)}
   });
-  $('musicSearchStatus').textContent='找到 '+items.length+' 個可播放來源';
+  $('musicSearchStatus').textContent='找到 '+items.length+' 個可播放音樂來源';
   musicNav='search';renderMusicNav('search');renderMusicItems(items);
  },function(err){
   musicBusy=false;$('musicSearchBtn').disabled=false;
