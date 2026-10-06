@@ -948,3 +948,12 @@ body:has(#playerSection:not(.hidden)) .content{
   grid-template-columns:1fr!important;
  }
 }
+
+/* V1.5.6.23: playback-first view, no hero occupying screen */
+body.watch-playing #hero,
+#hero.hidden {display:none!important;visibility:hidden!important}
+body.watch-playing #kidsHome,
+body.watch-playing #homeSearch {display:none!important}
+body.watch-playing #playerSection {display:block!important}
+body.watch-playing main {padding-top:8px!important}
+body.watch-playing #playerSection {margin-top:0!important}

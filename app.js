@@ -389,7 +389,12 @@ function bindSidebar(){
  });
 }
 
-function showPlayer(){miniPlayerSuppressed=false;$('kidsHome').classList.add('hidden');$('hero').classList.add('hidden');$('playerSection').classList.remove('hidden');renderSidebar(sidebarFilter);bindMiniPlayerScroll();setTimeout(updateMiniPlayerOnScroll,60)}
+function showPlayer(){
+ document.body.classList.add('watch-playing');
+ setMiniPlayer(false);
+ miniPlayerSuppressed=false;$('kidsHome').classList.add('hidden');$('hero').classList.add('hidden');$('playerSection').classList.remove('hidden');renderSidebar(sidebarFilter);bindMiniPlayerScroll();
+ try{window.scrollTo(0,0)}catch(e){}
+ setTimeout(updateMiniPlayerOnScroll,60)}
 
 function stopPlaybackForHome(){
  // 1) Normal YouTube IFrame API player.
@@ -431,6 +436,7 @@ function stopPlaybackForHome(){
 }
 
 function showHome(){
+ document.body.classList.remove('watch-playing');
  setMiniPlayer(false);miniPlayerSuppressed=false;
  stopPlaybackForHome();clearPlayerFallbackTimer();if(playerMode==='iframe')sendDirectCommand('pauseVideo');else if(player&&playerReady){try{player.pauseVideo()}catch(e){}}if($('playerSection'))$('playerSection').classList.remove('player-booting');if(immersiveFull)exitImmersiveFullscreen();if($('parentPanel'))$('parentPanel').classList.add('hidden');parentOpen=false;$('playerSection').classList.add('hidden');$('hero').classList.remove('hidden');$('kidsHome').classList.remove('hidden');renderRows();updateUsageUI()}
 function playInsideWatchVideo(v,list){if(!v||!v.id)return;selectVideo(v.id,list&&list.length?list:[v])}
