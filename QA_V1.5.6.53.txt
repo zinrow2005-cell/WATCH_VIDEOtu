@@ -1,0 +1,35 @@
+WATCH_VIDEOtu V1.5.6.53 Mobile QA
+
+本版針對使用者手機截圖修正：
+
+KTV
+- 歌曲卡片手機版改為 2 列結構：歌名在上、試播/點歌在下。
+- 不再讓「點歌」按鈕超出右側。
+- 搜尋列手機改單欄。
+- KTV 導航改橫向滑動。
+- KTV 播放控制改直向大按鈕。
+- 待唱清單固定在內容後方，不浮動遮住歌曲。
+- 所有 KTV 主要容器強制 max-width:100%。
+
+全球電視
+- 手機取消「半收合側欄」。
+- 左側國家選單改成真正 off-canvas drawer。
+- 平時完全移出畫面，不再留下 48px rail 遮住 Famelack。
+- 增加「☰ 頻道／國家」按鈕。
+- 抽屜開啟時增加遮罩，點遮罩可關閉。
+- 選擇國家後手機自動收合選單。
+- TV 工具按鈕手機改 2x2 grid。
+- Famelack iframe 改全寬，不被側欄壓住。
+
+靜態檢查
+- app.js: PASS
+- ktv_singers.js: PASS
+- ktv_songs.js: PASS
+- sw.js: PASS
+- DOM missing: 0
+- Duplicate IDs: 0
+
+瀏覽器限制
+- 系統有 Chromium，但此執行環境的瀏覽器政策會阻擋 localhost/file URL，
+  因此無法真正透過 headless browser 載入本地 PWA 做像素級點擊測試。
+- 本版依手機實際截圖 + HTML/CSS/JS 結構做針對性修正。

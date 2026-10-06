@@ -2,8 +2,8 @@ var watchFullscreenScrollY=0;
 var miniPlayerSuppressUntil=0;
 (function(){
 'use strict';
-var STORAGE='familytube_v15652';
-var OLD_KEYS=['familytube_v15651','familytube_v15650','familytube_v15649','familytube_v15648','familytube_v15647','familytube_v15646','familytube_v15645','familytube_v15644','familytube_v15643','familytube_v15642','familytube_v15641','familytube_v15640','familytube_v15639','familytube_v15638','familytube_v15637','familytube_v15636','familytube_v15635','familytube_v15634','familytube_v15633','familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v15653';
+var OLD_KEYS=['familytube_v15652','familytube_v15651','familytube_v15650','familytube_v15649','familytube_v15648','familytube_v15647','familytube_v15646','familytube_v15645','familytube_v15644','familytube_v15643','familytube_v15642','familytube_v15641','familytube_v15640','familytube_v15639','familytube_v15638','familytube_v15637','familytube_v15636','familytube_v15635','familytube_v15634','familytube_v15633','familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var DEFAULT={
  videos:[{id:'M7lc1UVf-VE',title:'YouTube 播放測試',category:'學習',channel:'YouTube',recommended:true,addedAt:Date.now()}],
  profiles:{
@@ -1127,7 +1127,7 @@ function showTvMode(){
  renderTvCountries('');
  renderTvNav(tvNav);
  if(!tvCurrentUrl)loadTvCountry(state.tv.lastCountry||'tw');
- if(window.innerWidth<=1100)setTvSidebarCollapsed(true);else setTvSidebarCollapsed(false);
+ if(window.innerWidth<=820)setTvSidebarCollapsed(true);else if(window.innerWidth<=1100)setTvSidebarCollapsed(true);else setTvSidebarCollapsed(false);
  try{window.scrollTo(0,0)}catch(e){}
 }
 
@@ -1158,7 +1158,10 @@ function renderTvCountries(filter){
   b.type='button';
   b.className='tv-country'+(c.code===tvCountry?' active':'');
   b.innerHTML='<span>'+c.flag+'</span><b>'+esc(c.name)+'</b>';
-  b.onclick=function(){loadTvCountry(c.code)};
+  b.onclick=function(){
+   loadTvCountry(c.code);
+   if(window.innerWidth<=820)setTvSidebarCollapsed(true);
+  };
   root.appendChild(b);
  });
 }
@@ -1268,6 +1271,13 @@ function setTvSidebarCollapsed(on){
  if($('tvSidebarToggleBtn')){
   $('tvSidebarToggleBtn').textContent=tvSidebarCollapsed?'☰':'✕';
   $('tvSidebarToggleBtn').setAttribute('aria-label',tvSidebarCollapsed?'展開國家欄':'收合國家欄');
+ }
+ if($('tvMobileDrawerBtn')){
+  $('tvMobileDrawerBtn').textContent=tvSidebarCollapsed?'☰ 頻道／國家':'✕ 關閉選單';
+  $('tvMobileDrawerBtn').setAttribute('aria-expanded',tvSidebarCollapsed?'false':'true');
+ }
+ if($('tvDrawerBackdrop')){
+  $('tvDrawerBackdrop').classList.toggle('hidden',tvSidebarCollapsed||window.innerWidth>820);
  }
 }
 function toggleTvSidebar(){setTvSidebarCollapsed(!tvSidebarCollapsed);}
