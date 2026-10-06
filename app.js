@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-var STORAGE='familytube_v15624';
-var OLD_KEYS=['familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v15625';
+var OLD_KEYS=['familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var DEFAULT={
  videos:[{id:'M7lc1UVf-VE',title:'YouTube 播放測試',category:'學習',channel:'YouTube',recommended:true,addedAt:Date.now()}],
  profiles:{
@@ -10,10 +10,11 @@ var DEFAULT={
  },
  activeProfile:'daughter',pin:'1234',
  bedtime:{enabled:false,start:'21:00',end:'07:00'},
+ playback:{loopCurrent:false},
  whitelist:{enabled:false,channels:[]}
 };
 var state=load(),player=null,currentId=null,currentList=[],currentIndex=-1,parentOpen=false,kidMode=false,modalCb=null;
-var usageTick=null,lastUsageStamp=0,selectedAvatar='👧',quickMeta={id:'',title:'',channel:''},immersiveFull=false,relatedBusy=false;
+var usageTick=null,lastUsageStamp=0,selectedAvatar='👧',quickMeta={id:'',title:'',channel:''},immersiveFull=false,relatedBusy=false,relatedItems=[];
 var ytApiReady=false,playerReady=false,pendingVideo=null,lastRelatedId='',playerCreating=false,playerMode='none',playerFallbackTimer=null;
 var miniPlayerActive=false,miniPlayerSuppressed=false,miniScrollBound=false;
 
@@ -37,7 +38,7 @@ function load(){
    if(typeof p.dailyLimit!=='number')p.dailyLimit=60;
    if(!p.usage)p.usage={};
   });
-  if(!v.bedtime)v.bedtime=clone(DEFAULT.bedtime);
+  if(!v.bedtime)v.bedtime=clone(DEFAULT.bedtime);if(!v.playback)v.playback=clone(DEFAULT.playback);
   if(!v.whitelist)v.whitelist=clone(DEFAULT.whitelist);
   if(!v.videos)v.videos=[];
   v.videos.forEach(function(x,i){
@@ -245,8 +246,27 @@ function onState(e){
  }else if(e.data===YT.PlayerState.CUED){
   setTimeout(updateStoredVideoMetaFromPlayer,300);
  }
- if(e.data===YT.PlayerState.ENDED)nextVideo();
+ if(e.data===YT.PlayerState.ENDED)handleVideoEnded();
 }
+
+function handleVideoEnded(){
+ if(state.playback&&state.playback.loopCurrent){
+  try{
+   if(player&&player.seekTo){player.seekTo(0,true);player.playVideo();return}
+  }catch(e){}
+  if(currentId){playSelectedId(currentId);return}
+ }
+ var next=null;
+ for(var i=0;i<relatedItems.length;i++){
+  if(relatedItems[i]&&relatedItems[i].id!==currentId){next=relatedItems[i];break}
+ }
+ if(next){
+  playInsideWatchVideo(next,relatedItems);
+  return;
+ }
+ nextVideo();
+}
+
 function onErr(e){
  var msg='YouTube 播放錯誤：'+e.data;
  if(e.data===153)msg='錯誤 153：請從 GitHub Pages / HTTPS 網址開啟。';
@@ -468,7 +488,67 @@ function selectVideo(id,list){
 function addRecent(id){var p=profile();p.recent=p.recent.filter(function(x){return x!==id});p.recent.unshift(id);p.recent=p.recent.slice(0,40);save()}
 function nextVideo(){if(!currentList.length)return;if(currentIndex<0)currentIndex=0;else currentIndex=(currentIndex+1)%currentList.length;selectVideo(currentList[currentIndex].id,currentList)}
 function prevVideo(){if(!currentList.length)return;if(currentIndex<0)currentIndex=0;else currentIndex=(currentIndex-1+currentList.length)%currentList.length;selectVideo(currentList[currentIndex].id,currentList)}
-function toggleFav(){if(!currentId)return;var p=profile(),i=p.favorites.indexOf(currentId);if(i>=0)p.favorites.splice(i,1);else p.favorites.push(currentId);save();updateFavBtn();renderRows();renderSidebar(sidebarFilter)}
+
+var VIDEO_CATEGORIES=['英文','兒歌','卡通','故事','學習','自然／動物','其他'];
+
+function ensureFavoriteId(id){
+ if(!id)return;
+ var p=profile();
+ if(p.favorites.indexOf(id)<0)p.favorites.unshift(id);
+}
+
+function saveVideoAsFavorite(video,category){
+ if(!video||!video.id)return null;
+ var existing=videoById(video.id);
+ if(!existing){
+  existing={
+   id:video.id,
+   title:video.title||'YouTube 影片',
+   channel:video.channel||'',
+   category:category||video.category||'其他',
+   recommended:false,
+   addedAt:Date.now()
+  };
+  state.videos.push(existing);
+ }else{
+  if(video.title&&(!existing.title||existing.title==='YouTube 影片'))existing.title=video.title;
+  if(video.channel&&!existing.channel)existing.channel=video.channel;
+  if(category)existing.category=category;
+ }
+ if(category){
+  existing.category=category;
+  existing.categoryManual=true;
+  existing.autoCategory=false;
+ }else if(!existing.category||existing.category==='其他'||existing.category==='YouTube 搜尋'){
+  applyAutoCategory(existing,video.searchQuery||'');
+ }
+ ensureFavoriteId(existing.id);
+ save();
+ renderRows();
+ renderSidebar('favorites');
+ updateFavBtn();
+ return existing;
+}
+
+function categoryPickerHtml(selected){
+ return '<div class="search-category-picker"><span>分類</span><select class="category-select">'+
+  VIDEO_CATEGORIES.map(function(c){return '<option'+(c===selected?' selected':'')+'>'+esc(c)+'</option>'}).join('')+
+  '</select><button class="category-save" type="button">確定</button></div>';
+}
+
+function toggleFav(){
+ if(!currentId)return;
+ var p=profile(),i=p.favorites.indexOf(currentId);
+ if(i>=0){
+  p.favorites.splice(i,1);
+  save();
+ }else{
+  var saved=videoById(currentId),ctx=currentVideoContext(currentId);
+  if(!saved&&ctx)saveVideoAsFavorite(ctx,null);
+  else{ensureFavoriteId(currentId);save()}
+ }
+ updateFavBtn();renderRows();renderSidebar('favorites');
+}
 function updateFavBtn(){var yes=currentId&&profile().favorites.indexOf(currentId)>=0;$('favBtn').textContent=yes?'★ 已收藏':'☆ 最愛'}
 function resumeVideo(id,list){var pr=profile().progress[id];selectVideo(id,list);if(pr&&pr.current>5&&player)setTimeout(function(){try{player.seekTo(pr.current,true)}catch(e){}},800)}
 function makeCard(v,opts){
@@ -752,6 +832,7 @@ function renderInternalSearch(items,append){
   card.className='search-result-card';
   card.innerHTML='<div class="search-thumb"><img alt="" loading="lazy"><span class="search-duration">'+esc(secondsText(v.seconds))+'</span></div>'+
    '<div class="search-result-actions"><button class="play">▶ 播放</button><button class="add">＋ 收藏</button></div>'+
+   '<div class="search-category-slot"></div>'+
    '<div class="search-result-body"><div class="search-result-title">'+esc(v.title)+'</div>'+
    '<div class="search-result-channel">'+esc(v.channel)+'</div></div>';
 
@@ -766,17 +847,25 @@ function renderInternalSearch(items,append){
   var temp={id:v.id,title:v.title,channel:v.channel,category:'YouTube 搜尋',searchQuery:queryValue};
   card.querySelector('.search-thumb').onclick=function(){playInsideWatchVideo(temp,[temp])};
   card.querySelector('.play').onclick=function(){playInsideWatchVideo(temp,[temp])};
-  card.querySelector('.add').onclick=function(){
-   if(state.videos.some(function(x){return x.id===v.id})){
-    this.textContent='已存在';this.disabled=true;return;
-   }
-   var nv=applyAutoCategory({
-    id:v.id,title:v.title,channel:v.channel,category:'其他',
-    recommended:false,addedAt:Date.now(),searchQuery:queryValue
-   },queryValue);
-   state.videos.push(nv);save();renderAll();
-   this.textContent='✓ 已收藏';this.disabled=true;
+
+  var addBtn=card.querySelector('.add'),slot=card.querySelector('.search-category-slot');
+  addBtn.onclick=function(){
+   var auto=autoClassifyVideo({title:v.title,channel:v.channel,query:queryValue});
+   saveVideoAsFavorite(temp,auto.category);
+   addBtn.textContent='★ 已收藏';
+   addBtn.disabled=true;
+   slot.innerHTML=categoryPickerHtml(auto.category);
+   var sel=slot.querySelector('.category-select');
+   slot.querySelector('.category-save').onclick=function(){
+    saveVideoAsFavorite(temp,sel.value);
+    slot.innerHTML='<div class="category-saved">✓ 已分類：'+esc(sel.value)+'</div>';
+   };
   };
+  if(profile().favorites.indexOf(v.id)>=0){
+   addBtn.textContent='★ 已收藏';addBtn.disabled=true;
+   var existing=videoById(v.id);
+   slot.innerHTML='<div class="category-saved">分類：'+esc(existing&&existing.category?existing.category:'其他')+'</div>';
+  }
   frag.appendChild(card);
  });
  root.appendChild(frag);
@@ -857,8 +946,9 @@ function getQuickVideo(){
 function quickPlayHome(){var v=getQuickVideo();if(v)selectVideo(v.id,[v])}
 function quickAddHome(){
  var v=getQuickVideo();if(!v)return;
- if(state.videos.some(function(x){return x.id===v.id})){$('quickAddStatus').textContent='這部影片已經在影片庫裡。';return}
- var nv={id:v.id,title:v.title,channel:v.channel,category:v.category||'其他',recommended:false,addedAt:Date.now()};if(nv.category==='其他'||nv.category==='YouTube 搜尋'){applyAutoCategory(nv,'')}else{nv.categoryManual=true;nv.categoryConfidence=100}state.videos.push(nv);save();renderAll();$('quickAddStatus').innerHTML='<span class="ok">✓ 已加入影片庫：'+esc(v.title)+'</span>';
+ var cat=v.category||'其他';
+ saveVideoAsFavorite(v,cat);
+ $('quickAddStatus').innerHTML='<span class="ok">✓ 已收藏到影片庫與快速選片：'+esc(v.title)+'</span>';
 }
 function updateStoredVideoMetaFromPlayer(){
  if(!player||!currentId||!player.getVideoData)return;
@@ -943,6 +1033,7 @@ function fetchRelatedWithFallback(id){
  });
 }
 function renderRelated(items){
+ relatedItems=(items||[]).slice();
  var root=$('relatedGrid');root.innerHTML='';
  items.slice(0,18).forEach(function(v){
   var card=document.createElement('button');card.type='button';card.className='related-card';
@@ -980,7 +1071,8 @@ function loadRelatedVideos(id){
 
 function askPin(cb){modalCb=cb;$('modal').classList.remove('hidden');$('modalInput').value='';$('modalInput').focus()}
 function closeModal(v){$('modal').classList.add('hidden');if(modalCb){var f=modalCb;modalCb=null;f(v)}}
-function openParent(){if(parentOpen){closeParent();return}askPin(function(ok){if(ok){parentOpen=true;$('kidsHome').classList.add('hidden');$('hero').classList.add('hidden');$('playerSection').classList.add('hidden');$('parentPanel').classList.remove('hidden');loadParentFields();renderManage()}})}
+function openParent(){
+ if($('loopCurrentEnabled'))$('loopCurrentEnabled').checked=!!(state.playback&&state.playback.loopCurrent);if(parentOpen){closeParent();return}askPin(function(ok){if(ok){parentOpen=true;$('kidsHome').classList.add('hidden');$('hero').classList.add('hidden');$('playerSection').classList.add('hidden');$('parentPanel').classList.remove('hidden');loadParentFields();renderManage()}})}
 function closeParent(){parentOpen=false;$('parentPanel').classList.add('hidden');showHome()}
 function setKidMode(){if(!kidMode){kidMode=true;$('parentBtn').classList.add('hidden');$('kidModeBtn').textContent='🧒 兒童模式：開'}else askPin(function(ok){if(ok){kidMode=false;$('parentBtn').classList.remove('hidden');$('kidModeBtn').textContent='🧒 兒童模式'}})}
 function loadParentFields(){
@@ -1033,6 +1125,14 @@ function bindUiSafely(){
 }
 
 document.addEventListener('DOMContentLoaded',function(){
+ if($('loopCurrentEnabled'))$('loopCurrentEnabled').checked=!!(state.playback&&state.playback.loopCurrent);
+ if($('savePlaybackBtn'))$('savePlaybackBtn').onclick=function(){
+  if(!state.playback)state.playback={loopCurrent:false};
+  state.playback.loopCurrent=!!$('loopCurrentEnabled').checked;
+  save();
+  alert(state.playback.loopCurrent?'已開啟目前影片循環播放':'已關閉循環；播放結束會接續相關推薦');
+ };
+
  bindSidebar();
 
  bindUiSafely();
