@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-var STORAGE='familytube_v15633';
-var OLD_KEYS=['familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v15634';
+var OLD_KEYS=['familytube_v15633','familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var DEFAULT={
  videos:[{id:'M7lc1UVf-VE',title:'YouTube 播放測試',category:'學習',channel:'YouTube',recommended:true,addedAt:Date.now()}],
  profiles:{
@@ -12,7 +12,8 @@ var DEFAULT={
  bedtime:{enabled:false,start:'21:00',end:'07:00'},
  playback:{loopCurrent:false},
  whitelist:{enabled:false,channels:[]},
- music:{favorites:[],recent:[],volume:0.85}
+ music:{favorites:[],recent:[],volume:0.85},
+ ktv:{queue:[],recent:[],favorites:[]}
 };
 var state=load(),player=null,currentId=null,currentList=[],currentIndex=-1,parentOpen=false,kidMode=false,modalCb=null;
 var usageTick=null,lastUsageStamp=0,selectedAvatar='👧',quickMeta={id:'',title:'',channel:''},immersiveFull=false,relatedBusy=false,relatedItems=[];
@@ -40,7 +41,7 @@ function load(){
    if(!p.usage)p.usage={};
   });
   if(!v.bedtime)v.bedtime=clone(DEFAULT.bedtime);if(!v.playback)v.playback=clone(DEFAULT.playback);
-  if(!v.whitelist)v.whitelist=clone(DEFAULT.whitelist);if(!v.music)v.music=clone(DEFAULT.music);if(!v.music.favorites)v.music.favorites=[];if(!v.music.recent)v.music.recent=[];if(typeof v.music.volume!=='number')v.music.volume=0.85;
+  if(!v.whitelist)v.whitelist=clone(DEFAULT.whitelist);if(!v.music)v.music=clone(DEFAULT.music);if(!v.music.favorites)v.music.favorites=[];if(!v.music.recent)v.music.recent=[];if(typeof v.music.volume!=='number')v.music.volume=0.85;if(!v.ktv)v.ktv=clone(DEFAULT.ktv);if(!v.ktv.queue)v.ktv.queue=[];if(!v.ktv.recent)v.ktv.recent=[];if(!v.ktv.favorites)v.ktv.favorites=[];
   if(!v.videos)v.videos=[];
   v.videos.forEach(function(x,i){
    if(!x.addedAt)x.addedAt=Date.now()-i*1000;
@@ -80,6 +81,7 @@ var radioCategory='popular';
 var musicModeActive=false,musicItems=[],musicCurrent=null,musicIndex=-1,musicBusy=false,musicNav='search';
 
 function showVideoMode(){
+ leaveKtvMode();
  document.body.classList.remove('music-mode-active');
  musicModeActive=false;
  if($('musicMode'))$('musicMode').classList.add('hidden');
@@ -92,6 +94,7 @@ function showVideoMode(){
 }
 
 function showMusicMode(){
+ leaveKtvMode();
  document.body.classList.add('music-mode-active');
  if(immersiveFull)exitImmersiveFullscreen();
  stopPlaybackForHome();
@@ -411,6 +414,222 @@ function setupMediaSessionActions(){
  try{navigator.mediaSession.setActionHandler('stop',stopMusic)}catch(e){}
  try{navigator.mediaSession.setActionHandler('nexttrack',nextMusic)}catch(e){}
  try{navigator.mediaSession.setActionHandler('previoustrack',prevMusic)}catch(e){}
+}
+
+
+var ktvModeActive=false,ktvNav='hot',ktvSearchType='all',ktvSearchResults=[],ktvBusy=false,ktvCurrent=null;
+
+var KTV_SINGERS=[
+ {name:'周杰倫',region:'華語'},{name:'五月天',region:'華語'},{name:'孫燕姿',region:'華語'},
+ {name:'林俊傑',region:'華語'},{name:'鄧紫棋',region:'華語'},{name:'陳奕迅',region:'華語'},
+ {name:'伍佰',region:'華語'},{name:'張惠妹',region:'華語'},{name:'蔡依林',region:'華語'},
+ {name:'張宇',region:'華語'},{name:'梁靜茹',region:'華語'},{name:'盧廣仲',region:'華語'},
+ {name:'米津玄師',region:'日韓'},{name:'藤井風',region:'日韓'},{name:'Stray Kids',region:'日韓'},
+ {name:'aespa',region:'日韓'},{name:'Taylor Swift',region:'歐美'},{name:'Adele',region:'歐美'}
+];
+
+var KTV_HOT=[
+ {title:'晴天',artist:'周杰倫',region:'華語'},
+ {title:'突然好想你',artist:'五月天',region:'華語'},
+ {title:'遇見',artist:'孫燕姿',region:'華語'},
+ {title:'小酒窩',artist:'林俊傑',region:'華語'},
+ {title:'泡沫',artist:'鄧紫棋',region:'華語'},
+ {title:'十年',artist:'陳奕迅',region:'華語'},
+ {title:'挪威的森林',artist:'伍佰',region:'華語'},
+ {title:'聽海',artist:'張惠妹',region:'華語'},
+ {title:'勇氣',artist:'梁靜茹',region:'華語'},
+ {title:'如果可以',artist:'韋禮安',region:'華語'},
+ {title:'IRIS OUT',artist:'米津玄師',region:'日韓'},
+ {title:'Good Goodbye',artist:'HWASA',region:'日韓'},
+ {title:'Cruel Summer',artist:'Taylor Swift',region:'歐美'},
+ {title:'Someone Like You',artist:'Adele',region:'歐美'}
+];
+
+function showKtvMode(){
+ if(immersiveFull)exitImmersiveFullscreen();
+ stopPlaybackForHome();
+ stopMusic();
+ ktvModeActive=true;
+ musicModeActive=false;
+ document.body.classList.remove('watch-mode','music-mode-active');
+ document.body.classList.add('ktv-mode-active');
+ if($('hero'))$('hero').classList.add('hidden');
+ if($('kidsHome'))$('kidsHome').classList.add('hidden');
+ if($('playerSection'))$('playerSection').classList.add('hidden');
+ if($('musicMode'))$('musicMode').classList.add('hidden');
+ if($('parentPanel'))$('parentPanel').classList.add('hidden');
+ if($('ktvMode'))$('ktvMode').classList.remove('hidden');
+ $('videoModeBtn').classList.remove('active');
+ $('musicModeBtn').classList.remove('active');
+ $('ktvModeBtn').classList.add('active');
+ renderKtvSingers();
+ renderKtvNav(ktvNav);
+ renderKtvQueue();
+ try{window.scrollTo(0,0)}catch(e){}
+}
+
+function leaveKtvMode(){
+ ktvModeActive=false;
+ document.body.classList.remove('ktv-mode-active');
+ if($('ktvMode'))$('ktvMode').classList.add('hidden');
+ if($('ktvModeBtn'))$('ktvModeBtn').classList.remove('active');
+}
+
+function renderKtvNav(nav){
+ ktvNav=nav||'hot';
+ document.querySelectorAll('.ktv-nav').forEach(function(b){
+  b.classList.toggle('active',b.dataset.ktvnav===ktvNav);
+ });
+ $('ktvSingerPanel').classList.toggle('hidden',ktvNav!=='singer');
+ $('ktvSongPanel').classList.toggle('hidden',ktvNav==='singer'||ktvNav==='queue');
+ if(ktvNav==='hot')renderKtvSongs(KTV_HOT,'熱門歌曲','快速點歌');
+ else if(ktvNav==='mandarin')renderKtvSongs(KTV_HOT.filter(function(x){return x.region==='華語'}),'華語歌曲','熱門華語');
+ else if(ktvNav==='jpkr')renderKtvSongs(KTV_HOT.filter(function(x){return x.region==='日韓'}),'日韓歌曲','熱門日韓');
+ else if(ktvNav==='western')renderKtvSongs(KTV_HOT.filter(function(x){return x.region==='歐美'}),'歐美歌曲','熱門歐美');
+ else if(ktvNav==='queue'){
+  $('ktvSingerPanel').classList.add('hidden');
+  $('ktvSongPanel').classList.remove('hidden');
+  $('ktvListTitle').textContent='已點歌曲';
+  $('ktvListSub').textContent='依照目前順序播放';
+  renderKtvQueueAsSongs();
+ }
+}
+
+function renderKtvSingers(){
+ var root=$('ktvSingerGrid');if(!root)return;
+ root.innerHTML='';
+ KTV_SINGERS.forEach(function(s){
+  var b=document.createElement('button');b.type='button';b.className='ktv-singer';
+  b.innerHTML='<span class="ktv-singer-avatar">'+esc(s.name.charAt(0))+'</span><b>'+esc(s.name)+'</b><small>'+esc(s.region)+'</small>';
+  b.onclick=function(){
+   $('ktvSearchInput').value=s.name;
+   ktvSearchType='artist';
+   document.querySelectorAll('.ktv-search-type').forEach(function(x){x.classList.toggle('active',x.dataset.ktvtype==='artist')});
+   searchKtv(s.name);
+  };
+  root.appendChild(b);
+ });
+}
+
+function renderKtvSongs(items,title,sub){
+ var root=$('ktvSongGrid');if(!root)return;
+ $('ktvListTitle').textContent=title||'歌曲';
+ $('ktvListSub').textContent=sub||'';
+ root.innerHTML='';
+ if(!items||!items.length){
+  root.innerHTML='<div class="ktv-empty">目前沒有歌曲</div>';return;
+ }
+ items.forEach(function(song,i){
+  var card=document.createElement('div');card.className='ktv-song-card';
+  card.innerHTML='<div class="ktv-song-num">'+String(i+1)+'</div><div class="ktv-song-copy"><b>'+esc(song.title)+'</b><small>'+esc(song.artist||song.channel||'')+'</small></div><div class="ktv-song-actions"><button class="ktv-preview" type="button">▶ 試播</button><button class="ktv-order" type="button">＋ 點歌</button></div>';
+  card.querySelector('.ktv-preview').onclick=function(){resolveAndPlayKtv(song,false)};
+  card.querySelector('.ktv-order').onclick=function(){addKtvQueue(song,false)};
+  root.appendChild(card);
+ });
+}
+
+function addKtvQueue(song,priority){
+ if(!song)return;
+ var q=state.ktv.queue||[];
+ var item={title:song.title||'KTV歌曲',artist:song.artist||song.channel||'',id:song.id||'',videoId:song.videoId||song.id||'',region:song.region||'',addedAt:Date.now()};
+ if(priority)q.unshift(item);else q.push(item);
+ state.ktv.queue=q;
+ save();renderKtvQueue();
+ $('ktvStatus').textContent='已點歌：'+item.title+(item.artist?' — '+item.artist:'');
+}
+
+function renderKtvQueue(){
+ var root=$('ktvQueue');if(!root)return;
+ var q=state.ktv.queue||[];
+ $('ktvQueueCount').textContent=String(q.length);
+ root.innerHTML='';
+ if(!q.length){root.innerHTML='<div class="ktv-queue-empty">還沒有點歌</div>';return}
+ q.forEach(function(song,i){
+  var row=document.createElement('div');row.className='ktv-queue-item';
+  row.innerHTML='<span class="ktv-q-num">'+(i+1)+'</span><span class="ktv-q-copy"><b>'+esc(song.title)+'</b><small>'+esc(song.artist||'')+'</small></span><button class="ktv-q-priority" type="button" title="插播">↑</button><button class="ktv-q-delete" type="button" title="取消">×</button>';
+  row.querySelector('.ktv-q-priority').onclick=function(){
+   var x=q.splice(i,1)[0];q.unshift(x);state.ktv.queue=q;save();renderKtvQueue();
+  };
+  row.querySelector('.ktv-q-delete').onclick=function(){
+   q.splice(i,1);state.ktv.queue=q;save();renderKtvQueue();
+  };
+  root.appendChild(row);
+ });
+}
+
+function renderKtvQueueAsSongs(){
+ renderKtvSongs((state.ktv.queue||[]).map(function(x){return x}), '已點歌曲','依照目前順序播放');
+}
+
+function ktvQueryFor(song){
+ var q=((song.artist||'')+' '+(song.title||'')).trim();
+ return q+' KTV karaoke 伴奏';
+}
+
+function resolveAndPlayKtv(song,consumeQueue){
+ if(!song)return;
+ if(song.videoId||song.id){
+  var v={id:song.videoId||song.id,title:song.title||'KTV',channel:song.artist||'',category:'KTV'};
+  ktvCurrent=song;$('ktvNowMini').textContent=(song.title||'')+(song.artist?' · '+song.artist:'');
+  if(consumeQueue&&(state.ktv.queue||[]).length){state.ktv.queue.shift();save();renderKtvQueue()}
+  leaveKtvMode();
+  playInsideWatchVideo(v,[v]);
+  return;
+ }
+ ktvBusy=true;
+ $('ktvStatus').textContent='正在找「'+(song.artist||'')+' '+song.title+'」的 KTV／伴奏影片…';
+ fetchSearchWithFallback(ktvQueryFor(song),1).then(function(res){
+  ktvBusy=false;
+  var items=(res&&res.items)||[];
+  if(!items.length)throw new Error('no result');
+  var v=items[0];
+  song.videoId=v.id;song.id=v.id;song.channel=v.channel;
+  ktvCurrent=song;
+  $('ktvNowMini').textContent=(song.title||v.title)+(song.artist?' · '+song.artist:'');
+  if(consumeQueue&&(state.ktv.queue||[]).length){state.ktv.queue.shift();save();renderKtvQueue()}
+  leaveKtvMode();
+  playInsideWatchVideo({id:v.id,title:song.title||v.title,channel:song.artist||v.channel,category:'KTV'},[{id:v.id,title:song.title||v.title,channel:song.artist||v.channel,category:'KTV'}]);
+ }).catch(function(){
+  ktvBusy=false;$('ktvStatus').textContent='目前找不到可播放的 KTV／伴奏版本，請換一首或修改關鍵字。';
+ });
+}
+
+function startKtvQueue(){
+ var q=state.ktv.queue||[];
+ if(!q.length){$('ktvStatus').textContent='請先點歌。';return}
+ resolveAndPlayKtv(q[0],true);
+}
+
+function cutKtvSong(){
+ var q=state.ktv.queue||[];
+ if(q.length)resolveAndPlayKtv(q[0],true);
+ else if(ktvModeActive)$('ktvStatus').textContent='待唱清單已經沒有下一首。';
+}
+
+function searchKtv(forceQuery){
+ if(ktvBusy)return;
+ var q=String(forceQuery||$('ktvSearchInput').value||'').trim();
+ if(!q)return;
+ ktvBusy=true;
+ $('ktvStatus').textContent='正在搜尋 KTV 歌曲…';
+ var query=q;
+ if(ktvSearchType==='artist')query=q+' KTV karaoke';
+ else if(ktvSearchType==='song')query=q+' KTV 伴奏';
+ else query=q+' KTV karaoke 伴奏';
+ fetchSearchWithFallback(query,1).then(function(res){
+  ktvBusy=false;
+  var items=(res&&res.items)||[];
+  ktvSearchResults=items.map(function(v){
+   return {title:v.title,artist:v.channel||'',id:v.id,videoId:v.id,region:'',image:v.image||''};
+  });
+  $('ktvSingerPanel').classList.add('hidden');
+  $('ktvSongPanel').classList.remove('hidden');
+  $('ktvStatus').textContent='找到 '+ktvSearchResults.length+' 個可點選結果';
+  renderKtvSongs(ktvSearchResults,'搜尋結果','點「＋ 點歌」加入待唱清單');
+ }).catch(function(){
+  ktvBusy=false;$('ktvStatus').textContent='目前搜尋來源沒有回應，請稍後再試。';
+  renderKtvSongs([],'搜尋結果','');
+ });
 }
 
 var AUTO_CATEGORY_RULES=[
@@ -1515,6 +1734,22 @@ function bindUiSafely(){
 }
 
 document.addEventListener('DOMContentLoaded',function(){
+ if($('ktvModeBtn'))$('ktvModeBtn').onclick=showKtvMode;
+ if($('ktvSearchBtn'))$('ktvSearchBtn').onclick=function(){searchKtv()};
+ if($('ktvSearchInput'))$('ktvSearchInput').onkeydown=function(e){if(e.key==='Enter')searchKtv()};
+ document.querySelectorAll('.ktv-nav').forEach(function(b){b.onclick=function(){renderKtvNav(b.dataset.ktvnav)}});
+ document.querySelectorAll('.ktv-search-type').forEach(function(b){b.onclick=function(){
+  ktvSearchType=b.dataset.ktvtype;
+  document.querySelectorAll('.ktv-search-type').forEach(function(x){x.classList.toggle('active',x===b)});
+ }});
+ if($('ktvStartBtn'))$('ktvStartBtn').onclick=startKtvQueue;
+ if($('ktvCutBtn'))$('ktvCutBtn').onclick=cutKtvSong;
+ if($('ktvClearQueueBtn'))$('ktvClearQueueBtn').onclick=function(){
+  if(!confirm('確定清空所有已點歌曲？'))return;
+  state.ktv.queue=[];save();renderKtvQueue();
+ };
+ renderKtvSingers();renderKtvQueue();
+
  document.querySelectorAll('.radio-cat').forEach(function(b){
   b.onclick=function(){loadRadioCategory(b.dataset.radioCat)};
  });if($('videoModeBtn'))$('videoModeBtn').onclick=showVideoMode;

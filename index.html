@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#0b1220">
-<title>WATCH_VIDEOtu V1.5.6.33</title>
+<title>WATCH_VIDEOtu V1.5.6.34</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=15633">
+<link rel="stylesheet" href="styles.css?v=15634">
 
-<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=15633">
-<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png?v=15633">
-<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-180.png?v=15633">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=15634">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png?v=15634">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-180.png?v=15634">
 <meta name="apple-mobile-web-app-title" content="WATCH_VIDEOtu">
 
 </head>
@@ -26,12 +26,13 @@
       <circle cx="50" cy="14" r="6" fill="#fff"/><path d="M50 10.7v6.6M46.7 14h6.6" stroke="#ff174d" stroke-width="2.4" stroke-linecap="round"/>
     </svg>
   </span>
-  <span class="brand-copy"><strong>WATCH_VIDEO<span>tu  <span class="brand-version">V1.5.6.33</span>
+  <span class="brand-copy"><strong>WATCH_VIDEO<span>tu  <span class="brand-version">V1.5.6.34</span>
 </span></strong><small>Kids Video Hub</small></span>
 </button>
 <div class="mode-switch" id="modeSwitch">
   <button id="videoModeBtn" class="mode-btn active" type="button">🎬 影片模式</button>
   <button id="musicModeBtn" class="mode-btn" type="button">🎵 音樂模式</button>
+<button id="ktvModeBtn" class="mode-btn" type="button">🎤 KTV</button>
 </div>
 
   <div class="top-actions">
@@ -266,12 +267,74 @@
     </aside>
   </div>
 </section>
+
+<section id="ktvMode" class="ktv-mode hidden">
+  <div class="ktv-shell">
+    <aside class="ktv-sidebar">
+      <div class="ktv-brand">🎤 KTV 點歌台</div>
+      <button class="ktv-nav active" data-ktvnav="hot">🔥 熱門歌曲</button>
+      <button class="ktv-nav" data-ktvnav="singer">👤 歌手選單</button>
+      <button class="ktv-nav" data-ktvnav="mandarin">華語</button>
+      <button class="ktv-nav" data-ktvnav="jpkr">日韓</button>
+      <button class="ktv-nav" data-ktvnav="western">歐美</button>
+      <button class="ktv-nav" data-ktvnav="queue">📋 已點歌曲 <span id="ktvQueueCount">0</span></button>
+    </aside>
+
+    <section class="ktv-main">
+      <div class="ktv-search-panel">
+        <div class="ktv-search-title">
+          <div>
+            <div class="eyebrow">KARAOKE SONG BOOK</div>
+            <h1>找歌、點歌、直接唱</h1>
+          </div>
+          <div class="ktv-now-mini">
+            <span>目前播放</span>
+            <b id="ktvNowMini">尚未開始</b>
+          </div>
+        </div>
+        <div class="ktv-search-row">
+          <input id="ktvSearchInput" type="search" placeholder="輸入歌名或歌手，例如：周杰倫 晴天">
+          <button id="ktvSearchBtn" type="button">🔎 搜尋點歌</button>
+        </div>
+        <div class="ktv-search-types">
+          <button class="ktv-search-type active" data-ktvtype="all">全部</button>
+          <button class="ktv-search-type" data-ktvtype="song">依歌名</button>
+          <button class="ktv-search-type" data-ktvtype="artist">依歌手</button>
+        </div>
+        <div id="ktvStatus" class="search-hint">可由熱門歌曲、歌手或搜尋開始點歌。</div>
+      </div>
+
+      <div id="ktvSingerPanel" class="ktv-singer-panel hidden">
+        <div class="ktv-section-head"><h2>歌手選單</h2><span>點選歌手後顯示可搜尋歌曲</span></div>
+        <div id="ktvSingerGrid" class="ktv-singer-grid"></div>
+      </div>
+
+      <div id="ktvSongPanel">
+        <div class="ktv-section-head"><h2 id="ktvListTitle">熱門歌曲</h2><span id="ktvListSub">快速點歌</span></div>
+        <div id="ktvSongGrid" class="ktv-song-grid"></div>
+      </div>
+    </section>
+
+    <aside class="ktv-queue-panel">
+      <div class="ktv-queue-head">
+        <div><span>已點歌曲</span><b id="ktvQueueTitle">待唱清單</b></div>
+        <button id="ktvClearQueueBtn" type="button">清空</button>
+      </div>
+      <div id="ktvQueue" class="ktv-queue"></div>
+      <div class="ktv-queue-controls">
+        <button id="ktvStartBtn" type="button">▶ 開始唱</button>
+        <button id="ktvCutBtn" type="button">⏭ 切歌</button>
+      </div>
+    </aside>
+  </div>
+</section>
+
 </main>
 
 <div id="modal" class="modal hidden">
   <div class="modal-card"><h3>輸入家長 PIN</h3><input id="modalInput" inputmode="numeric" maxlength="6"><div class="modal-actions"><button id="modalCancel">取消</button><button id="modalOk">確定</button></div></div>
 </div>
-<script defer src="app.js?v=15633"></script>
+<script defer src="app.js?v=15634"></script>
 
 </body>
 </html>
