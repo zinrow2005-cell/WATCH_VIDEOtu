@@ -2,8 +2,8 @@ var watchFullscreenScrollY=0;
 var miniPlayerSuppressUntil=0;
 (function(){
 'use strict';
-var STORAGE='familytube_v15653';
-var OLD_KEYS=['familytube_v15652','familytube_v15651','familytube_v15650','familytube_v15649','familytube_v15648','familytube_v15647','familytube_v15646','familytube_v15645','familytube_v15644','familytube_v15643','familytube_v15642','familytube_v15641','familytube_v15640','familytube_v15639','familytube_v15638','familytube_v15637','familytube_v15636','familytube_v15635','familytube_v15634','familytube_v15633','familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v15654';
+var OLD_KEYS=['familytube_v15653','familytube_v15652','familytube_v15651','familytube_v15650','familytube_v15649','familytube_v15648','familytube_v15647','familytube_v15646','familytube_v15645','familytube_v15644','familytube_v15643','familytube_v15642','familytube_v15641','familytube_v15640','familytube_v15639','familytube_v15638','familytube_v15637','familytube_v15636','familytube_v15635','familytube_v15634','familytube_v15633','familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var DEFAULT={
  videos:[{id:'M7lc1UVf-VE',title:'YouTube 播放測試',category:'學習',channel:'YouTube',recommended:true,addedAt:Date.now()}],
  profiles:{
@@ -547,6 +547,25 @@ function leaveKtvMode(){
 }
 
 
+
+var ktvToastTimer=null;
+function showKtvToast(message,type){
+ var t=$('ktvToast');if(!t)return;
+ t.textContent=message||'';
+ t.className='ktv-toast '+(type||'ok');
+ if(ktvToastTimer)clearTimeout(ktvToastTimer);
+ ktvToastTimer=setTimeout(function(){t.className='ktv-toast hidden'},2200);
+}
+function ktvQueueContains(song){
+ var key=ktvSongKey(song),q=state.ktv.queue||[];
+ for(var i=0;i<q.length;i++){if(ktvSongKey(q[i])===key)return true}
+ return false;
+}
+function updateKtvQueueCount(){
+ var n=(state.ktv.queue||[]).length;
+ if($('ktvQueueNavCount'))$('ktvQueueNavCount').textContent=n;
+}
+
 function ktvSongKey(song){
  return String((song&&song.artist)||'')+'||'+String((song&&song.title)||'');
 }
@@ -778,26 +797,36 @@ function renderKtvSongs(items,title,sub){
  $('ktvListTitle').textContent=title||'歌曲';
  $('ktvListSub').textContent=sub||'';
  root.innerHTML='';
- if(!items||!items.length){
-  root.innerHTML='<div class="ktv-empty">目前沒有歌曲</div>';return;
- }
+ if(!items||!items.length){root.innerHTML='<div class="ktv-empty">目前沒有歌曲</div>';return}
  items.forEach(function(song,i){
   var card=document.createElement('div');card.className='ktv-song-card';
-  card.innerHTML='<div class="ktv-song-num">'+String(i+1)+'</div><div class="ktv-song-copy"><b>'+esc(song.title)+'</b><small>'+esc(song.artist||song.channel||'')+(song.singCount?' · 已唱 '+song.singCount+' 次':'')+'</small></div><div class="ktv-song-actions"><button class="ktv-preview" type="button">▶ 試播</button><button class="ktv-order" type="button">＋ 點歌</button></div>';
+  var already=ktvQueueContains(song);
+  card.innerHTML='<div class="ktv-song-num">'+String(i+1)+'</div><div class="ktv-song-copy"><b>'+esc(song.title)+'</b><small>'+esc(song.artist||song.channel||'')+(song.singCount?' · 已唱 '+song.singCount+' 次':'')+'</small></div><div class="ktv-song-actions"><button class="ktv-preview" type="button">▶ 試播</button><button class="ktv-order'+(already?' ordered':'')+'" type="button">'+(already?'✓ 已點':'＋ 點歌')+'</button></div>';
   card.querySelector('.ktv-preview').onclick=function(){resolveAndPlayKtv(song,false)};
-  card.querySelector('.ktv-order').onclick=function(){addKtvQueue(song,false)};
+  card.querySelector('.ktv-order').onclick=function(){
+   addKtvQueue(song,false);
+   if(ktvQueueContains(song)){this.textContent='✓ 已點';this.classList.add('ordered')}
+  };
   root.appendChild(card);
  });
+ updateKtvQueueCount();
 }
 
 function addKtvQueue(song,priority){
  if(!song)return;
- var q=state.ktv.queue||[];
+ var q=state.ktv.queue||[],key=ktvSongKey(song);
+ for(var i=0;i<q.length;i++){
+  if(ktvSongKey(q[i])===key){
+   showKtvToast('已在待唱清單第 '+(i+1)+' 首：'+(song.title||'KTV歌曲'),'warn');
+   updateKtvQueueCount();
+   return;
+  }
+ }
  var item={title:song.title||'KTV歌曲',artist:song.artist||song.channel||'',id:song.id||'',videoId:song.videoId||song.id||'',region:song.region||'',addedAt:Date.now()};
  if(priority)q.unshift(item);else q.push(item);
- state.ktv.queue=q;
- save();renderKtvQueue();
+ state.ktv.queue=q;save();renderKtvQueue();updateKtvQueueCount();
  $('ktvStatus').textContent='已點歌：'+item.title+(item.artist?' — '+item.artist:'');
+ showKtvToast('✓ 已加入待唱：'+item.title+(item.artist?' · '+item.artist:''),'ok');
 }
 
 
@@ -813,6 +842,7 @@ function moveKtvQueueTop(index){
 function renderKtvQueue(){
  var root=$('ktvQueue');if(!root)return;
  var q=state.ktv.queue||[];
+ updateKtvQueueCount();
  $('ktvQueueCount').textContent=String(q.length);
  root.innerHTML='';
  if(!q.length){root.innerHTML='<div class="ktv-queue-empty">還沒有點歌</div>';return}
@@ -1276,9 +1306,7 @@ function setTvSidebarCollapsed(on){
   $('tvMobileDrawerBtn').textContent=tvSidebarCollapsed?'☰ 頻道／國家':'✕ 關閉選單';
   $('tvMobileDrawerBtn').setAttribute('aria-expanded',tvSidebarCollapsed?'false':'true');
  }
- if($('tvDrawerBackdrop')){
-  $('tvDrawerBackdrop').classList.toggle('hidden',tvSidebarCollapsed||window.innerWidth>820);
- }
+ if($('tvDrawerBackdrop'))$('tvDrawerBackdrop').classList.toggle('hidden',tvSidebarCollapsed||window.innerWidth>820);
 }
 function toggleTvSidebar(){setTvSidebarCollapsed(!tvSidebarCollapsed);}
 
@@ -2477,6 +2505,10 @@ function bindUiSafely(){
 }
 
 document.addEventListener('DOMContentLoaded',function(){
+ if($('tvMobileDrawerBtn'))$('tvMobileDrawerBtn').onclick=toggleTvSidebar;
+ if($('tvDrawerBackdrop'))$('tvDrawerBackdrop').onclick=function(){setTvSidebarCollapsed(true)};
+ window.addEventListener('orientationchange',function(){if(tvModeActive)setTimeout(function(){setTvSidebarCollapsed(true)},180)});
+
  if($('musicRetryBtn'))$('musicRetryBtn').onclick=function(){RADIO_SERVER_DISCOVERY_DONE=false;loadRadioCategory(radioCategory);};
  document.addEventListener('touchmove',function(e){
   if(document.body.classList.contains('watch-scroll-lock'))e.preventDefault();
