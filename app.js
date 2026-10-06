@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-var STORAGE='familytube_v15643';
-var OLD_KEYS=['familytube_v15642','familytube_v15641','familytube_v15640','familytube_v15639','familytube_v15638','familytube_v15637','familytube_v15636','familytube_v15635','familytube_v15634','familytube_v15633','familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v15644';
+var OLD_KEYS=['familytube_v15643','familytube_v15642','familytube_v15641','familytube_v15640','familytube_v15639','familytube_v15638','familytube_v15637','familytube_v15636','familytube_v15635','familytube_v15634','familytube_v15633','familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var DEFAULT={
  videos:[{id:'M7lc1UVf-VE',title:'YouTube 播放測試',category:'學習',channel:'YouTube',recommended:true,addedAt:Date.now()}],
  profiles:{
@@ -588,7 +588,8 @@ function renderKtvSingers(){
  if(!list.length){root.innerHTML='<div class="ktv-empty">這個分類目前沒有歌手</div>';return}
  list.forEach(function(s){
   var b=document.createElement('button');b.type='button';b.className='ktv-singer';
-  b.innerHTML='<span class="ktv-singer-avatar">'+esc(s.name.charAt(0))+'</span><b>'+esc(s.name)+'</b><small>'+esc((s.area?s.area+' · ':'')+s.region)+'</small>';
+  var songCount=localSongsByArtist(s.name).length;
+  b.innerHTML='<span class="ktv-singer-avatar">'+esc(s.name.charAt(0))+'</span><b>'+esc(s.name)+'</b><small>'+esc((s.area?s.area+' · ':'')+s.region)+(songCount?' · '+songCount+' 首':'')+'</small>';
   b.onclick=function(){
    $('ktvSearchInput').value=s.name;
    ktvSearchType='artist';
@@ -600,6 +601,8 @@ function renderKtvSingers(){
 }
 
 function renderKtvSongs(items,title,sub){
+ var displayItems=(items||[]).slice(0,LEGACY_IPAD?120:240);
+ items=displayItems;
  var root=$('ktvSongGrid');if(!root)return;
  $('ktvListTitle').textContent=title||'歌曲';
  $('ktvListSub').textContent=sub||'';
@@ -2106,9 +2109,9 @@ document.addEventListener('DOMContentLoaded',function(){
  document.querySelectorAll('.ktv-song-cat').forEach(function(b){
   b.onclick=function(){
    var cat=b.dataset.songCat||'';
-   var list=KTV_SONGS.filter(function(s){return s.tag===cat||s.region===cat||s.era===cat});
+   var list=cat==='__all__'?KTV_SONGS.slice():KTV_SONGS.filter(function(s){return s.tag===cat||s.region===cat||s.era===cat});
    $('ktvSingerPanel').classList.add('hidden');$('ktvSongPanel').classList.remove('hidden');
-   renderKtvSongs(list,cat+'歌曲',list.length+' 首');
+   renderKtvSongs(list,(cat==='__all__'?'全部':cat)+'歌曲',list.length+' 首');
    $('ktvStatus').textContent='已顯示 '+list.length+' 首 '+cat+' 歌曲';
   };
  });
