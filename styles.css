@@ -1078,3 +1078,132 @@ body.watch-mode main{padding-top:8px!important;}
 .sidebar-edit-menu{position:absolute;right:4px;top:36px;z-index:20;min-width:130px;padding:6px;border-radius:10px;background:#0b1320;border:1px solid rgba(255,255,255,.12);box-shadow:0 8px 22px rgba(0,0,0,.35)}
 .sidebar-edit-menu button{width:100%;text-align:left;margin:2px 0;padding:8px;border-radius:8px;font-size:11px}
 .sidebar-edit-menu.hidden{display:none!important}
+
+/* V1.5.6.28 true fullscreen video + keep bottom toolbar */
+html.watch-fullscreen-root,
+body.watch-fullscreen{
+ overflow:hidden!important;
+ width:100%!important;
+ height:100%!important;
+ background:#000!important;
+}
+
+body.watch-fullscreen header,
+body.watch-fullscreen .topbar,
+body.watch-fullscreen .app-header,
+body.watch-fullscreen #hero,
+body.watch-fullscreen #kidsHome,
+body.watch-fullscreen #parentPanel{
+ display:none!important;
+}
+
+body.watch-fullscreen #playerSection{
+ position:fixed!important;
+ inset:0!important;
+ z-index:99999!important;
+ width:100vw!important;
+ height:100vh!important;
+ margin:0!important;
+ padding:0!important;
+ background:#000!important;
+ border-radius:0!important;
+}
+
+body.watch-fullscreen .watch-layout{
+ display:block!important;
+ width:100vw!important;
+ height:100vh!important;
+ min-height:0!important;
+ background:#000!important;
+}
+
+body.watch-fullscreen .library-sidebar,
+body.watch-fullscreen .related-sidebar,
+body.watch-fullscreen .player-top,
+body.watch-fullscreen .player-info-row{
+ display:none!important;
+}
+
+body.watch-fullscreen .watch-center{
+ width:100vw!important;
+ height:100vh!important;
+ display:grid!important;
+ grid-template-rows:minmax(0,1fr) auto!important;
+ gap:0!important;
+ background:#000!important;
+}
+
+body.watch-fullscreen .player-mini-spacer{
+ display:none!important;
+}
+
+body.watch-fullscreen .player-stage{
+ position:relative!important;
+ inset:auto!important;
+ width:100vw!important;
+ height:calc(100vh - 70px)!important;
+ max-width:none!important;
+ max-height:none!important;
+ margin:0!important;
+ border-radius:0!important;
+ background:#000!important;
+ box-shadow:none!important;
+ border:0!important;
+ overflow:hidden!important;
+}
+
+body.watch-fullscreen #player,
+body.watch-fullscreen #player iframe,
+body.watch-fullscreen #ytDirectFrame{
+ width:100vw!important;
+ height:100%!important;
+ max-width:none!important;
+ max-height:none!important;
+ aspect-ratio:auto!important;
+ object-fit:contain!important;
+ background:#000!important;
+}
+
+body.watch-fullscreen .kid-controls{
+ position:relative!important;
+ width:100vw!important;
+ min-height:70px!important;
+ margin:0!important;
+ padding:8px 12px!important;
+ display:grid!important;
+ grid-template-columns:repeat(6,minmax(0,1fr))!important;
+ gap:8px!important;
+ background:#05080d!important;
+ border-top:1px solid rgba(255,255,255,.08)!important;
+ z-index:100001!important;
+}
+
+body.watch-fullscreen .kid-controls button{
+ min-height:50px!important;
+ margin:0!important;
+ border-radius:10px!important;
+}
+
+body.watch-fullscreen .mini-player-close{
+ display:none!important;
+}
+
+/* iPad/phone fullscreen toolbar wraps if needed */
+@media(max-width:900px){
+ body.watch-fullscreen .player-stage{
+  height:calc(100vh - 122px)!important;
+ }
+ body.watch-fullscreen .kid-controls{
+  min-height:122px!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+ }
+}
+@media(max-width:520px){
+ body.watch-fullscreen .player-stage{
+  height:calc(100vh - 184px)!important;
+ }
+ body.watch-fullscreen .kid-controls{
+  min-height:184px!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+ }
+}

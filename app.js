@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-var STORAGE='familytube_v15627';
-var OLD_KEYS=['familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v15628';
+var OLD_KEYS=['familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var DEFAULT={
  videos:[{id:'M7lc1UVf-VE',title:'YouTube 播放測試',category:'學習',channel:'YouTube',recommended:true,addedAt:Date.now()}],
  profiles:{
@@ -1006,34 +1006,20 @@ function updateStoredVideoMetaFromPlayer(){
 
 function enterImmersiveFullscreen(){
  setMiniPlayer(false);
- var el=$('playerSection');
  immersiveFull=true;
- el.classList.add('immersive-fullscreen');
- document.body.classList.add('ft-no-scroll');
+ document.body.classList.add('watch-fullscreen');
+ document.documentElement.classList.add('watch-fullscreen-root');
+ $('playerSection').classList.add('immersive-fullscreen');
  $('fullBtn').textContent='✕ 退出全螢幕';
-
- // Use CSS immersive fullscreen as the primary path for iPad/Safari reliability.
- // Desktop browsers may still use native fullscreen when available.
- var ua=navigator.userAgent||'';
- var isiOS=/iPad|iPhone|iPod/.test(ua)||(/Macintosh/.test(ua)&&navigator.maxTouchPoints>1);
- if(!isiOS){
-  try{
-   if(el.requestFullscreen&&!document.fullscreenElement){
-    var p=el.requestFullscreen();
-    if(p&&p.catch)p.catch(function(){});
-   }
-  }catch(e){}
- }
+ try{window.scrollTo(0,0)}catch(e){}
 }
 function exitImmersiveFullscreen(){
  immersiveFull=false;
+ document.body.classList.remove('watch-fullscreen');
+ document.documentElement.classList.remove('watch-fullscreen-root');
  $('playerSection').classList.remove('immersive-fullscreen');
- document.body.classList.remove('ft-no-scroll');
- $('fullBtn').textContent='⛶ 全螢幕';setTimeout(updateMiniPlayerOnScroll,80);
- try{
-  if(document.fullscreenElement&&document.exitFullscreen)document.exitFullscreen().catch(function(){});
-  else if(document.webkitFullscreenElement&&document.webkitExitFullscreen)document.webkitExitFullscreen();
- }catch(e){}
+ $('fullBtn').textContent='⛶ 全螢幕';
+ setTimeout(updateMiniPlayerOnScroll,80);
 }
 function toggleImmersiveFullscreen(){immersiveFull?exitImmersiveFullscreen():enterImmersiveFullscreen()}
 function currentVideoContext(id){
