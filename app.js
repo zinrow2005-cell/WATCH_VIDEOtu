@@ -2,8 +2,8 @@ var watchFullscreenScrollY=0;
 var miniPlayerSuppressUntil=0;
 (function(){
 'use strict';
-var STORAGE='familytube_v15655';
-var OLD_KEYS=['familytube_v15654','familytube_v15653','familytube_v15652','familytube_v15651','familytube_v15650','familytube_v15649','familytube_v15648','familytube_v15647','familytube_v15646','familytube_v15645','familytube_v15644','familytube_v15643','familytube_v15642','familytube_v15641','familytube_v15640','familytube_v15639','familytube_v15638','familytube_v15637','familytube_v15636','familytube_v15635','familytube_v15634','familytube_v15633','familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v15656';
+var OLD_KEYS=['familytube_v15655','familytube_v15654','familytube_v15653','familytube_v15652','familytube_v15651','familytube_v15650','familytube_v15649','familytube_v15648','familytube_v15647','familytube_v15646','familytube_v15645','familytube_v15644','familytube_v15643','familytube_v15642','familytube_v15641','familytube_v15640','familytube_v15639','familytube_v15638','familytube_v15637','familytube_v15636','familytube_v15635','familytube_v15634','familytube_v15633','familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var DEFAULT={
  videos:[{id:'M7lc1UVf-VE',title:'YouTube 播放測試',category:'學習',channel:'YouTube',recommended:true,addedAt:Date.now()}],
  profiles:{
@@ -1188,6 +1188,7 @@ function renderTvMobileQuickRail(){
 }
 
 function setTvPortraitMini(on){
+ if(window.innerWidth<=820&&window.innerWidth<=window.innerHeight)on=false;
  if(window.innerWidth>820||window.innerWidth>window.innerHeight)on=false;
  tvPortraitMini=!!on;
  document.body.classList.toggle('tv-portrait-mini',tvPortraitMini);
@@ -1196,7 +1197,7 @@ function setTvPortraitMini(on){
 
 function evaluateTvPortraitMini(){
  tvMiniTicking=false;
- if(!tvModeActive||window.innerWidth>820||window.innerWidth>window.innerHeight||tvPortraitMiniDismissed){
+ if(!tvModeActive||window.innerWidth<=820&&window.innerWidth<=window.innerHeight||window.innerWidth>820||window.innerWidth>window.innerHeight||tvPortraitMiniDismissed){
   setTvPortraitMini(false);return;
  }
  var wrap=$('tvEmbedWrap');if(!wrap)return;
@@ -1302,6 +1303,14 @@ function loadTvCountry(code){
   if(tvEmbedTimer){clearTimeout(tvEmbedTimer);tvEmbedTimer=null}
  };
  f.src=tvCurrentUrl;
+ if(window.innerWidth<=820){
+  setTimeout(function(){
+   try{
+    var w=$('tvEmbedWrap');
+    if(w&&w.scrollIntoView)w.scrollIntoView({behavior:'smooth',block:'start'});
+   }catch(e){}
+  },180);
+ }
  if(tvEmbedTimer)clearTimeout(tvEmbedTimer);
  tvEmbedTimer=setTimeout(function(){
   if($('tvStatus'))$('tvStatus').textContent='如果畫面仍空白，可能是來源網站禁止 iframe 嵌入。';

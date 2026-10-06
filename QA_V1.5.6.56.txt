@@ -1,0 +1,18 @@
+WATCH_VIDEOtu V1.5.6.56
+
+修正：
+1. 手機四模式按鈕改 2x2，影片/音樂/KTV/全球電視不再裁切。
+2. 手機直立 TV 不再使用浮動迷你播放器，避免操作 Famelack 頻道時被縮小。
+3. 直立 TV iframe 高度改為 72svh、最低 620px，讓 Famelack 內的頻道列表有足夠操作空間。
+4. iframe 明確允許 scrolling / pointer-events / touch。
+5. 選地區後自動捲到電視頁面。
+6. 加入提示：選擇地區後，直接在下方電視頁面內點選頻道。
+7. 橫式保留右側快速地區欄。
+
+程式檢查：
+- app.js PASS
+- ktv_singers.js PASS
+- ktv_songs.js PASS
+- sw.js PASS
+- DOM missing 0
+- duplicate IDs 0
