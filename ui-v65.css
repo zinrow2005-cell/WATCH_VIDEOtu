@@ -463,3 +463,12 @@ textarea:focus{
  content-visibility:auto;
  contain-intrinsic-size:250px;
 }
+
+.category-loading-row{min-height:190px}
+.category-load-status{color:#8fa5c0;font-size:12px}
+.category-skeleton-strip{display:flex;gap:10px;overflow:hidden;padding:2px 0 8px}
+.category-skeleton{flex:0 0 220px;height:150px;border-radius:14px;background:linear-gradient(90deg,rgba(28,43,67,.85),rgba(42,62,92,.95),rgba(28,43,67,.85));background-size:200% 100%;animation:categorySkeletonMove 1.25s linear infinite}
+@keyframes categorySkeletonMove{from{background-position:200% 0}to{background-position:-200% 0}}
+.category-retry-btn{min-height:34px!important;padding:5px 10px!important;font-size:11px!important}
+.category-empty-hint{color:#8fa5c0;padding:18px 6px}
+@media(max-width:700px){.category-loading-row{min-height:170px}.category-skeleton{flex-basis:158px;height:112px}.category-skeleton-strip{gap:7px}}
