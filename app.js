@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-var STORAGE='familytube_v15641';
-var OLD_KEYS=['familytube_v15640','familytube_v15639','familytube_v15638','familytube_v15637','familytube_v15636','familytube_v15635','familytube_v15634','familytube_v15633','familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v15642';
+var OLD_KEYS=['familytube_v15641','familytube_v15640','familytube_v15639','familytube_v15638','familytube_v15637','familytube_v15636','familytube_v15635','familytube_v15634','familytube_v15633','familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var DEFAULT={
  videos:[{id:'M7lc1UVf-VE',title:'YouTube 播放測試',category:'學習',channel:'YouTube',recommended:true,addedAt:Date.now()}],
  profiles:{
@@ -422,25 +422,7 @@ function setupMediaSessionActions(){
 
 var ktvModeActive=false,ktvNav='hot',ktvSearchType='all',ktvSearchResults=[],ktvBusy=false,ktvCurrent=null,ktvSingerFilter='all',ktvSingerLetter='all';
 
-var KTV_SINGERS=[
- {name:'周杰倫',region:'華語',type:'male'},{name:'林俊傑',region:'華語',type:'male'},
- {name:'陳奕迅',region:'華語',type:'male'},{name:'伍佰',region:'華語',type:'male'},
- {name:'張宇',region:'華語',type:'male'},{name:'盧廣仲',region:'華語',type:'male'},
- {name:'韋禮安',region:'華語',type:'male'},{name:'蕭敬騰',region:'華語',type:'male'},
- {name:'陶喆',region:'華語',type:'male'},{name:'王力宏',region:'華語',type:'male'},
- {name:'孫燕姿',region:'華語',type:'female'},{name:'鄧紫棋',region:'華語',type:'female'},
- {name:'張惠妹',region:'華語',type:'female'},{name:'蔡依林',region:'華語',type:'female'},
- {name:'梁靜茹',region:'華語',type:'female'},{name:'田馥甄',region:'華語',type:'female'},
- {name:'A-Lin',region:'華語',type:'female'},{name:'徐佳瑩',region:'華語',type:'female'},
- {name:'五月天',region:'華語',type:'group'},{name:'蘇打綠',region:'華語',type:'group'},
- {name:'動力火車',region:'華語',type:'group'},{name:'F.I.R.',region:'華語',type:'group'},
- {name:'米津玄師',region:'日韓',type:'jpkr'},{name:'藤井風',region:'日韓',type:'jpkr'},
- {name:'Aimer',region:'日韓',type:'jpkr'},{name:'YOASOBI',region:'日韓',type:'jpkr'},
- {name:'aespa',region:'日韓',type:'jpkr'},{name:'TWICE',region:'日韓',type:'jpkr'},
- {name:'Taylor Swift',region:'歐美',type:'western'},{name:'Adele',region:'歐美',type:'western'},
- {name:'Bruno Mars',region:'歐美',type:'western'},{name:'Ed Sheeran',region:'歐美',type:'western'},
- {name:'Lady Gaga',region:'歐美',type:'western'},{name:'Coldplay',region:'歐美',type:'western'}
-];
+var KTV_SINGERS=(typeof KTV_SINGERS_DB!=='undefined'&&KTV_SINGERS_DB&&KTV_SINGERS_DB.length)?KTV_SINGERS_DB.slice():[];
 
 var KTV_HOT=[
  {title:'晴天',artist:'周杰倫',region:'華語'},
@@ -563,7 +545,13 @@ function renderKtvSingers(){
  var root=$('ktvSingerGrid');if(!root)return;
  root.innerHTML='';
  var list=KTV_SINGERS.filter(function(s){
-  if(ktvSingerFilter!=='all'&&s.type!==ktvSingerFilter)return false;
+  if(ktvSingerFilter!=='all'){
+  if(ktvSingerFilter==='taiwan'&&s.area!=='台灣')return false;
+  else if(ktvSingerFilter==='hongkong'&&s.area!=='香港')return false;
+  else if(ktvSingerFilter==='mainland'&&s.area!=='中國大陸')return false;
+  else if(ktvSingerFilter==='taiwanese'&&s.region!=='台語')return false;
+  else if(['taiwan','hongkong','mainland','taiwanese'].indexOf(ktvSingerFilter)<0&&s.type!==ktvSingerFilter)return false;
+ }
   if(ktvSingerLetter==='all')return true;
   var first=String(s.name||'').charAt(0).toUpperCase();
   if(ktvSingerLetter==='zh')return !/^[A-Z]$/.test(first);
@@ -572,7 +560,7 @@ function renderKtvSingers(){
  if(!list.length){root.innerHTML='<div class="ktv-empty">這個分類目前沒有歌手</div>';return}
  list.forEach(function(s){
   var b=document.createElement('button');b.type='button';b.className='ktv-singer';
-  b.innerHTML='<span class="ktv-singer-avatar">'+esc(s.name.charAt(0))+'</span><b>'+esc(s.name)+'</b><small>'+esc(s.region)+'</small>';
+  b.innerHTML='<span class="ktv-singer-avatar">'+esc(s.name.charAt(0))+'</span><b>'+esc(s.name)+'</b><small>'+esc((s.area?s.area+' · ':'')+s.region)+'</small>';
   b.onclick=function(){
    $('ktvSearchInput').value=s.name;
    ktvSearchType='artist';

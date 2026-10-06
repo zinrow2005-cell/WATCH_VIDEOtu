@@ -2007,3 +2007,10 @@ body.tv-sidebar-collapsed .tv-sidebar-toggle{display:block!important;width:38px!
  .ktv-song-grid,.music-results{grid-template-columns:1fr!important}
  .ktv-main,.music-main{min-width:0!important}
 }
+
+/* V1.5.6.42 expanded KTV singer database */
+.ktv-singer-filter-bar{max-height:92px;overflow:auto;padding-bottom:3px}
+.ktv-singer small{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+@media(max-width:820px){
+ .ktv-singer-filter-bar{max-height:none;flex-wrap:nowrap;overflow-x:auto}
+}
