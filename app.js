@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-var STORAGE='familytube_v15640';
-var OLD_KEYS=['familytube_v15639','familytube_v15638','familytube_v15637','familytube_v15636','familytube_v15635','familytube_v15634','familytube_v15633','familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v15641';
+var OLD_KEYS=['familytube_v15640','familytube_v15639','familytube_v15638','familytube_v15637','familytube_v15636','familytube_v15635','familytube_v15634','familytube_v15633','familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var DEFAULT={
  videos:[{id:'M7lc1UVf-VE',title:'YouTube 播放測試',category:'學習',channel:'YouTube',recommended:true,addedAt:Date.now()}],
  profiles:{
@@ -779,7 +779,7 @@ function searchKtv(forceQuery){
 
 
 
-var tvModeActive=false,tvNav='countries',tvCountry='tw',tvCurrentUrl='',tvEmbedTimer=null,tvPaused=false;
+var tvModeActive=false,tvNav='countries',tvCountry='tw',tvCurrentUrl='',tvEmbedTimer=null,tvPaused=false,tvSidebarCollapsed=false;
 
 var TV_COUNTRIES=[
  {code:'tw',name:'台灣',flag:'🇹🇼'},{code:'jp',name:'日本',flag:'🇯🇵'},{code:'kr',name:'韓國',flag:'🇰🇷'},
@@ -830,6 +830,7 @@ function showTvMode(){
  renderTvCountries('');
  renderTvNav(tvNav);
  if(!tvCurrentUrl)loadTvCountry(state.tv.lastCountry||'tw');
+ if(window.innerWidth<=1100)setTvSidebarCollapsed(true);else setTvSidebarCollapsed(false);
  try{window.scrollTo(0,0)}catch(e){}
 }
 
@@ -962,6 +963,17 @@ function toggleTvFullscreen(){
  if($('tvFullscreenBtn'))$('tvFullscreenBtn').textContent=on?'✕ 退出全螢幕':'⛶ 全螢幕';
  if(on){try{window.scrollTo(0,0)}catch(e){}}
 }
+
+
+function setTvSidebarCollapsed(on){
+ tvSidebarCollapsed=!!on;
+ document.body.classList.toggle('tv-sidebar-collapsed',tvSidebarCollapsed);
+ if($('tvSidebarToggleBtn')){
+  $('tvSidebarToggleBtn').textContent=tvSidebarCollapsed?'☰':'✕';
+  $('tvSidebarToggleBtn').setAttribute('aria-label',tvSidebarCollapsed?'展開國家欄':'收合國家欄');
+ }
+}
+function toggleTvSidebar(){setTvSidebarCollapsed(!tvSidebarCollapsed);}
 
 function renderTvNav(nav){
  tvNav=nav||'countries';
@@ -2073,6 +2085,7 @@ function bindUiSafely(){
 }
 
 document.addEventListener('DOMContentLoaded',function(){
+ if($('tvSidebarToggleBtn'))$('tvSidebarToggleBtn').onclick=toggleTvSidebar;
  if($('tvPauseBtn'))$('tvPauseBtn').onclick=toggleTvPause;
  updateTvPauseBtn();
  try{
