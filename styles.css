@@ -1511,3 +1511,43 @@ body.ktv-mode-active{background:#060a12}
  .ktv-song-card{grid-template-columns:30px minmax(0,1fr)}
  .ktv-song-actions{grid-column:1/-1}.ktv-song-actions button{flex:1}
 }
+
+/* V1.5.6.35 singer filters + frequent songs */
+.ktv-singer-filter-bar,
+.ktv-singer-letter-bar{
+ display:flex;
+ gap:6px;
+ flex-wrap:wrap;
+ margin-bottom:10px;
+}
+.ktv-singer-filter,
+.ktv-letter{
+ border:1px solid rgba(255,255,255,.08);
+ background:#17253b;
+ color:#b9c8da;
+ border-radius:999px;
+ padding:7px 10px;
+ font-size:10px;
+ font-weight:900;
+}
+.ktv-singer-filter.active,
+.ktv-letter.active{
+ background:#fff;
+ color:#111827;
+ border-color:#fff;
+}
+.ktv-singer-letter-bar{
+ max-height:72px;
+ overflow:auto;
+ padding-bottom:3px;
+}
+@media(max-width:700px){
+ .ktv-singer-filter-bar,
+ .ktv-singer-letter-bar{
+  flex-wrap:nowrap;
+  overflow-x:auto;
+  max-height:none;
+ }
+ .ktv-singer-filter,
+ .ktv-letter{flex:0 0 auto}
+}

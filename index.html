@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#0b1220">
-<title>WATCH_VIDEOtu V1.5.6.34</title>
+<title>WATCH_VIDEOtu V1.5.6.35</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=15634">
+<link rel="stylesheet" href="styles.css?v=15635">
 
-<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=15634">
-<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png?v=15634">
-<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-180.png?v=15634">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=15635">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png?v=15635">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-180.png?v=15635">
 <meta name="apple-mobile-web-app-title" content="WATCH_VIDEOtu">
 
 </head>
@@ -26,7 +26,7 @@
       <circle cx="50" cy="14" r="6" fill="#fff"/><path d="M50 10.7v6.6M46.7 14h6.6" stroke="#ff174d" stroke-width="2.4" stroke-linecap="round"/>
     </svg>
   </span>
-  <span class="brand-copy"><strong>WATCH_VIDEO<span>tu  <span class="brand-version">V1.5.6.34</span>
+  <span class="brand-copy"><strong>WATCH_VIDEO<span>tu  <span class="brand-version">V1.5.6.35</span>
 </span></strong><small>Kids Video Hub</small></span>
 </button>
 <div class="mode-switch" id="modeSwitch">
@@ -277,7 +277,8 @@
       <button class="ktv-nav" data-ktvnav="mandarin">華語</button>
       <button class="ktv-nav" data-ktvnav="jpkr">日韓</button>
       <button class="ktv-nav" data-ktvnav="western">歐美</button>
-      <button class="ktv-nav" data-ktvnav="queue">📋 已點歌曲 <span id="ktvQueueCount">0</span></button>
+      <button class="ktv-nav" data-ktvnav="frequent">⭐ 我的常唱</button>
+<button class="ktv-nav" data-ktvnav="queue">📋 已點歌曲 <span id="ktvQueueCount">0</span></button>
     </aside>
 
     <section class="ktv-main">
@@ -305,6 +306,45 @@
       </div>
 
       <div id="ktvSingerPanel" class="ktv-singer-panel hidden">
+        <div id="ktvSingerFilterBar" class="ktv-singer-filter-bar">
+          <button class="ktv-singer-filter active" data-singer-filter="all">全部</button>
+          <button class="ktv-singer-filter" data-singer-filter="male">男歌手</button>
+          <button class="ktv-singer-filter" data-singer-filter="female">女歌手</button>
+          <button class="ktv-singer-filter" data-singer-filter="group">團體</button>
+          <button class="ktv-singer-filter" data-singer-filter="jpkr">日韓</button>
+          <button class="ktv-singer-filter" data-singer-filter="western">歐美</button>
+        </div>
+        <div id="ktvSingerLetterBar" class="ktv-singer-letter-bar">
+          <button class="ktv-letter active" data-letter="all">全部</button>
+          <button class="ktv-letter" data-letter="zh">中文</button>
+          <button class="ktv-letter" data-letter="A">A</button>
+          <button class="ktv-letter" data-letter="B">B</button>
+          <button class="ktv-letter" data-letter="C">C</button>
+          <button class="ktv-letter" data-letter="D">D</button>
+          <button class="ktv-letter" data-letter="E">E</button>
+          <button class="ktv-letter" data-letter="F">F</button>
+          <button class="ktv-letter" data-letter="G">G</button>
+          <button class="ktv-letter" data-letter="H">H</button>
+          <button class="ktv-letter" data-letter="I">I</button>
+          <button class="ktv-letter" data-letter="J">J</button>
+          <button class="ktv-letter" data-letter="K">K</button>
+          <button class="ktv-letter" data-letter="L">L</button>
+          <button class="ktv-letter" data-letter="M">M</button>
+          <button class="ktv-letter" data-letter="N">N</button>
+          <button class="ktv-letter" data-letter="O">O</button>
+          <button class="ktv-letter" data-letter="P">P</button>
+          <button class="ktv-letter" data-letter="Q">Q</button>
+          <button class="ktv-letter" data-letter="R">R</button>
+          <button class="ktv-letter" data-letter="S">S</button>
+          <button class="ktv-letter" data-letter="T">T</button>
+          <button class="ktv-letter" data-letter="U">U</button>
+          <button class="ktv-letter" data-letter="V">V</button>
+          <button class="ktv-letter" data-letter="W">W</button>
+          <button class="ktv-letter" data-letter="X">X</button>
+          <button class="ktv-letter" data-letter="Y">Y</button>
+          <button class="ktv-letter" data-letter="Z">Z</button>
+        </div>
+        
         <div class="ktv-section-head"><h2>歌手選單</h2><span>點選歌手後顯示可搜尋歌曲</span></div>
         <div id="ktvSingerGrid" class="ktv-singer-grid"></div>
       </div>
@@ -334,7 +374,7 @@
 <div id="modal" class="modal hidden">
   <div class="modal-card"><h3>輸入家長 PIN</h3><input id="modalInput" inputmode="numeric" maxlength="6"><div class="modal-actions"><button id="modalCancel">取消</button><button id="modalOk">確定</button></div></div>
 </div>
-<script defer src="app.js?v=15634"></script>
+<script defer src="app.js?v=15635"></script>
 
 </body>
 </html>
