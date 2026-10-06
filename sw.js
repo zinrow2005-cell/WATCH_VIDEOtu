@@ -1,5 +1,5 @@
-const CACHE='watch-v15621';
-const ASSETS=['icons/icon-192.png','icons/icon-512.png','icons/apple-touch-icon-180.png','./','index.html','styles.css?v=15621','app.js?v=15621','manifest.webmanifest'];
+const CACHE='watch-v15622';
+const ASSETS=['icons/icon-192.png','icons/icon-512.png','icons/apple-touch-icon-180.png','./','index.html','styles.css?v=15622','app.js?v=15622','manifest.webmanifest'];
 
 self.addEventListener('install',function(e){
  self.skipWaiting();

@@ -751,3 +751,200 @@ button{-webkit-tap-highlight-color:transparent;touch-action:manipulation}
  .related-sidebar .related-grid{grid-template-columns:1fr!important}
  .home-search-results{grid-template-columns:1fr!important}
 }
+
+/* V1.5.6.22 viewport-fit player layout */
+
+/* When player is open, let the watch area escape the normal centered content width. */
+body:has(#playerSection:not(.hidden)) main,
+body:has(#playerSection:not(.hidden)) .main,
+body:has(#playerSection:not(.hidden)) .app-main,
+body:has(#playerSection:not(.hidden)) .container,
+body:has(#playerSection:not(.hidden)) .content{
+ max-width:none!important;
+ width:100%!important;
+}
+
+/* Player page uses almost the full viewport width. */
+#playerSection{
+ width:calc(100vw - 24px)!important;
+ max-width:none!important;
+ margin-left:calc(50% - 50vw + 12px)!important;
+ margin-right:12px!important;
+ padding:0!important;
+}
+
+/* The 3 columns stretch to the viewport. */
+.watch-layout{
+ width:100%!important;
+ min-height:calc(100vh - 84px);
+ grid-template-columns:
+   clamp(230px,15vw,300px)
+   minmax(0,1fr)
+   clamp(300px,21vw,410px)!important;
+ gap:12px!important;
+}
+
+/* Left/right columns fill usable screen height. */
+.library-sidebar,
+.related-sidebar{
+ height:calc(100vh - 96px)!important;
+ max-height:calc(100vh - 96px)!important;
+ top:76px!important;
+}
+
+/* Center column grows with the available screen width. */
+.watch-center{
+ min-width:0!important;
+ width:100%!important;
+}
+
+/* Larger player, still 16:9. */
+.watch-center .player-stage{
+ width:100%!important;
+ max-width:none!important;
+ border-radius:16px!important;
+ overflow:hidden!important;
+ background:#000!important;
+}
+.watch-center #player{
+ width:100%!important;
+ height:auto!important;
+ aspect-ratio:16/9!important;
+ min-height:0!important;
+}
+.watch-center #player iframe,
+.watch-center #ytDirectFrame{
+ width:100%!important;
+ height:100%!important;
+ aspect-ratio:16/9!important;
+}
+
+/* Give top/header rows less vertical waste. */
+.player-top{
+ margin-bottom:8px!important;
+}
+.player-title-wrap .now-playing{
+ font-size:18px!important;
+}
+.watch-center .kid-controls{
+ display:grid!important;
+ grid-template-columns:repeat(5,minmax(0,1fr))!important;
+ gap:8px!important;
+}
+.watch-center .kid-controls button{
+ min-width:0!important;
+ width:100%!important;
+}
+
+/* Left library larger and denser. */
+.library-sidebar{
+ padding:12px!important;
+}
+.sidebar-video-list{
+ max-height:calc(100vh - 285px)!important;
+ overflow:auto!important;
+}
+.sidebar-video-item{
+ grid-template-columns:96px minmax(0,1fr)!important;
+}
+.sidebar-video-item img{
+ width:96px!important;
+}
+
+/* Right related panel uses the full height and larger cards. */
+.related-sidebar{
+ padding:12px!important;
+}
+.related-sidebar .related-grid{
+ max-height:calc(100vh - 150px)!important;
+ overflow:auto!important;
+ padding-right:2px!important;
+}
+.related-sidebar .related-card{
+ grid-template-columns:145px minmax(0,1fr)!important;
+}
+.related-sidebar .related-title{
+ font-size:12px!important;
+ line-height:1.3!important;
+}
+
+/* Keep floating mini player sensible with the larger layout. */
+.player-shell.mini-active .player-stage{
+ width:min(430px,36vw)!important;
+ right:14px!important;
+ bottom:14px!important;
+}
+
+/* 1366-ish notebook / iPad landscape */
+@media(max-width:1450px){
+ #playerSection{
+  width:calc(100vw - 16px)!important;
+  margin-left:calc(50% - 50vw + 8px)!important;
+  margin-right:8px!important;
+ }
+ .watch-layout{
+  grid-template-columns:220px minmax(0,1fr) 300px!important;
+  gap:9px!important;
+ }
+ .library-sidebar,.related-sidebar{
+  height:calc(100vh - 88px)!important;
+  max-height:calc(100vh - 88px)!important;
+ }
+ .sidebar-video-item{
+  grid-template-columns:78px minmax(0,1fr)!important;
+ }
+ .sidebar-video-item img{width:78px!important}
+ .related-sidebar .related-card{
+  grid-template-columns:112px minmax(0,1fr)!important;
+ }
+}
+
+/* Tablet portrait: keep player big, put side panels around it without tiny columns. */
+@media(max-width:1000px){
+ #playerSection{
+  width:calc(100vw - 12px)!important;
+  margin-left:calc(50% - 50vw + 6px)!important;
+  margin-right:6px!important;
+ }
+ .watch-layout{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:10px!important;
+ }
+ .watch-center{order:1}
+ .library-sidebar{order:2}
+ .related-sidebar{order:3}
+ .library-sidebar,.related-sidebar{
+  position:relative!important;
+  top:auto!important;
+  width:100%!important;
+  height:auto!important;
+  max-height:none!important;
+ }
+ .sidebar-video-list{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  max-height:320px!important;
+ }
+ .related-sidebar .related-grid{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  max-height:none!important;
+ }
+}
+
+/* Phone */
+@media(max-width:600px){
+ #playerSection{
+  width:100vw!important;
+  margin-left:calc(50% - 50vw)!important;
+  margin-right:0!important;
+ }
+ .watch-center .kid-controls{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+ }
+ .sidebar-video-list,
+ .related-sidebar .related-grid{
+  grid-template-columns:1fr!important;
+ }
+}
