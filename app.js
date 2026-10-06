@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-var STORAGE='familytube_v15631';
-var OLD_KEYS=['familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v15632';
+var OLD_KEYS=['familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var DEFAULT={
  videos:[{id:'M7lc1UVf-VE',title:'YouTube 播放測試',category:'學習',channel:'YouTube',recommended:true,addedAt:Date.now()}],
  profiles:{
@@ -63,6 +63,20 @@ var RADIO_SERVERS=[
  'https://at1.api.radio-browser.info',
  'https://all.api.radio-browser.info'
 ];
+
+var RADIO_CATEGORIES={
+ popular:{label:'熱門電台',mode:'top'},
+ mandarin:{label:'華語／中文',tag:'mandarin,chinese,c-pop'},
+ pop:{label:'流行音樂',tag:'pop,hits,top 40'},
+ jazz:{label:'Jazz',tag:'jazz'},
+ classical:{label:'古典音樂',tag:'classical'},
+ lofi:{label:'Lo-fi／輕音樂',tag:'lofi,chillout,ambient'},
+ rock:{label:'搖滾',tag:'rock'},
+ oldies:{label:'懷舊／經典',tag:'oldies,classic hits,retro'},
+ news:{label:'新聞／談話',tag:'news,talk'}
+};
+var radioCategory='popular';
+
 var musicModeActive=false,musicItems=[],musicCurrent=null,musicIndex=-1,musicBusy=false,musicNav='search';
 
 function showVideoMode(){
@@ -91,6 +105,7 @@ function showMusicMode(){
  if($('videoModeBtn'))$('videoModeBtn').classList.remove('active');
  if($('musicModeBtn'))$('musicModeBtn').classList.add('active');
  renderMusicNav(musicNav);
+ if(musicNav==='search'&&(!musicItems||!musicItems.length))loadRadioCategory(radioCategory);
  try{window.scrollTo(0,0)}catch(e){}
 }
 
@@ -193,6 +208,88 @@ function normalizeStation(x){
  };
 }
 
+
+function stationContentLabel(st){
+ var raw=((st.tags||'')+' '+(st.name||'')).toLowerCase();
+ var labels=[];
+ function hit(words,label){
+  for(var i=0;i<words.length;i++){
+   if(raw.indexOf(words[i])>=0){labels.push(label);return}
+  }
+ }
+ hit(['mandarin','chinese','c-pop','中文','華語'],'華語／中文');
+ hit(['pop','hits','top 40'],'流行音樂');
+ hit(['jazz'],'Jazz');
+ hit(['classical','symphony','opera'],'古典音樂');
+ hit(['lofi','lo-fi','chill','ambient','relax'],'Lo-fi／輕音樂');
+ hit(['rock','metal','alternative'],'搖滾');
+ hit(['oldies','classic hits','retro','80s','90s'],'懷舊／經典');
+ hit(['news','talk','speech'],'新聞／談話');
+ hit(['dance','edm','house','trance'],'舞曲／電子');
+ hit(['country','folk'],'鄉村／民謠');
+ hit(['religious','christian','gospel'],'宗教／福音');
+ if(!labels.length){
+  var t=(st.tags||'').split(',').filter(Boolean).slice(0,2).join('／');
+  if(t)labels.push(t);
+ }
+ return labels.slice(0,2).join(' · ')||'綜合內容';
+}
+function stationDescription(st){
+ var parts=[stationContentLabel(st)];
+ if(st.countrycode)parts.push(st.countrycode);
+ if(st.codec)parts.push(st.codec+(st.bitrate?' '+st.bitrate+'kbps':''));
+ return parts.join('｜');
+}
+function fetchRadioTop(){
+ var servers=RADIO_SERVERS.slice(),si=0;
+ function next(){
+  if(si>=servers.length)return Promise.reject(new Error('目前無法取得電台清單'));
+  var base=servers[si++];
+  return radioFetch(base+'/json/stations/topclick/80?hidebroken=true',6500).then(function(arr){
+   if(!Array.isArray(arr)||!arr.length)throw new Error('empty');
+   return arr;
+  }).catch(function(){return next()});
+ }
+ return next();
+}
+function fetchRadioCategory(cat){
+ var cfg=RADIO_CATEGORIES[cat]||RADIO_CATEGORIES.popular;
+ if(cfg.mode==='top')return fetchRadioTop();
+ var tags=(cfg.tag||'').split(','),ti=0,all=[];
+ function oneTag(){
+  if(ti>=tags.length){
+   var seen={},out=[];
+   all.forEach(function(x){if(x&&x.stationuuid&&!seen[x.stationuuid]){seen[x.stationuuid]=1;out.push(x)}});
+   if(out.length)return Promise.resolve(out);
+   return fetchRadioTop();
+  }
+  var tag=tags[ti++].trim();
+  return fetchRadioSearch(tag).then(function(arr){all=all.concat(arr||[]);return oneTag()})
+   .catch(function(){return oneTag()});
+ }
+ return oneTag();
+}
+function loadRadioCategory(cat){
+ radioCategory=cat||'popular';
+ document.querySelectorAll('.radio-cat').forEach(function(b){
+  b.classList.toggle('active',b.dataset.radioCat===radioCategory);
+ });
+ var cfg=RADIO_CATEGORIES[radioCategory]||RADIO_CATEGORIES.popular;
+ $('musicSearchStatus').textContent='正在載入「'+cfg.label+'」…';
+ fetchRadioCategory(radioCategory).then(function(arr){
+  var seen={},items=[];
+  (arr||[]).forEach(function(x){
+   var st=normalizeStation(x);
+   if(st.stationuuid&&st.url&&!seen[st.stationuuid]){seen[st.stationuuid]=1;items.push(st)}
+  });
+  $('musicSearchStatus').textContent='目前可播放 '+items.length+' 個「'+cfg.label+'」來源';
+  renderMusicItems(items.slice(0,80));
+ }).catch(function(){
+  $('musicSearchStatus').textContent='目前無法取得電台清單，請稍後再試。';
+  renderMusicItems([]);
+ });
+}
+
 function renderMusicItems(items){
  musicItems=(items||[]).filter(function(x){return x&&x.stationuuid&&x.url});
  var root=$('musicResults');if(!root)return;
@@ -205,7 +302,7 @@ function renderMusicItems(items){
   var card=document.createElement('button');
   card.type='button';card.className='music-card';
   var art=(st.favicon&&st.favicon.indexOf('https://')===0)?st.favicon:'icons/icon-192.png';
-  card.innerHTML='<img src="'+esc(art)+'" alt=""><span class="music-card-copy"><b>'+esc(st.name)+'</b><small>'+esc([st.countrycode,st.tags].filter(Boolean).join(' · '))+'</small></span><span class="music-card-actions"><span class="music-card-play">▶</span><button type="button" class="music-add-playlist" title="加入播放清單">＋</button></span>';
+  card.innerHTML='<img src="'+esc(art)+'" alt=""><span class="music-card-copy"><b>'+esc(st.name)+'</b><small class="music-station-desc">'+esc(stationDescription(st))+'</small></span><span class="music-card-actions"><span class="music-card-play">▶</span><button type="button" class="music-add-playlist" title="加入播放清單">＋</button></span>';
   var im=card.querySelector('img');im.onerror=function(){this.onerror=null;this.src='icons/icon-192.png'};
   card.onclick=function(){playMusicStation(st,idx,musicItems)};card.querySelector('.music-add-playlist').onclick=function(e){e.stopPropagation();openPlaylistModal(st)};
   frag.appendChild(card);
@@ -332,7 +429,7 @@ function searchMusic(){
  if(!q){$('musicSearchInput').focus();return}
  musicBusy=true;
  $('musicSearchBtn').disabled=true;
- $('musicSearchStatus').textContent='正在搜尋網路電台與音樂串流…';
+ $('musicSearchStatus').textContent='正在搜尋電台…';
  fetchRadioSearch(q).then(function(arr){
   musicBusy=false;$('musicSearchBtn').disabled=false;
   var seen={},items=[];
@@ -372,7 +469,7 @@ function playMusicStation(st,idx,list){
  musicItems=(list&&list.length)?list.slice():musicItems;
  musicIndex=typeof idx==='number'?idx:musicItems.findIndex(function(x){return x.stationuuid===st.stationuuid});
  $('musicTitle').textContent=st.name;
- $('musicMeta').textContent=[st.countrycode,st.tags,st.codec,(st.bitrate?st.bitrate+' kbps':'')].filter(Boolean).join(' · ');
+ $('musicMeta').textContent=stationDescription(st);
  $('musicCover').src=(st.favicon&&st.favicon.indexOf('https://')===0)?st.favicon:'icons/icon-512.png';
  $('musicCover').onerror=function(){this.onerror=null;this.src='icons/icon-512.png'};
  audio.src=st.url;
@@ -1521,6 +1618,10 @@ function bindUiSafely(){
 }
 
 document.addEventListener('DOMContentLoaded',function(){
+ document.querySelectorAll('.radio-cat').forEach(function(b){
+  b.onclick=function(){loadRadioCategory(b.dataset.radioCat)};
+ });
+
  if($('newPlaylistBtn'))$('newPlaylistBtn').onclick=function(){
   var n=prompt('新的播放清單名稱');
   if(n!==null)createPlaylist(n);

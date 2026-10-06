@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#0b1220">
-<title>WATCH_VIDEOtu V1.5.6.31</title>
+<title>WATCH_VIDEOtu V1.5.6.32</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=15631">
+<link rel="stylesheet" href="styles.css?v=15632">
 
-<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=15631">
-<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png?v=15631">
-<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-180.png?v=15631">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=15632">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png?v=15632">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-180.png?v=15632">
 <meta name="apple-mobile-web-app-title" content="WATCH_VIDEOtu">
 
 </head>
@@ -26,7 +26,7 @@
       <circle cx="50" cy="14" r="6" fill="#fff"/><path d="M50 10.7v6.6M46.7 14h6.6" stroke="#ff174d" stroke-width="2.4" stroke-linecap="round"/>
     </svg>
   </span>
-  <span class="brand-copy"><strong>WATCH_VIDEO<span>tu  <span class="brand-version">V1.5.6.31</span>
+  <span class="brand-copy"><strong>WATCH_VIDEO<span>tu  <span class="brand-version">V1.5.6.32</span>
 </span></strong><small>Kids Video Hub</small></span>
 </button>
 <div class="mode-switch" id="modeSwitch">
@@ -205,26 +205,39 @@
 <section id="musicMode" class="music-mode hidden">
   <div class="music-layout">
     <aside class="music-sidebar">
-      <div class="music-sidebar-title">🎵 音樂模式</div>
-      <button class="music-nav active" data-musicnav="search">🔎 搜尋</button>
+      <div class="music-sidebar-title">📻 電台大廳</div>
+      <button class="music-nav active" data-musicnav="search">📻 電台大廳</button>
       <button class="music-nav" data-musicnav="favorites">★ 我的收藏</button>
       <button class="music-nav" data-musicnav="recent">🕘 最近播放</button>
 <button class="music-nav" data-musicnav="playlists">📂 播放清單</button>
-      <div class="music-note">網路串流模式，不需要先下載音樂檔。</div>
+      <div class="music-note">直接播放網路電台，不需要先下載音樂檔。</div>
     </aside>
 
     <section class="music-main">
       <div class="music-search-panel">
         <div>
-          <div class="eyebrow">BACKGROUND AUDIO</div>
-          <h1>網路音樂</h1>
-          <p>搜尋電台、音樂類型或關鍵字，直接串流播放。</p>
+          <div class="eyebrow">INTERNET RADIO</div>
+          <h1>網路電台</h1>
+          <p>直接瀏覽可播放的網路電台，依內容類型挑選後立即串流播放。</p>
         </div>
-        <div class="music-search-row">
-          <input id="musicSearchInput" type="search" placeholder="例如：Jazz、Classical、Taiwan、Mandarin">
-          <button id="musicSearchBtn" type="button">搜尋音樂</button>
-        </div>
-        <div id="musicSearchStatus" class="search-hint"></div>
+        
+<div class="music-search-row">
+  <input id="musicSearchInput" type="search" placeholder="搜尋電台名稱、國家或類型，例如：Jazz、Taiwan">
+  <button id="musicSearchBtn" type="button">搜尋電台</button>
+</div>
+<div class="radio-category-bar" id="radioCategoryBar">
+  <button class="radio-cat active" data-radio-cat="popular">🔥 熱門</button>
+  <button class="radio-cat" data-radio-cat="mandarin">華語／中文</button>
+  <button class="radio-cat" data-radio-cat="pop">流行</button>
+  <button class="radio-cat" data-radio-cat="jazz">Jazz</button>
+  <button class="radio-cat" data-radio-cat="classical">古典</button>
+  <button class="radio-cat" data-radio-cat="lofi">Lo-fi</button>
+  <button class="radio-cat" data-radio-cat="rock">搖滾</button>
+  <button class="radio-cat" data-radio-cat="oldies">懷舊</button>
+  <button class="radio-cat" data-radio-cat="news">新聞／談話</button>
+</div>
+<div id="musicSearchStatus" class="search-hint">正在載入目前可播放的熱門電台…</div>
+
       </div>
 
       
@@ -271,7 +284,7 @@
 <div id="modal" class="modal hidden">
   <div class="modal-card"><h3>輸入家長 PIN</h3><input id="modalInput" inputmode="numeric" maxlength="6"><div class="modal-actions"><button id="modalCancel">取消</button><button id="modalOk">確定</button></div></div>
 </div>
-<script defer src="app.js?v=15631"></script>
+<script defer src="app.js?v=15632"></script>
 
 <div id="playlistModal" class="modal hidden">
   <div class="modal-card playlist-modal-card">
