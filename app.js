@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-var STORAGE='familytube_v15620';
-var OLD_KEYS=['familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v15621';
+var OLD_KEYS=['familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var DEFAULT={
  videos:[{id:'M7lc1UVf-VE',title:'YouTube 播放測試',category:'學習',channel:'YouTube',recommended:true,addedAt:Date.now()}],
  profiles:{
@@ -341,7 +341,55 @@ function closeMiniPlayer(){
  try{if(player&&player.pauseVideo)player.pauseVideo()}catch(e){}
 }
 
-function showPlayer(){miniPlayerSuppressed=false;$('kidsHome').classList.add('hidden');$('hero').classList.add('hidden');$('playerSection').classList.remove('hidden');bindMiniPlayerScroll();setTimeout(updateMiniPlayerOnScroll,60)}
+
+var sidebarFilter='favorites';
+
+function sidebarItems(filter){
+ var p=profile(),all=availableVideos(),list=[];
+ if(filter==='favorites'){
+  list=p.favorites.map(videoById).filter(function(v){return v&&allowedVideo(v)});
+ }else if(filter==='recent'){
+  list=p.recent.map(videoById).filter(function(v){return v&&allowedVideo(v)});
+ }else if(filter==='recommended'){
+  list=all.filter(function(v){return v.recommended});
+ }else{
+  list=all.filter(function(v){return v.category===filter});
+ }
+ return list.slice(0,30);
+}
+
+function renderSidebar(filter){
+ if(filter)sidebarFilter=filter;
+ var root=$('sidebarVideoList');
+ if(!root)return;
+ document.querySelectorAll('.side-filter').forEach(function(b){
+  b.classList.toggle('active',b.dataset.sidefilter===sidebarFilter);
+ });
+ var list=sidebarItems(sidebarFilter);
+ root.innerHTML='';
+ if(!list.length){
+  root.innerHTML='<div class="sidebar-empty">這個分類目前沒有影片</div>';
+  return;
+ }
+ var frag=document.createDocumentFragment();
+ list.forEach(function(v){
+  var item=document.createElement('button');
+  item.type='button';
+  item.className='sidebar-video-item'+(v.id===currentId?' playing':'');
+  item.innerHTML='<img src="'+thumb(v.id)+'" alt=""><span class="sidebar-video-copy"><b>'+esc(v.title)+'</b><small>'+esc(v.channel||v.category||'影片')+'</small></span>';
+  item.onclick=function(){playInsideWatchVideo(v,list)};
+  frag.appendChild(item);
+ });
+ root.appendChild(frag);
+}
+
+function bindSidebar(){
+ document.querySelectorAll('.side-filter').forEach(function(b){
+  b.onclick=function(){renderSidebar(b.dataset.sidefilter)};
+ });
+}
+
+function showPlayer(){miniPlayerSuppressed=false;$('kidsHome').classList.add('hidden');$('hero').classList.add('hidden');$('playerSection').classList.remove('hidden');renderSidebar(sidebarFilter);bindMiniPlayerScroll();setTimeout(updateMiniPlayerOnScroll,60)}
 
 function stopPlaybackForHome(){
  // 1) Normal YouTube IFrame API player.
@@ -412,13 +460,14 @@ function selectVideo(id,list){
  playSelectedId(id);
 
  addRecent(id);
+ renderSidebar(sidebarFilter);
  updateFavBtn();
  updateHero();
 }
 function addRecent(id){var p=profile();p.recent=p.recent.filter(function(x){return x!==id});p.recent.unshift(id);p.recent=p.recent.slice(0,40);save()}
 function nextVideo(){if(!currentList.length)return;if(currentIndex<0)currentIndex=0;else currentIndex=(currentIndex+1)%currentList.length;selectVideo(currentList[currentIndex].id,currentList)}
 function prevVideo(){if(!currentList.length)return;if(currentIndex<0)currentIndex=0;else currentIndex=(currentIndex-1+currentList.length)%currentList.length;selectVideo(currentList[currentIndex].id,currentList)}
-function toggleFav(){if(!currentId)return;var p=profile(),i=p.favorites.indexOf(currentId);if(i>=0)p.favorites.splice(i,1);else p.favorites.push(currentId);save();updateFavBtn();renderRows()}
+function toggleFav(){if(!currentId)return;var p=profile(),i=p.favorites.indexOf(currentId);if(i>=0)p.favorites.splice(i,1);else p.favorites.push(currentId);save();updateFavBtn();renderRows();renderSidebar(sidebarFilter)}
 function updateFavBtn(){var yes=currentId&&profile().favorites.indexOf(currentId)>=0;$('favBtn').textContent=yes?'★ 已收藏':'☆ 最愛'}
 function resumeVideo(id,list){var pr=profile().progress[id];selectVideo(id,list);if(pr&&pr.current>5&&player)setTimeout(function(){try{player.seekTo(pr.current,true)}catch(e){}},800)}
 function makeCard(v,opts){
@@ -701,9 +750,9 @@ function renderInternalSearch(items,append){
   var card=document.createElement('div');
   card.className='search-result-card';
   card.innerHTML='<div class="search-thumb"><img alt="" loading="lazy"><span class="search-duration">'+esc(secondsText(v.seconds))+'</span></div>'+
+   '<div class="search-result-actions"><button class="play">▶ 播放</button><button class="add">＋ 收藏</button></div>'+
    '<div class="search-result-body"><div class="search-result-title">'+esc(v.title)+'</div>'+
-   '<div class="search-result-channel">'+esc(v.channel)+'</div>'+
-   '<div class="search-result-actions"><button class="play">▶ 播放</button><button class="add">＋ 收藏</button></div></div>';
+   '<div class="search-result-channel">'+esc(v.channel)+'</div></div>';
 
   var img=card.querySelector('.search-thumb img');
   var primary=v.image||v.fallback||thumb(v.id),fallback=v.fallback||thumb(v.id);
@@ -877,16 +926,25 @@ function fetchRelatedFromInstance(base,id){
  });
 }
 function fetchRelatedWithFallback(id){
- var order=SEARCH_INSTANCES.slice();
- if(lastSearchInstance){order=order.filter(function(x){return x!==lastSearchInstance});order.unshift(lastSearchInstance)}
- var i=0;
- function next(){if(i>=order.length)return Promise.reject(new Error('推薦節點暫時無法使用'));var base=order[i++];return fetchRelatedFromInstance(base,id).catch(function(){return next()})}
- return next();
+ return loadDynamicInstances(false).then(function(instances){
+  var order=(instances&&instances.length?instances:FALLBACK_INVIDIOUS_INSTANCES).slice();
+  if(lastSearchInstance){
+   order=order.filter(function(x){return x!==lastSearchInstance});
+   order.unshift(lastSearchInstance);
+  }
+  var i=0;
+  function next(){
+   if(i>=order.length)return Promise.reject(new Error('推薦節點暫時無法使用'));
+   var base=order[i++];
+   return fetchRelatedFromInstance(base,id).catch(function(){return next()});
+  }
+  return next();
+ });
 }
 function renderRelated(items){
  var root=$('relatedGrid');root.innerHTML='';
- items.slice(0,12).forEach(function(v){
-  var card=document.createElement('div');card.className='related-card';
+ items.slice(0,18).forEach(function(v){
+  var card=document.createElement('button');card.type='button';card.className='related-card';
   card.innerHTML='<div class="related-thumb"><img src="'+esc(v.image||v.fallback||thumb(v.id))+'" alt=""><span class="related-duration">'+esc(secondsText(v.seconds))+'</span></div><div class="related-body"><div class="related-title">'+esc(v.title)+'</div><div class="related-channel">'+esc(v.channel)+'</div></div>';
   var im=card.querySelector('img');im.onerror=function(){this.onerror=null;this.src=v.fallback||thumb(v.id)};
   card.onclick=function(){playInsideWatchVideo(v,[v])};
@@ -974,6 +1032,7 @@ function bindUiSafely(){
 }
 
 document.addEventListener('DOMContentLoaded',function(){
+ bindSidebar();
 
  bindUiSafely();
 
@@ -983,7 +1042,6 @@ document.addEventListener('DOMContentLoaded',function(){
   bindMiniPlayerScroll();
  }catch(e){}
 
- document.querySelectorAll('.category-chip').forEach(function(b){b.onclick=function(){applyFilter(b.dataset.filter)}});
  document.querySelectorAll('.avatar-grid button').forEach(function(b){b.onclick=function(){selectedAvatar=b.dataset.avatar;document.querySelectorAll('.avatar-grid button').forEach(function(x){x.classList.toggle('active',x.dataset.avatar===selectedAvatar)})}});
  $('homeSearchBtn').onclick=function(){if(searchTapLocked)return;searchTapLocked=true;setTimeout(function(){searchTapLocked=false},500);runInternalSearch(true)};$('quickPlayBtn').onclick=quickPlayHome;$('quickAddBtn').onclick=quickAddHome;
  $('homeSearchInput').addEventListener('keydown',function(e){if(e.key==='Enter'||e.keyCode===13)runInternalSearch(true)});

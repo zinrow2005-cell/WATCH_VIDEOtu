@@ -5,13 +5,13 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#0b1220">
-<title>WATCH_VIDEOtu V1.5.6.20</title>
+<title>WATCH_VIDEOtu V1.5.6.21</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=15620">
+<link rel="stylesheet" href="styles.css?v=15621">
 
-<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=15620">
-<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png?v=15620">
-<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-180.png?v=15620">
+<link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=15621">
+<link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png?v=15621">
+<link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-180.png?v=15621">
 <meta name="apple-mobile-web-app-title" content="WATCH_VIDEOtu">
 
 </head>
@@ -26,7 +26,7 @@
       <circle cx="50" cy="14" r="6" fill="#fff"/><path d="M50 10.7v6.6M46.7 14h6.6" stroke="#ff174d" stroke-width="2.4" stroke-linecap="round"/>
     </svg>
   </span>
-  <span class="brand-copy"><strong>WATCH_VIDEO<span>tu  <span class="brand-version">V1.5.6.20</span>
+  <span class="brand-copy"><strong>WATCH_VIDEO<span>tu  <span class="brand-version">V1.5.6.21</span>
 </span></strong><small>Kids Video Hub</small></span>
 </button>
   <div class="top-actions">
@@ -54,29 +54,59 @@
   </section>
 
   <section id="playerSection" class="player-shell hidden">
-    <div class="player-top">
-      <button id="backToHomeBtn" class="ghost big-kid-btn">← 回首頁</button>
-      <div class="player-title-wrap">
-        <div class="player-label">正在播放</div>
-        <div id="nowPlaying" class="now-playing">尚未選擇影片</div>
+    <div class="watch-layout">
+      <aside class="library-sidebar" aria-label="我的影片庫">
+        <div class="sidebar-head">
+          <div>
+            <div class="sidebar-eyebrow">我的影片庫</div>
+            <h2>快速選片</h2>
+          </div>
+        </div>
+        <div class="sidebar-filters" id="sidebarFilters">
+          <button data-sidefilter="favorites" class="side-filter active">★ 收藏</button>
+          <button data-sidefilter="recent" class="side-filter">🕘 最近</button>
+          <button data-sidefilter="recommended" class="side-filter">👍 推薦</button>
+          <button data-sidefilter="英文" class="side-filter">🔤 英文</button>
+          <button data-sidefilter="兒歌" class="side-filter">🎵 兒歌</button>
+          <button data-sidefilter="卡通" class="side-filter">🐻 卡通</button>
+          <button data-sidefilter="故事" class="side-filter">📚 故事</button>
+          <button data-sidefilter="學習" class="side-filter">🧠 學習</button>
+          <button data-sidefilter="自然／動物" class="side-filter">🦖 自然</button>
+        </div>
+        <div id="sidebarVideoList" class="sidebar-video-list"></div>
+      </aside>
+
+      <div class="watch-center">
+        <div class="player-top">
+          <button id="backToHomeBtn" class="ghost big-kid-btn">← 回首頁</button>
+          <div class="player-title-wrap">
+            <div class="player-label">正在播放</div>
+            <div id="nowPlaying" class="now-playing">尚未選擇影片</div>
+          </div>
+        </div>
+        <div id="playerMiniSpacer" class="player-mini-spacer"></div>
+        <div id="playerStage" class="player-stage"><div id="player"></div></div>
+        <div class="controls kid-controls">
+          <button id="prevBtn">⏮ 上一部</button>
+          <button id="playBtn">▶ / ⏸</button>
+          <button id="nextBtn">下一部 ⏭</button>
+          <button id="favBtn">☆ 最愛</button>
+          <button id="fullBtn">⛶ 全螢幕</button>
+        </div>
+        <div class="player-info-row">
+          <div id="watchStatus" class="watch-status"></div>
+        </div>
       </div>
-    </div>
-    <div id="playerMiniSpacer" class="player-mini-spacer"></div>
-    <div id="playerStage" class="player-stage"><div id="player"></div></div>
-    <div class="controls kid-controls">
-      <button id="prevBtn">⏮ 上一部</button>
-      <button id="playBtn">▶ / ⏸</button>
-      <button id="nextBtn">下一部 ⏭</button>
-      <button id="favBtn">☆ 最愛</button>
-      <button id="fullBtn">⛶ 全螢幕</button>
-    </div>
-    <div class="player-info-row">
-      <div id="watchStatus" class="watch-status"></div>
-      <div id="relatedStatus" class="related-status"></div>
-    </div>
-    <div class="related-section">
-      <div class="related-head"><h2>你可能也喜歡</h2><span>依正在觀看的影片推薦</span></div>
-      <div id="relatedGrid" class="related-grid"></div>
+
+      <aside class="related-sidebar" aria-label="相關推薦影片">
+        <div class="related-head side-related-head">
+          <div>
+            <h2>相關影片</h2>
+            <span id="relatedStatus">依正在觀看的影片推薦</span>
+          </div>
+        </div>
+        <div id="relatedGrid" class="related-grid"></div>
+      </aside>
     </div>
   </section>
 <button id="miniPlayerClose" class="mini-player-close" aria-label="關閉縮小播放器">×</button>
@@ -118,15 +148,7 @@
   </section>
 
   <section id="kidsHome">
-    <div id="categoryStrip" class="category-strip">
-      <button data-filter="all" class="category-chip active">全部</button>
-      <button data-filter="英文" class="category-chip">🔤 英文</button>
-      <button data-filter="兒歌" class="category-chip">🎵 兒歌</button>
-      <button data-filter="卡通" class="category-chip">🐻 卡通</button>
-      <button data-filter="故事" class="category-chip">📚 故事</button>
-      <button data-filter="學習" class="category-chip">🧠 學習</button>
-      <button data-filter="recommended" class="category-chip">👍 家長推薦</button>
-    </div>
+    
     <div id="dynamicRows"></div>
   </section>
 
@@ -172,6 +194,6 @@
 <div id="modal" class="modal hidden">
   <div class="modal-card"><h3>輸入家長 PIN</h3><input id="modalInput" inputmode="numeric" maxlength="6"><div class="modal-actions"><button id="modalCancel">取消</button><button id="modalOk">確定</button></div></div>
 </div>
-<script defer src="app.js?v=15620"></script>
+<script defer src="app.js?v=15621"></script>
 </body>
 </html>
