@@ -454,3 +454,12 @@ textarea:focus{
  content-visibility:auto;
  contain-intrinsic-size:260px;
 }
+
+/* V1.5.6.68 dynamic-only category home */
+#dynamicRows .media-row{
+ contain:layout style paint;
+}
+#dynamicRows .media-scroller{
+ content-visibility:auto;
+ contain-intrinsic-size:250px;
+}
