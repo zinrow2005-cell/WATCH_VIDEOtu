@@ -1,9 +1,23 @@
 {
-  "name": "WATCH_VIDEOtu V1.5.6.18 Internal Search",
+  "name": "WATCH_VIDEOtu V1.5.6.19",
   "short_name": "WATCH_VIDEOtu",
   "start_url": "./",
   "display": "standalone",
-  "background_color": "#0b1220",
-  "theme_color": "#0b1220",
-  "icons": []
+  "background_color": "#0c1320",
+  "theme_color": "#0c1320",
+  "icons": [
+    {
+      "src": "icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "scope": "./"
 }
