@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-var STORAGE='familytube_v15619';
-var OLD_KEYS=['familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v15620';
+var OLD_KEYS=['familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var DEFAULT={
  videos:[{id:'M7lc1UVf-VE',title:'YouTube 播放測試',category:'學習',channel:'YouTube',recommended:true,addedAt:Date.now()}],
  profiles:{
@@ -526,21 +526,65 @@ function secondsText(sec){
 
 
 
-var SEARCH_INSTANCES=[
+var FALLBACK_INVIDIOUS_INSTANCES=[
  'https://inv.nadeko.net',
  'https://invidious.nerdvpn.de',
  'https://yt.chocolatemoo53.com',
- 'https://invidious.tiekoetter.com'
+ 'https://invidious.tiekoetter.com',
+ 'https://invidious.f5.si'
 ];
-var PIPED_INSTANCES=[
- 'https://pipedapi.kavin.rocks',
- 'https://pipedapi.leptons.xyz',
- 'https://pipedapi.nosebs.ru',
- 'https://pipedapi.syncpundit.io',
- 'https://piped-api.garudalinux.org',
- 'https://api-piped.mha.fi',
- 'https://pipedapi.rivo.lol'
-];
+var INVIDIOUS_REGISTRY_URL='https://api.invidious.io/instances.json?sort_by=cors';
+var dynamicSearchInstances=[];
+var instanceRegistryLoadedAt=0;
+
+function normalizeInstanceRegistry(data){
+ var out=[];
+ if(!Array.isArray(data))return out;
+ data.forEach(function(row){
+  try{
+   var host='',meta=null;
+   if(Array.isArray(row)){
+    host=String(row[0]||'');
+    meta=row[1]||{};
+   }else if(row&&typeof row==='object'){
+    host=String(row.domain||row.host||row.name||'');
+    meta=row;
+   }
+   if(!host)return;
+   var uri=String((meta&&meta.uri)||('https://'+host));
+   var apiOk=(meta&&typeof meta.api!=='undefined')?!!meta.api:true;
+   var corsOk=(meta&&typeof meta.cors!=='undefined')?!!meta.cors:true;
+   var typeOk=(!meta||!meta.type||meta.type==='https');
+   if(apiOk&&corsOk&&typeOk&&uri.indexOf('https://')===0){
+    out.push(uri.replace(/\/+$/,''));
+   }
+  }catch(e){}
+ });
+ // de-duplicate
+ return out.filter(function(x,i,a){return a.indexOf(x)===i});
+}
+
+function loadDynamicInstances(force){
+ var now=Date.now();
+ if(!force && dynamicSearchInstances.length && now-instanceRegistryLoadedAt<30*60*1000){
+  return Promise.resolve(dynamicSearchInstances.slice());
+ }
+ return fetchJsonTimeout(INVIDIOUS_REGISTRY_URL,3500).then(function(data){
+  var list=normalizeInstanceRegistry(data);
+  if(list.length){
+   dynamicSearchInstances=list;
+   instanceRegistryLoadedAt=Date.now();
+   return list.slice();
+  }
+  dynamicSearchInstances=FALLBACK_INVIDIOUS_INSTANCES.slice();
+  instanceRegistryLoadedAt=Date.now();
+  return dynamicSearchInstances.slice();
+ },function(){
+  dynamicSearchInstances=FALLBACK_INVIDIOUS_INSTANCES.slice();
+  instanceRegistryLoadedAt=Date.now();
+  return dynamicSearchInstances.slice();
+ });
+}
 
 var searchPage=1,lastSearchInstance='',searchBusy=false,searchTapLocked=false;
 
@@ -565,28 +609,9 @@ function normalizeSearchItems(j,base){
  });
 }
 
-function pipedVideoId(url){
- var m=String(url||'').match(/[?&]v=([A-Za-z0-9_-]{11})/);
- return m?m[1]:null;
-}
 
-function normalizePipedItems(data){
- var arr=(data&&Array.isArray(data.items))?data.items:[];
- return arr.filter(function(x){
-  var id=pipedVideoId(x&&x.url);
-  return !!id && (!x.type || x.type==='stream');
- }).map(function(x){
-  var id=pipedVideoId(x.url);
-  return {
-   id:id,
-   title:x.title||'YouTube 影片',
-   channel:x.uploaderName||'',
-   seconds:parseInt(x.duration||0,10)||0,
-   image:x.thumbnail||'',
-   fallback:thumb(id)
-  };
- });
-}
+
+
 
 function fetchJsonTimeout(url,ms){
  return new Promise(function(resolve,reject){
@@ -620,31 +645,26 @@ function fetchInvidiousSearch(base,q,page){
  });
 }
 
-function fetchPipedSearch(base,q){
- var url=base+'/search?q='+encodeURIComponent(q)+'&filter=videos';
- return fetchJsonTimeout(url,LEGACY_IPAD?4200:5000).then(function(j){
-  var items=normalizePipedItems(j).slice(0,SEARCH_RENDER_LIMIT);
-  if(!items.length)throw new Error('no results');
-  return {items:items,base:base,provider:'Piped'};
- });
-}
 
-function searchTasks(q,page){
+
+function searchTasks(q,page,instances){
  var tasks=[];
- PIPED_INSTANCES.forEach(function(base){tasks.push(function(){return fetchPipedSearch(base,q)})});
- SEARCH_INSTANCES.forEach(function(base){tasks.push(function(){return fetchInvidiousSearch(base,q,page)})});
+ (instances||[]).forEach(function(base){
+  tasks.push(function(){return fetchInvidiousSearch(base,q,page)});
+ });
  return tasks;
 }
 
 function runSearchPool(tasks){
  return new Promise(function(resolve,reject){
   var idx=0,active=0,failed=0,done=false,total=tasks.length;
+  if(!total){reject(new Error('沒有搜尋來源'));return}
   var maxParallel=LEGACY_IPAD?2:3;
   var globalTimer=setTimeout(function(){
    if(done)return;
    done=true;
    reject(new Error('搜尋來源逾時'));
-  },LEGACY_IPAD?7000:6000);
+  },LEGACY_IPAD?8500:7000);
 
   function launch(){
    if(done)return;
@@ -658,9 +678,11 @@ function runSearchPool(tasks){
       active--;failed++;
       if(done)return;
       if(failed>=total){
-       done=true;clearTimeout(globalTimer);reject(new Error('目前搜尋來源都沒有回應'));return;
+       done=true;clearTimeout(globalTimer);
+       reject(new Error('目前搜尋來源都沒有回應'));
+       return;
       }
-      setTimeout(launch,LEGACY_IPAD?80:0);
+      setTimeout(launch,LEGACY_IPAD?100:10);
      });
     })(fn);
    }
@@ -711,8 +733,14 @@ function renderInternalSearch(items,append){
 }
 
 function fetchSearchWithFallback(q,page){
- $('searchNodeStatus').textContent=LEGACY_IPAD?'iPad 相容搜尋中…':'正在系統內搜尋…';
- return runSearchPool(searchTasks(q,page));
+ $('searchNodeStatus').textContent='正在取得目前可用搜尋來源…';
+ return loadDynamicInstances(false).then(function(instances){
+  if(!instances.length)throw new Error('目前沒有可用搜尋來源');
+  $('searchNodeStatus').textContent='正在系統內搜尋… 可用來源 '+instances.length+' 個';
+  return runSearchPool(searchTasks(q,page,instances));
+ },function(){
+  return runSearchPool(searchTasks(q,page,FALLBACK_INVIDIOUS_INSTANCES));
+ });
 }
 
 function runInternalSearch(reset){
@@ -738,10 +766,22 @@ function runInternalSearch(reset){
   $('searchNodeStatus').textContent='已顯示 '+res.items.length+' 部結果 · '+res.provider;
   $('searchMoreBtn').classList.remove('hidden');
  },function(err){
-  searchBusy=false;
-  $('homeSearchBtn').disabled=false;
-  if(reset)$('homeSearchResults').innerHTML='<div class="search-loading">搜尋失敗，請再試一次。</div>';
-  $('searchNodeStatus').innerHTML='<span class="api-err">'+esc(err&&err.message?err.message:'搜尋失敗')+'</span>';
+  // One final refresh of the official instance registry before giving up.
+  loadDynamicInstances(true).then(function(instances){
+   return runSearchPool(searchTasks(q,searchPage,instances));
+  }).then(function(res2){
+   searchBusy=false;
+   $('homeSearchBtn').disabled=false;
+   lastSearchInstance=res2.base;
+   renderInternalSearch(res2.items,!reset);
+   $('searchNodeStatus').textContent='已顯示 '+res2.items.length+' 部結果 · '+res2.provider+'（已更新來源）';
+   $('searchMoreBtn').classList.remove('hidden');
+  },function(){
+   searchBusy=false;
+   $('homeSearchBtn').disabled=false;
+   if(reset)$('homeSearchResults').innerHTML='<div class="search-loading">目前公開搜尋來源暫時無法使用，稍後再試。</div>';
+   $('searchNodeStatus').innerHTML='<span class="api-err">目前搜尋來源都沒有回應</span>';
+  });
  });
 }
 
