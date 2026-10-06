@@ -3559,3 +3559,240 @@ body.watch-fullscreen .watch-right{
   min-height:46px!important;
  }
 }
+
+/* =========================================================
+   V1.5.6.60 — FINAL MOBILE FULLSCREEN OVERRIDE
+   Must stay at the END of styles.css so normal mobile layout
+   cannot override fullscreen layout.
+   ========================================================= */
+
+html.watch-fullscreen-root,
+body.watch-mode.watch-fullscreen{
+ width:100%!important;
+ max-width:100%!important;
+ height:100%!important;
+ margin:0!important;
+ overflow:hidden!important;
+ overscroll-behavior:none!important;
+ background:#000!important;
+}
+
+/* Hide every normal-layout element that should not participate. */
+body.watch-mode.watch-fullscreen .library-sidebar,
+body.watch-mode.watch-fullscreen .related-sidebar,
+body.watch-mode.watch-fullscreen .player-top,
+body.watch-mode.watch-fullscreen .player-info-row,
+body.watch-mode.watch-fullscreen .player-mini-spacer{
+ display:none!important;
+}
+
+/* The fullscreen section owns the viewport. */
+body.watch-mode.watch-fullscreen #playerSection{
+ display:block!important;
+ position:fixed!important;
+ inset:0!important;
+ width:100vw!important;
+ max-width:100vw!important;
+ height:100vh!important;
+ height:100svh!important;
+ height:100dvh!important;
+ min-height:0!important;
+ margin:0!important;
+ padding:0!important;
+ border:0!important;
+ border-radius:0!important;
+ overflow:hidden!important;
+ background:#000!important;
+ z-index:99999!important;
+ box-sizing:border-box!important;
+}
+
+/* Override the normal phone flex-column layout. */
+body.watch-mode.watch-fullscreen #playerSection .watch-layout{
+ display:block!important;
+ position:relative!important;
+ width:100%!important;
+ max-width:100%!important;
+ height:100%!important;
+ min-height:0!important;
+ margin:0!important;
+ padding:0!important;
+ overflow:hidden!important;
+ background:#000!important;
+}
+
+/* Player + toolbar are a strict two-row grid. */
+body.watch-mode.watch-fullscreen #playerSection .watch-center{
+ display:grid!important;
+ grid-template-columns:1fr!important;
+ grid-template-rows:minmax(0,1fr) auto!important;
+ width:100%!important;
+ max-width:100%!important;
+ height:100%!important;
+ min-height:0!important;
+ margin:0!important;
+ padding:0!important;
+ gap:0!important;
+ overflow:hidden!important;
+ background:#000!important;
+}
+
+/* Player always keeps the remaining space. */
+body.watch-mode.watch-fullscreen #playerSection #playerStage{
+ grid-row:1!important;
+ position:relative!important;
+ inset:auto!important;
+ width:100%!important;
+ max-width:100%!important;
+ height:100%!important;
+ min-height:0!important;
+ max-height:none!important;
+ margin:0!important;
+ padding:0!important;
+ overflow:hidden!important;
+ border:0!important;
+ border-radius:0!important;
+ background:#000!important;
+ box-shadow:none!important;
+ box-sizing:border-box!important;
+}
+
+body.watch-mode.watch-fullscreen #playerSection #player,
+body.watch-mode.watch-fullscreen #playerSection #player iframe,
+body.watch-mode.watch-fullscreen #playerSection #ytDirectFrame{
+ display:block!important;
+ position:absolute!important;
+ inset:0!important;
+ width:100%!important;
+ max-width:100%!important;
+ height:100%!important;
+ max-height:100%!important;
+ min-height:0!important;
+ margin:0!important;
+ padding:0!important;
+ border:0!important;
+ background:#000!important;
+ object-fit:contain!important;
+ aspect-ratio:auto!important;
+}
+
+/* Compact fullscreen toolbar. */
+body.watch-mode.watch-fullscreen #playerSection .kid-controls{
+ grid-row:2!important;
+ position:relative!important;
+ left:auto!important;
+ right:auto!important;
+ top:auto!important;
+ bottom:auto!important;
+ display:grid!important;
+ width:100%!important;
+ max-width:100%!important;
+ height:auto!important;
+ min-height:0!important;
+ max-height:none!important;
+ margin:0!important;
+ box-sizing:border-box!important;
+ background:#07101f!important;
+ border-top:1px solid rgba(255,255,255,.12)!important;
+ overflow:visible!important;
+ z-index:100002!important;
+}
+
+body.watch-mode.watch-fullscreen #playerSection .kid-controls button{
+ width:100%!important;
+ max-width:100%!important;
+ min-width:0!important;
+ height:auto!important;
+ margin:0!important;
+ box-sizing:border-box!important;
+ white-space:normal!important;
+ overflow:hidden!important;
+ text-overflow:ellipsis!important;
+}
+
+/* Phone / narrow portrait: compact 3 x 2 toolbar. */
+@media(max-width:700px){
+ body.watch-mode.watch-fullscreen #playerSection .kid-controls{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  grid-auto-rows:50px!important;
+  gap:5px!important;
+  padding:
+   6px
+   max(6px,env(safe-area-inset-right,0px))
+   calc(6px + env(safe-area-inset-bottom,0px))
+   max(6px,env(safe-area-inset-left,0px))!important;
+ }
+
+ body.watch-mode.watch-fullscreen #playerSection .kid-controls button{
+  min-height:50px!important;
+  max-height:50px!important;
+  padding:5px 4px!important;
+  border-radius:9px!important;
+  font-size:11px!important;
+  line-height:1.15!important;
+ }
+}
+
+/* Very narrow phones: still 3 columns, slightly smaller text. */
+@media(max-width:390px){
+ body.watch-mode.watch-fullscreen #playerSection .kid-controls{
+  grid-auto-rows:48px!important;
+  gap:4px!important;
+ }
+
+ body.watch-mode.watch-fullscreen #playerSection .kid-controls button{
+  min-height:48px!important;
+  max-height:48px!important;
+  font-size:10px!important;
+  padding:4px 2px!important;
+ }
+}
+
+/* Phone landscape: all six controls fit in one row. */
+@media(max-height:520px) and (orientation:landscape){
+ body.watch-mode.watch-fullscreen #playerSection .kid-controls{
+  grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  grid-auto-rows:48px!important;
+  gap:5px!important;
+  padding:
+   5px
+   max(7px,env(safe-area-inset-right,0px))
+   calc(5px + env(safe-area-inset-bottom,0px))
+   max(7px,env(safe-area-inset-left,0px))!important;
+ }
+
+ body.watch-mode.watch-fullscreen #playerSection .kid-controls button{
+  min-height:48px!important;
+  max-height:48px!important;
+  font-size:10px!important;
+  padding:4px 3px!important;
+ }
+}
+
+/* iPad / larger tablets: one row when space allows. */
+@media(min-width:701px){
+ body.watch-mode.watch-fullscreen #playerSection .kid-controls{
+  grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  grid-auto-rows:54px!important;
+  gap:7px!important;
+  padding:
+   7px
+   max(10px,env(safe-area-inset-right,0px))
+   calc(7px + env(safe-area-inset-bottom,0px))
+   max(10px,env(safe-area-inset-left,0px))!important;
+ }
+
+ body.watch-mode.watch-fullscreen #playerSection .kid-controls button{
+  min-height:54px!important;
+  max-height:54px!important;
+  font-size:12px!important;
+  padding:6px!important;
+ }
+}
+
+/* iOS Safari viewport fallback. */
+@supports (-webkit-touch-callout:none){
+ body.watch-mode.watch-fullscreen #playerSection{
+  height:-webkit-fill-available!important;
+ }
+}

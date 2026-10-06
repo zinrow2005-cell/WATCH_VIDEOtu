@@ -1,0 +1,24 @@
+WATCH_VIDEOtu V1.5.6.60 — Mobile Fullscreen Fix
+
+問題根因：
+- 一般手機版的 body.watch-mode .watch-layout / .controls 規則位於 fullscreen CSS 後面。
+- CSS specificity 相同時，後面的手機規則覆蓋 fullscreen 規則。
+- 導致全螢幕仍套用一般手機 3 欄版型，播放器高度被壓縮，六個按鈕撐滿整頁。
+
+本版修正：
+1. 在 styles.css 最後加入高 specificity 的 body.watch-mode.watch-fullscreen 規則。
+2. 全螢幕固定為兩列：影片區 + 底部工具列。
+3. 手機直立：工具列固定 3 x 2，每列約 48–50px。
+4. 手機橫式：六個控制按鈕同一列。
+5. iPad：六按鈕一列。
+6. 保留 safe-area-inset-bottom，避免 Home Indicator 裁切。
+7. 進入全螢幕時強制關閉 mini-player 狀態。
+8. 退出全螢幕約 1.9 秒後才重新允許 mini-player 判定。
+
+QA：
+- app.js PASS
+- ktv_singers.js PASS
+- ktv_songs.js PASS
+- sw.js PASS
+- DOM missing 0
+- duplicate IDs 0
