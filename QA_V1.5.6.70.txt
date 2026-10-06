@@ -1,0 +1,15 @@
+WATCH_VIDEOtu V1.5.6.70 — KTV Queue Count Fix
+
+修正：
+- 左側「已點歌曲」原本同時顯示舊計數與新 ktvQueueNavCount，因此 3 首會顯示成 3 3。
+- 現在左側只保留一個 ktvQueueNavCount。
+- 點歌、刪除、清空、插播後 updateKtvQueueCount() 統一更新。
+- 右側待唱清單本身仍正常顯示實際 3 首。
+
+QA：
+- ktvQueueNavCount HTML occurrences: 1
+- app.js PASS
+- ktv_singers.js PASS
+- ktv_songs.js PASS
+- sw.js PASS
+- duplicate IDs 0
