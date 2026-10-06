@@ -1,0 +1,22 @@
+WATCH_VIDEOtu V1.5.6.58 — Child Recommendation Library
+
+完成：
+- 刪除原本 YouTube 播放測試影片 M7lc1UVf-VE，且會從舊手機/電腦 localStorage 自動移除。
+- 「播放推薦」改為「播放兒童推薦」。
+- 推薦區改為兒童內容，並輪替避開最近看過的影片。
+- 英文：加入使用者指定影片、Lingokids ABC Chant、ABC Animals、ABC Song。
+- 兒歌：加入朱妮托尼兒歌/卡通合集。
+- 卡通：加入巧虎幼兒安全學習。
+- 學習：加入 Bebefinn 兒歌與幼兒學習。
+- 自然：加入 Nat Geo Kids 動物大自然合集。
+- 新增「數字／顏色」分類：加入使用者指定 2 支影片、Numbers & Colors、Super Simple Colors。
+- 相關推薦搜尋會依目前分類自動加上 kids / child friendly / educational 等條件。
+- 新增各分類的推薦搜尋關鍵字資料，供後續動態擴充。
+
+QA：
+- app.js PASS
+- ktv_singers.js PASS
+- ktv_songs.js PASS
+- sw.js PASS
+- DOM missing 0
+- duplicate IDs 0

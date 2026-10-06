@@ -3534,3 +3534,9 @@ body.watch-fullscreen .watch-right{
   box-sizing:border-box!important;
  }
 }
+
+/* V1.5.6.58 child recommendation categories */
+.side-filter[data-sidefilter="數字／顏色"]{font-weight:900}
+@media(max-width:700px){
+ .side-filter[data-sidefilter="數字／顏色"]{min-width:112px!important}
+}

@@ -5,9 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#0b1220">
-<title>WATCH_VIDEOtu V1.5.6.57</title>
+<title>WATCH_VIDEOtu V1.5.6.58</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=15657">
+<link rel="stylesheet" href="styles.css?v=15658">
 
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=15652">
 <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png?v=15652">
@@ -26,7 +26,7 @@
       <circle cx="50" cy="14" r="6" fill="#fff"/><path d="M50 10.7v6.6M46.7 14h6.6" stroke="#ff174d" stroke-width="2.4" stroke-linecap="round"/>
     </svg>
   </span>
-  <span class="brand-copy"><strong>WATCH_VIDEO<span>tu  <span class="brand-version" title="手機版會自動檢查更新">V1.5.6.57</span>
+  <span class="brand-copy"><strong>WATCH_VIDEO<span>tu  <span class="brand-version" title="兒童推薦資料庫 V1.5.6.58">V1.5.6.58</span>
 </span></strong><small>Kids Video Hub</small></span>
 </button>
 <div class="mode-switch" id="modeSwitch">
@@ -54,7 +54,7 @@
         <div><b id="dailyRemain">不限</b><span>今日剩餘</span></div>
       </div>
       <div class="hero-actions">
-        <button id="heroPlayBtn" class="primary">▶ 播放推薦</button>
+        <button id="heroPlayBtn" class="primary">▶ 播放兒童推薦</button>
         <button id="kidModeBtn" class="secondary">🧒 兒童模式</button>
       </div>
     </div>
@@ -72,13 +72,14 @@
         <div class="sidebar-filters" id="sidebarFilters">
           <button data-sidefilter="favorites" class="side-filter active">★ 收藏</button>
           <button data-sidefilter="recent" class="side-filter">🕘 最近</button>
-          <button data-sidefilter="recommended" class="side-filter">👍 推薦</button>
+          <button data-sidefilter="recommended" class="side-filter">🧒 兒童推薦</button>
           <button data-sidefilter="英文" class="side-filter">🔤 英文</button>
           <button data-sidefilter="兒歌" class="side-filter">🎵 兒歌</button>
           <button data-sidefilter="卡通" class="side-filter">🐻 卡通</button>
           <button data-sidefilter="故事" class="side-filter">📚 故事</button>
           <button data-sidefilter="學習" class="side-filter">🧠 學習</button>
           <button data-sidefilter="自然／動物" class="side-filter">🦖 自然</button>
+          <button data-sidefilter="數字／顏色" class="side-filter">🔢🌈 數字顏色</button>
         </div>
         <div id="sidebarVideoList" class="sidebar-video-list"></div>
       </aside>
@@ -142,7 +143,7 @@
         <div class="quick-add-title">📋 貼上 YouTube 影片網址</div>
         <div class="quick-add-line">
           <input id="quickUrlInput" placeholder="貼上 YouTube 影片網址" autocomplete="off">
-          <select id="quickCategory"><option>英文</option><option>兒歌</option><option>卡通</option><option>故事</option><option>學習</option><option>其他</option></select>
+          <select id="quickCategory"><option>英文</option><option>兒歌</option><option>卡通</option><option>故事</option><option>學習</option><option>自然／動物</option><option>數字／顏色</option><option>其他</option></select>
           <button id="quickPlayBtn">▶ 立即播放</button><button id="quickAddBtn">＋ 收藏</button>
         </div>
         <div id="quickAddStatus" class="search-hint"></div>
@@ -187,7 +188,7 @@
       </div>
 <div class="admin-card"><h3>PIN 設定</h3><input id="pinInput" inputmode="numeric" maxlength="6" placeholder="4～6 位數 PIN"><button id="savePinBtn">儲存 PIN</button></div>
       <div class="admin-card">
-        <h3>新增影片</h3><input id="urlInput" placeholder="貼上 YouTube 網址"><input id="titleInput" placeholder="影片名稱（可不填）"><input id="channelInput" placeholder="頻道名稱（選填）"><select id="categoryInput"><option>英文</option><option>兒歌</option><option>卡通</option><option>故事</option><option>學習</option><option>其他</option></select><button id="addBtn">＋ 加入影片</button>
+        <h3>新增影片</h3><input id="urlInput" placeholder="貼上 YouTube 網址"><input id="titleInput" placeholder="影片名稱（可不填）"><input id="channelInput" placeholder="頻道名稱（選填）"><select id="categoryInput"><option>英文</option><option>兒歌</option><option>卡通</option><option>故事</option><option>學習</option><option>自然／動物</option><option>數字／顏色</option><option>其他</option></select><button id="addBtn">＋ 加入影片</button>
       </div>
       <div class="admin-card">
         <h3>允許頻道白名單</h3><textarea id="whitelistInput" rows="5" placeholder="每行一個頻道名稱"></textarea><label class="checkline"><input id="whitelistEnabled" type="checkbox"> 只顯示白名單頻道</label><button id="saveWhitelistBtn">儲存白名單</button>
@@ -196,7 +197,7 @@
         <h3>資料備份</h3><button id="exportBtn">匯出備份</button><label class="file-btn">匯入備份<input id="importInput" type="file" accept="application/json"></label>
       </div>
       <div class="admin-card wide-card">
-        <h3>批次加入 YouTube 網址</h3><textarea id="batchInput" rows="5" placeholder="每行貼一個 YouTube 影片網址"></textarea><select id="batchCategory"><option>英文</option><option>兒歌</option><option>卡通</option><option>故事</option><option>學習</option><option>其他</option></select><button id="batchAddBtn">＋ 批次加入</button><div id="batchStatus" class="hint"></div>
+        <h3>批次加入 YouTube 網址</h3><textarea id="batchInput" rows="5" placeholder="每行貼一個 YouTube 影片網址"></textarea><select id="batchCategory"><option>英文</option><option>兒歌</option><option>卡通</option><option>故事</option><option>學習</option><option>自然／動物</option><option>數字／顏色</option><option>其他</option></select><button id="batchAddBtn">＋ 批次加入</button><div id="batchStatus" class="hint"></div>
       </div>
     </div>
     <h3 class="manage-title">影片庫排序與編輯</h3>
@@ -429,9 +430,9 @@
 <div id="modal" class="modal hidden">
   <div class="modal-card"><h3>輸入家長 PIN</h3><input id="modalInput" inputmode="numeric" maxlength="6"><div class="modal-actions"><button id="modalCancel">取消</button><button id="modalOk">確定</button></div></div>
 </div>
-<script defer src="ktv_singers.js?v=15657"></script>
-<script defer src="ktv_songs.js?v=15657"></script>
-<script defer src="app.js?v=15657"></script>
+<script defer src="ktv_singers.js?v=15658"></script>
+<script defer src="ktv_songs.js?v=15658"></script>
+<script defer src="app.js?v=15658"></script>
 
 <div id="ktvToast" class="ktv-toast hidden" role="status" aria-live="polite"></div>
 </body>
