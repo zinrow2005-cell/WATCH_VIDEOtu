@@ -1,0 +1,23 @@
+WATCH_VIDEOtu V1.5.6.63 — Responsive Stability
+
+本版重點：
+- 新增 responsive-v63.css，作為唯一最終跨裝置版型層。
+- Desktop / Tablet / Phone Portrait / Phone Landscape 分開管理。
+- 影片、音樂、KTV、全球電視、家長頁各自定義手機版。
+- 全螢幕播放器獨立於一般手機版型，不再被普通 media query 覆蓋。
+- 清理 styles.css 中 V1.5.6.50～61 的晚期修補區塊：removed approx 42624 CSS chars from v50-v61 patch blocks
+- Service Worker 已加入 responsive-v63.css?v=15663。
+
+CSS 統計：
+- main styles.css: 82874 bytes
+- responsive-v63.css: 13215 bytes
+- main @media count: 79
+- responsive @media count: 12
+
+程式檢查：
+- app.js PASS
+- ktv_singers.js PASS
+- ktv_songs.js PASS
+- sw.js PASS
+- duplicate IDs: 0
+- direct missing DOM bindings: 0

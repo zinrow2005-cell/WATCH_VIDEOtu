@@ -1,0 +1,536 @@
+
+/* ==========================================================
+   WATCH_VIDEOtu V1.5.6.63
+   AUTHORITATIVE RESPONSIVE LAYER
+   Desktop / Tablet / Phone Portrait / Phone Landscape
+   ========================================================== */
+
+:root{
+ --app-gap:12px;
+ --safe-top:env(safe-area-inset-top,0px);
+ --safe-right:env(safe-area-inset-right,0px);
+ --safe-bottom:env(safe-area-inset-bottom,0px);
+ --safe-left:env(safe-area-inset-left,0px);
+}
+
+html,body{
+ width:100%;
+ max-width:100%;
+ overflow-x:hidden;
+}
+
+*,*::before,*::after{box-sizing:border-box}
+
+img,video,iframe{max-width:100%}
+
+/* ---------- shared header ---------- */
+.topbar{
+ width:100%;
+ max-width:100%;
+}
+
+.mode-switch{
+ min-width:0;
+ max-width:100%;
+}
+
+.mode-btn{
+ min-width:0;
+}
+
+/* ---------- DESKTOP >= 1181 ---------- */
+@media(min-width:1181px){
+ main{width:100%;max-width:none;padding:12px}
+ .watch-layout{grid-template-columns:220px minmax(0,1fr) 320px;gap:12px}
+ .music-layout{grid-template-columns:220px minmax(0,1fr) 320px;gap:12px}
+ .ktv-shell{grid-template-columns:220px minmax(0,1fr) 320px;gap:12px}
+ .tv-embed-shell{display:grid;grid-template-columns:220px minmax(0,1fr);gap:12px}
+}
+
+/* ---------- TABLET 701–1180 ---------- */
+@media(min-width:701px) and (max-width:1180px){
+ main{width:100%;max-width:none;padding:10px}
+ .watch-layout{grid-template-columns:180px minmax(0,1fr) 260px;gap:10px}
+ .music-layout{grid-template-columns:180px minmax(0,1fr) 260px;gap:10px}
+ .ktv-shell{grid-template-columns:180px minmax(0,1fr) 260px;gap:10px}
+ .tv-embed-shell{grid-template-columns:180px minmax(0,1fr);gap:10px}
+ .topbar{gap:8px}
+ .mode-btn{padding:8px 10px}
+}
+
+/* ---------- PHONE COMMON <= 700 ---------- */
+@media(max-width:700px){
+ body{
+  width:100%;
+  max-width:100%;
+  overflow-x:hidden;
+  -webkit-text-size-adjust:100%;
+ }
+
+ main{
+  width:100%;
+  max-width:100%;
+  padding:8px;
+ }
+
+ .topbar{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  grid-template-areas:"brand actions" "modes modes"!important;
+  gap:6px!important;
+  padding:
+   calc(6px + var(--safe-top))
+   max(8px,var(--safe-right))
+   7px
+   max(8px,var(--safe-left))!important;
+ }
+
+ .brand-videotu{grid-area:brand!important;min-width:0!important}
+ .top-actions{grid-area:actions!important;display:flex!important;gap:4px!important}
+ .mode-switch{
+  grid-area:modes!important;
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:5px!important;
+  width:100%!important;
+  max-width:100%!important;
+  overflow:visible!important;
+  padding:4px!important;
+ }
+
+ .mode-btn{
+  width:100%!important;
+  min-width:0!important;
+  min-height:42px!important;
+  margin:0!important;
+  padding:8px 6px!important;
+  font-size:11px!important;
+  line-height:1.15!important;
+  white-space:normal!important;
+ }
+
+ .top-actions .pill{
+  min-width:0!important;
+  padding:7px 8px!important;
+  font-size:10px!important;
+  white-space:nowrap!important;
+ }
+
+ input,select,textarea{font-size:16px!important}
+ button{touch-action:manipulation}
+}
+
+/* ==========================================================
+   VIDEO MODE
+   ========================================================== */
+@media(max-width:700px){
+ body.watch-mode .watch-layout{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:8px!important;
+  width:100%!important;
+  min-width:0!important;
+ }
+
+ body.watch-mode .watch-center{order:1!important;min-width:0!important;width:100%!important}
+ body.watch-mode .library-sidebar{order:2!important;width:100%!important;max-width:100%!important;position:relative!important;top:auto!important}
+ body.watch-mode .related-sidebar{order:3!important;width:100%!important;max-width:100%!important;position:relative!important;top:auto!important}
+
+ body.watch-mode .sidebar-filters{
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  gap:5px!important;
+  overflow-x:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+ }
+
+ body.watch-mode .side-filter{flex:0 0 auto!important;min-width:86px!important}
+
+ body.watch-mode .kid-controls,
+ body.watch-mode .controls{
+  display:grid!important;
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  gap:5px!important;
+  width:100%!important;
+ }
+
+ body.watch-mode .kid-controls button,
+ body.watch-mode .controls button{
+  min-width:0!important;
+  min-height:44px!important;
+  padding:8px 4px!important;
+  font-size:11px!important;
+ }
+}
+
+/* FULLSCREEN = independent from normal phone layout */
+body.watch-mode.watch-fullscreen{
+ position:fixed!important;
+ inset:0!important;
+ width:100vw!important;
+ height:100dvh!important;
+ overflow:hidden!important;
+ background:#000!important;
+}
+
+body.watch-mode.watch-fullscreen #playerSection{
+ position:fixed!important;
+ inset:0!important;
+ width:100vw!important;
+ height:100dvh!important;
+ margin:0!important;
+ padding:0!important;
+ z-index:100000!important;
+ background:#000!important;
+}
+
+body.watch-mode.watch-fullscreen #playerSection .watch-layout{
+ display:block!important;
+ width:100%!important;
+ height:100%!important;
+ margin:0!important;
+ padding:0!important;
+}
+
+body.watch-mode.watch-fullscreen #playerSection .watch-center{
+ display:grid!important;
+ grid-template-columns:1fr!important;
+ grid-template-rows:minmax(0,1fr) auto!important;
+ width:100%!important;
+ height:100%!important;
+ gap:0!important;
+}
+
+body.watch-mode.watch-fullscreen #playerStage{
+ grid-row:1!important;
+ position:relative!important;
+ inset:auto!important;
+ width:100%!important;
+ height:100%!important;
+ min-height:0!important;
+ margin:0!important;
+ padding:0!important;
+ background:#000!important;
+ overflow:hidden!important;
+}
+
+body.watch-mode.watch-fullscreen #playerStage iframe,
+body.watch-mode.watch-fullscreen #player,
+body.watch-mode.watch-fullscreen #ytDirectFrame{
+ position:absolute!important;
+ inset:0!important;
+ width:100%!important;
+ height:100%!important;
+ border:0!important;
+}
+
+body.watch-mode.watch-fullscreen .library-sidebar,
+body.watch-mode.watch-fullscreen .related-sidebar,
+body.watch-mode.watch-fullscreen .player-top{
+ display:none!important;
+}
+
+body.watch-mode.watch-fullscreen .kid-controls{
+ grid-row:2!important;
+ position:relative!important;
+ display:grid!important;
+ width:100%!important;
+ margin:0!important;
+ background:#07101f!important;
+ border-top:1px solid rgba(255,255,255,.12)!important;
+ z-index:100002!important;
+}
+
+@media(max-width:700px){
+ body.watch-mode.watch-fullscreen .kid-controls{
+  grid-template-columns:repeat(3,minmax(0,1fr))!important;
+  grid-auto-rows:48px!important;
+  gap:5px!important;
+  padding:
+   6px
+   max(6px,var(--safe-right))
+   calc(6px + var(--safe-bottom))
+   max(6px,var(--safe-left))!important;
+ }
+
+ body.watch-mode.watch-fullscreen .kid-controls button{
+  min-height:48px!important;
+  max-height:48px!important;
+  min-width:0!important;
+  font-size:10px!important;
+  padding:4px 3px!important;
+ }
+}
+
+@media(max-height:520px) and (orientation:landscape){
+ body.watch-mode.watch-fullscreen .kid-controls{
+  grid-template-columns:repeat(6,minmax(0,1fr))!important;
+  grid-auto-rows:46px!important;
+ }
+}
+
+/* ==========================================================
+   MUSIC / RADIO
+   ========================================================== */
+@media(max-width:700px){
+ .music-layout{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:8px!important;
+  width:100%!important;
+ }
+
+ .music-sidebar{
+  order:1!important;
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  gap:5px!important;
+  overflow-x:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+  width:100%!important;
+ }
+
+ .music-now-panel{order:2!important;width:100%!important}
+ .music-main{order:3!important;width:100%!important;min-width:0!important}
+
+ .music-search-row{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:7px!important;
+ }
+
+ .music-search-row input,
+ .music-search-row button{
+  width:100%!important;
+  min-width:0!important;
+ }
+
+ .radio-category-bar{
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  gap:6px!important;
+  overflow-x:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+ }
+
+ .radio-cat{flex:0 0 auto!important}
+
+ .music-status-row{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:7px!important;
+ }
+
+ #musicRetryBtn{width:100%!important}
+
+ .music-results{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:8px!important;
+ }
+
+ .music-card{
+  width:100%!important;
+  min-width:0!important;
+  grid-template-columns:56px minmax(0,1fr) 34px!important;
+  gap:9px!important;
+ }
+}
+
+/* ==========================================================
+   KTV
+   ========================================================== */
+@media(max-width:700px){
+ .ktv-shell{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:8px!important;
+  width:100%!important;
+ }
+
+ .ktv-sidebar{
+  order:1!important;
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  gap:5px!important;
+  overflow-x:auto!important;
+  overflow-y:hidden!important;
+  width:100%!important;
+  position:relative!important;
+  top:auto!important;
+ }
+
+ .ktv-main{order:2!important;width:100%!important;min-width:0!important}
+ .ktv-queue-panel{order:3!important;width:100%!important;position:relative!important;top:auto!important}
+
+ .ktv-nav{flex:0 0 auto!important;min-width:92px!important}
+
+ .ktv-search-row{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:6px!important;
+ }
+
+ .ktv-search-row input,
+ .ktv-search-row button{
+  width:100%!important;
+  min-width:0!important;
+ }
+
+ .ktv-search-types,
+ .ktv-song-category-bar,
+ .ktv-singer-filter-bar,
+ .ktv-letter-bar{
+  display:flex!important;
+  flex-wrap:nowrap!important;
+  overflow-x:auto!important;
+  gap:5px!important;
+  -webkit-overflow-scrolling:touch!important;
+ }
+
+ .ktv-song-grid{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:8px!important;
+ }
+
+ .ktv-song-card{
+  display:grid!important;
+  grid-template-columns:38px minmax(0,1fr)!important;
+  grid-template-rows:auto auto!important;
+  gap:8px!important;
+  width:100%!important;
+  min-width:0!important;
+ }
+
+ .ktv-song-actions{
+  grid-column:1/-1!important;
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:6px!important;
+ }
+
+ .ktv-song-actions button{width:100%!important;min-width:0!important;min-height:44px!important}
+
+ .ktv-player-tools{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  gap:6px!important;
+ }
+
+ .ktv-player-tools button{width:100%!important;min-height:44px!important}
+}
+
+/* ==========================================================
+   GLOBAL TV
+   ========================================================== */
+@media(max-width:820px){
+ body.tv-mode-active{
+  overflow-x:hidden!important;
+ }
+
+ .tv-mode,
+ .tv-embed-shell,
+ .tv-embed-main,
+ .tv-embed-toolbar,
+ .tv-embed-wrap,
+ .tv-mobile-quick-rail{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+ }
+}
+
+/* portrait = normal page flow, TV + quick choices */
+@media(max-width:820px) and (orientation:portrait){
+ .tv-embed-sidebar,
+ .tv-drawer-backdrop,
+ .tv-mobile-drawer-btn{
+  display:none!important;
+ }
+
+ .tv-embed-main{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:7px!important;
+ }
+
+ .tv-embed-toolbar{order:1!important}
+ .tv-mobile-quick-rail{
+  order:2!important;
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:7px!important;
+ }
+
+ .tv-embed-wrap{
+  order:3!important;
+  position:relative!important;
+  height:72svh!important;
+  min-height:580px!important;
+  aspect-ratio:auto!important;
+  overflow:hidden!important;
+  background:#000!important;
+ }
+
+ #tvWebFrame{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  pointer-events:auto!important;
+ }
+}
+
+/* landscape = TV left + selector right */
+@media(max-width:920px) and (orientation:landscape){
+ .tv-embed-sidebar,
+ .tv-drawer-backdrop,
+ .tv-mobile-drawer-btn{
+  display:none!important;
+ }
+
+ .tv-embed-main{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) min(31vw,270px)!important;
+  grid-template-areas:"toolbar toolbar" "screen rail"!important;
+  gap:7px!important;
+ }
+
+ .tv-embed-toolbar{grid-area:toolbar!important}
+ .tv-embed-wrap{
+  grid-area:screen!important;
+  height:calc(100dvh - 126px)!important;
+  min-height:260px!important;
+  overflow:hidden!important;
+ }
+
+ .tv-mobile-quick-rail{
+  grid-area:rail!important;
+  display:flex!important;
+  flex-direction:column!important;
+  gap:6px!important;
+  height:calc(100dvh - 126px)!important;
+  overflow-y:auto!important;
+ }
+
+ .tv-quick-country{flex:0 0 auto!important;min-height:40px!important}
+}
+
+/* ==========================================================
+   PARENT / SETTINGS
+   ========================================================== */
+@media(max-width:700px){
+ .parent-panel{width:100%!important;padding:10px!important}
+ .admin-grid{grid-template-columns:1fr!important}
+ .manage-row,
+ .manage-row.v15{
+  display:grid!important;
+  grid-template-columns:56px minmax(0,1fr)!important;
+  gap:6px!important;
+ }
+ .manage-row img{width:56px!important}
+ .manage-row input,
+ .manage-row select,
+ .manage-row .extra-field,
+ .manage-row .row-buttons{grid-column:2!important}
+}
