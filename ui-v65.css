@@ -1,0 +1,447 @@
+
+/* ==========================================================
+   WATCH_VIDEOtu V1.5.6.65
+   MODERN UI SYSTEM
+   ========================================================== */
+
+:root{
+ --ui-bg:#0b1423;
+ --ui-surface:#111c2f;
+ --ui-surface-2:#17243a;
+ --ui-surface-3:#1d2c45;
+ --ui-border:rgba(255,255,255,.10);
+ --ui-border-strong:rgba(255,255,255,.16);
+ --ui-text:#f6f8fb;
+ --ui-muted:#95a8c3;
+ --ui-primary:#4aa3ff;
+ --ui-primary-2:#6d7cff;
+ --ui-success:#22c77a;
+ --ui-warning:#ffb84d;
+ --ui-danger:#ff5c72;
+ --ui-shadow:0 10px 28px rgba(0,0,0,.28);
+ --ui-shadow-soft:0 5px 14px rgba(0,0,0,.22);
+ --ui-radius:14px;
+ --ui-radius-sm:10px;
+}
+
+/* ---------- global button baseline ---------- */
+button,
+.button,
+.btn,
+.pill,
+.mode-btn,
+.side-filter,
+.music-nav,
+.ktv-nav,
+.tv-nav,
+.radio-cat,
+.ktv-search-type,
+.ktv-song-cat,
+.ktv-singer-filter,
+.ktv-letter,
+.tv-country,
+.tv-quick-country{
+ appearance:none;
+ -webkit-appearance:none;
+ border:1px solid var(--ui-border)!important;
+ border-radius:12px!important;
+ background:linear-gradient(180deg,rgba(34,51,78,.96),rgba(20,34,55,.96))!important;
+ color:var(--ui-text)!important;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.035),var(--ui-shadow-soft)!important;
+ transition:
+  transform .14s ease,
+  background .18s ease,
+  border-color .18s ease,
+  box-shadow .18s ease,
+  opacity .18s ease!important;
+ font-weight:800!important;
+ letter-spacing:.01em;
+ cursor:pointer;
+}
+
+button:hover,
+.button:hover,
+.btn:hover,
+.pill:hover,
+.mode-btn:hover,
+.side-filter:hover,
+.music-nav:hover,
+.ktv-nav:hover,
+.tv-nav:hover,
+.radio-cat:hover,
+.ktv-search-type:hover,
+.ktv-song-cat:hover,
+.ktv-singer-filter:hover,
+.ktv-letter:hover,
+.tv-country:hover{
+ transform:translateY(-1px);
+ border-color:rgba(104,175,255,.45)!important;
+ background:linear-gradient(180deg,rgba(42,65,99,.98),rgba(24,41,66,.98))!important;
+}
+
+button:active,
+.button:active,
+.btn:active,
+.pill:active,
+.mode-btn:active,
+.side-filter:active,
+.music-nav:active,
+.ktv-nav:active,
+.tv-nav:active,
+.radio-cat:active,
+.ktv-search-type:active,
+.ktv-song-cat:active,
+.ktv-singer-filter:active,
+.ktv-letter:active,
+.tv-country:active{
+ transform:translateY(0) scale(.985);
+ box-shadow:inset 0 2px 7px rgba(0,0,0,.28)!important;
+}
+
+button:focus-visible,
+.button:focus-visible,
+.btn:focus-visible{
+ outline:2px solid rgba(74,163,255,.92)!important;
+ outline-offset:2px!important;
+}
+
+/* ---------- active / selected ---------- */
+.mode-btn.active,
+.side-filter.active,
+.music-nav.active,
+.ktv-nav.active,
+.tv-nav.active,
+.radio-cat.active,
+.ktv-search-type.active,
+.ktv-song-cat.active,
+.ktv-singer-filter.active,
+.ktv-letter.active,
+.tv-country.active,
+.tv-quick-country.active{
+ background:linear-gradient(135deg,var(--ui-primary),var(--ui-primary-2))!important;
+ border-color:rgba(255,255,255,.25)!important;
+ color:#fff!important;
+ box-shadow:
+  0 7px 18px rgba(53,122,255,.28),
+  inset 0 1px 0 rgba(255,255,255,.18)!important;
+}
+
+/* ---------- primary CTAs ---------- */
+#heroPlayBtn,
+#homeSearchBtn,
+#musicSearchBtn,
+#ktvSearchBtn,
+#ktvStartBtn,
+#tvFullscreenBtn,
+.ktv-order,
+.music-play,
+.player-primary{
+ background:linear-gradient(135deg,#4aa3ff,#6d7cff)!important;
+ color:#fff!important;
+ border-color:rgba(255,255,255,.22)!important;
+ box-shadow:0 8px 22px rgba(74,163,255,.25)!important;
+}
+
+#heroPlayBtn:hover,
+#homeSearchBtn:hover,
+#musicSearchBtn:hover,
+#ktvSearchBtn:hover,
+#ktvStartBtn:hover,
+#tvFullscreenBtn:hover,
+.ktv-order:hover,
+.music-play:hover,
+.player-primary:hover{
+ background:linear-gradient(135deg,#62b0ff,#7c8bff)!important;
+}
+
+/* ---------- success / confirmed ---------- */
+.ktv-order.ordered,
+.favorite-active,
+.is-favorite,
+.success-btn{
+ background:linear-gradient(135deg,#1fbd72,#28d98b)!important;
+ border-color:rgba(255,255,255,.20)!important;
+ color:#fff!important;
+}
+
+/* ---------- warning / danger ---------- */
+.danger,
+.delete,
+.remove,
+#tvMiniCloseBtn,
+#ktvClosePlayerBtn{
+ background:linear-gradient(135deg,#ff5d73,#e83f5d)!important;
+ color:#fff!important;
+}
+
+.warning{
+ background:linear-gradient(135deg,#ffb84d,#f39a34)!important;
+ color:#1a1d25!important;
+}
+
+/* ---------- top mode switch ---------- */
+.mode-switch{
+ background:rgba(9,18,31,.72)!important;
+ border:1px solid var(--ui-border)!important;
+ border-radius:16px!important;
+ padding:5px!important;
+ box-shadow:inset 0 1px 0 rgba(255,255,255,.03)!important;
+ backdrop-filter:blur(10px);
+}
+
+.mode-btn{
+ min-height:40px;
+ padding:8px 14px!important;
+ border-radius:11px!important;
+ box-shadow:none!important;
+ background:transparent!important;
+ border-color:transparent!important;
+ color:#b9c7da!important;
+}
+
+.mode-btn:hover{
+ background:rgba(255,255,255,.055)!important;
+ transform:none!important;
+}
+
+.mode-btn.active{
+ background:linear-gradient(135deg,#318fe8,#5c72ed)!important;
+ box-shadow:0 5px 14px rgba(54,132,255,.25)!important;
+}
+
+/* ---------- top action pills ---------- */
+.top-actions .pill{
+ background:rgba(24,38,61,.94)!important;
+ border:1px solid var(--ui-border)!important;
+ box-shadow:none!important;
+}
+
+.top-actions .pill:hover{
+ background:rgba(35,54,84,.98)!important;
+}
+
+/* ---------- panels/cards ---------- */
+.player-shell,
+.music-search-panel,
+.music-now-panel,
+.ktv-search-panel,
+.ktv-player-panel,
+.ktv-queue-panel,
+.tv-embed-toolbar,
+.parent-panel,
+.media-card,
+.music-card,
+.ktv-song-card{
+ border:1px solid var(--ui-border)!important;
+ border-radius:var(--ui-radius)!important;
+ background:linear-gradient(180deg,rgba(18,30,49,.98),rgba(14,24,40,.98))!important;
+ box-shadow:var(--ui-shadow)!important;
+}
+
+/* ---------- video controls ---------- */
+.kid-controls button,
+.controls button,
+.player-controls button{
+ border-radius:12px!important;
+ background:linear-gradient(180deg,#1d2d48,#142239)!important;
+ border:1px solid var(--ui-border)!important;
+ color:#fff!important;
+ min-height:44px;
+}
+
+.kid-controls button:hover,
+.controls button:hover,
+.player-controls button:hover{
+ background:linear-gradient(180deg,#263a5b,#192a45)!important;
+}
+
+/* ---------- sidebar navigation ---------- */
+.side-filter,
+.music-nav,
+.ktv-nav,
+.tv-nav{
+ width:100%;
+ text-align:left;
+ justify-content:flex-start;
+ box-shadow:none!important;
+ background:rgba(23,36,57,.95)!important;
+ border-color:rgba(255,255,255,.07)!important;
+}
+
+.side-filter.active,
+.music-nav.active,
+.ktv-nav.active,
+.tv-nav.active{
+ background:linear-gradient(135deg,#328de3,#526be1)!important;
+}
+
+/* ---------- filters/chips ---------- */
+.radio-cat,
+.ktv-search-type,
+.ktv-song-cat,
+.ktv-singer-filter,
+.ktv-letter{
+ border-radius:999px!important;
+ min-height:34px!important;
+ padding:6px 12px!important;
+ box-shadow:none!important;
+ background:rgba(29,44,69,.92)!important;
+}
+
+/* ---------- form controls ---------- */
+input,
+select,
+textarea{
+ border:1px solid var(--ui-border)!important;
+ border-radius:12px!important;
+ background:#0b1626!important;
+ color:var(--ui-text)!important;
+ box-shadow:inset 0 1px 3px rgba(0,0,0,.22)!important;
+ transition:border-color .16s ease,box-shadow .16s ease!important;
+}
+
+input:focus,
+select:focus,
+textarea:focus{
+ border-color:rgba(74,163,255,.72)!important;
+ box-shadow:0 0 0 3px rgba(74,163,255,.13)!important;
+ outline:none!important;
+}
+
+/* ---------- TV specific ---------- */
+.tv-sidebar-toggle{
+ width:36px!important;
+ height:36px!important;
+ border-radius:10px!important;
+ padding:0!important;
+ display:inline-flex!important;
+ align-items:center!important;
+ justify-content:center!important;
+}
+
+.tv-country{
+ min-height:40px!important;
+ box-shadow:none!important;
+ background:#15243a!important;
+}
+
+.tv-embed-actions{
+ display:flex;
+ gap:6px;
+ flex-wrap:wrap;
+}
+
+.tv-embed-actions button{
+ min-height:38px!important;
+ padding:7px 11px!important;
+}
+
+/* ---------- KTV specific ---------- */
+.ktv-song-actions{
+ gap:6px!important;
+}
+
+.ktv-song-actions button{
+ min-height:38px!important;
+ padding:7px 10px!important;
+}
+
+.ktv-preview{
+ background:linear-gradient(180deg,#243753,#19283f)!important;
+}
+
+.ktv-order{
+ background:linear-gradient(135deg,#4c9eff,#6678f3)!important;
+}
+
+.ktv-queue-controls button,
+.ktv-player-tools button{
+ min-height:42px!important;
+}
+
+/* ---------- radio ---------- */
+.music-controls button{
+ border-radius:10px!important;
+ min-height:40px!important;
+}
+
+#musicRetryBtn{
+ background:linear-gradient(180deg,#253752,#182940)!important;
+}
+
+/* ---------- version badge ---------- */
+.brand-version{
+ background:linear-gradient(135deg,#ff725f,#ff9a48)!important;
+ color:#fff!important;
+ border:1px solid rgba(255,255,255,.18)!important;
+ box-shadow:0 4px 10px rgba(255,118,78,.22)!important;
+ border-radius:999px!important;
+}
+
+/* ---------- scrollbar refinement ---------- */
+*{
+ scrollbar-color:#3b536f #0d1828;
+ scrollbar-width:thin;
+}
+*::-webkit-scrollbar{height:8px;width:8px}
+*::-webkit-scrollbar-track{background:#0d1828;border-radius:999px}
+*::-webkit-scrollbar-thumb{background:#3a516e;border-radius:999px}
+
+/* ---------- touch devices ---------- */
+@media(hover:none){
+ button:hover,
+ .button:hover,
+ .btn:hover,
+ .pill:hover,
+ .mode-btn:hover,
+ .side-filter:hover,
+ .music-nav:hover,
+ .ktv-nav:hover,
+ .tv-nav:hover,
+ .radio-cat:hover,
+ .ktv-search-type:hover,
+ .ktv-song-cat:hover,
+ .ktv-singer-filter:hover,
+ .ktv-letter:hover,
+ .tv-country:hover{
+  transform:none!important;
+ }
+}
+
+/* ---------- mobile polish ---------- */
+@media(max-width:700px){
+ button,
+ .button,
+ .btn,
+ .pill{
+  min-height:42px;
+ }
+
+ .mode-btn{
+  min-height:42px!important;
+  border-radius:10px!important;
+ }
+
+ .top-actions .pill{
+  min-height:36px!important;
+  border-radius:10px!important;
+ }
+
+ .side-filter,
+ .music-nav,
+ .ktv-nav,
+ .tv-nav{
+  border-radius:11px!important;
+ }
+
+ .tv-embed-actions{
+  display:grid!important;
+  grid-template-columns:1fr 1fr!important;
+  gap:6px!important;
+ }
+
+ .tv-embed-actions button{
+  width:100%!important;
+  min-width:0!important;
+ }
+}

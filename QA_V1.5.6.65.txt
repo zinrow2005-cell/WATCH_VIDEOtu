@@ -1,0 +1,29 @@
+WATCH_VIDEOtu V1.5.6.65 — Modern UI Refresh
+
+全球電視：
+- 已刪除上方重複的地區快速按鈕列。
+- 桌機只保留左側國家/地區欄。
+- Famelack 內部頻道操作保留不變。
+
+全站按鈕：
+- 模式切換、首頁、影片控制、音樂、KTV、TV、家長頁按鈕統一現代化。
+- 新增 hover / pressed / active / focus-visible 狀態。
+- 主按鈕採藍紫漸層。
+- 成功/已點採綠色。
+- 關閉/刪除採紅色。
+- filter/chip 改圓角膠囊。
+- input/select/textarea 統一深色現代欄位。
+- 版本標籤改高亮漸層。
+- scrollbar 更新成深色細版。
+
+掃描：
+- HTML button count: 181
+- inline button styles removed: 0
+- duplicate IDs: 0
+- direct missing DOM bindings: 0
+
+程式檢查：
+- app.js PASS
+- ktv_singers.js PASS
+- ktv_songs.js PASS
+- sw.js PASS
