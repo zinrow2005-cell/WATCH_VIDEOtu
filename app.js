@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-var STORAGE='familytube_v15639';
-var OLD_KEYS=['familytube_v15638','familytube_v15637','familytube_v15636','familytube_v15635','familytube_v15634','familytube_v15633','familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v15640';
+var OLD_KEYS=['familytube_v15639','familytube_v15638','familytube_v15637','familytube_v15636','familytube_v15635','familytube_v15634','familytube_v15633','familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var DEFAULT={
  videos:[{id:'M7lc1UVf-VE',title:'YouTube 播放測試',category:'學習',channel:'YouTube',recommended:true,addedAt:Date.now()}],
  profiles:{
@@ -779,7 +779,7 @@ function searchKtv(forceQuery){
 
 
 
-var tvModeActive=false,tvNav='countries',tvCountry='tw',tvCurrentUrl='',tvEmbedTimer=null;
+var tvModeActive=false,tvNav='countries',tvCountry='tw',tvCurrentUrl='',tvEmbedTimer=null,tvPaused=false;
 
 var TV_COUNTRIES=[
  {code:'tw',name:'台灣',flag:'🇹🇼'},{code:'jp',name:'日本',flag:'🇯🇵'},{code:'kr',name:'韓國',flag:'🇰🇷'},
@@ -798,6 +798,7 @@ function stopTvPlayback(){
 }
 
 function leaveTvMode(){
+ tvPaused=false;updateTvPauseBtn();
  tvModeActive=false;
  document.body.classList.remove('tv-mode-active');document.body.classList.remove('tv-fullscreen');
  if($('tvMode'))$('tvMode').classList.add('hidden');
@@ -901,6 +902,7 @@ function toggleTvFavorite(){
 }
 
 function loadTvCountry(code){
+ tvPaused=false;updateTvPauseBtn();
  tvCountry=code||'tw';
  state.tv.lastCountry=tvCountry;
  tvCurrentUrl=tvUrlForCountry(tvCountry);
@@ -927,7 +929,28 @@ function loadTvCountry(code){
  },7000);
 }
 
+
+function updateTvPauseBtn(){
+ if(!$('tvPauseBtn'))return;
+ $('tvPauseBtn').textContent=tvPaused?'▶ 繼續播放':'⏸ 暫停直播';
+ $('tvPauseBtn').classList.toggle('active',tvPaused);
+}
+function toggleTvPause(){
+ var f=$('tvWebFrame');if(!f||!tvCurrentUrl)return;
+ if(!tvPaused){
+  tvPaused=true;
+  try{f.src='about:blank'}catch(e){}
+  if($('tvStatus'))$('tvStatus').textContent='直播已暫停；繼續後會回到目前直播點。';
+ }else{
+  tvPaused=false;
+  if($('tvStatus'))$('tvStatus').textContent='正在繼續載入直播…';
+  f.src=tvCurrentUrl;
+ }
+ updateTvPauseBtn();
+}
+
 function reloadTvEmbed(){
+ tvPaused=false;updateTvPauseBtn();
  if(!tvCurrentUrl)return;
  var f=$('tvWebFrame');if(!f)return;
  f.src='about:blank';
@@ -2050,6 +2073,8 @@ function bindUiSafely(){
 }
 
 document.addEventListener('DOMContentLoaded',function(){
+ if($('tvPauseBtn'))$('tvPauseBtn').onclick=toggleTvPause;
+ updateTvPauseBtn();
  try{
 
  if($('tvModeBtn'))$('tvModeBtn').onclick=showTvMode;
