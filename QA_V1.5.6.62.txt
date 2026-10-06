@@ -1,0 +1,17 @@
+WATCH_VIDEOtu V1.5.6.62 — Recommendation Engine + Production Cleanup
+
+完成：
+- 七大兒童分類會先顯示本機內容，再自動搜尋補充相關兒童影片。
+- 自動搜尋結果會經兒童內容評分排序，降低 reaction / prank / news / gaming / shorts 等結果。
+- 本機與網路結果依 YouTube ID 去重。
+- 首頁各列共用 shownIds，避免同一支影片在兒童推薦、英文、故事等區塊重複出現。
+- 點單一分類時，也會自動補充「更多分類影片」。
+- 已移除貼 YouTube 網址功能留下的 quick/oEmbed 死程式。
+- 已刪除舊 QA txt、browser_qa.py、favorite_test.js、fav_test.js。
+- 正式 ZIP 保留必要執行檔與本版 QA。
+
+程式檢查：
+- app.js PASS
+- ktv_singers.js PASS
+- ktv_songs.js PASS
+- sw.js PASS
