@@ -755,3 +755,143 @@ body.watch-mode.watch-fullscreen #playerSection .watch-center{
  grid-template-rows:minmax(0,1fr) auto!important;
  height:100%!important;
 }
+
+/* ==========================================================
+   V1.5.6.73 — MOBILE / TABLET KTV QUEUE DRAWER
+   ========================================================== */
+.ktv-queue-drawer-btn,
+.ktv-queue-drawer-backdrop,
+.ktv-queue-drawer-close{
+ display:none;
+}
+
+@media(max-width:900px){
+ .ktv-shell{
+  position:relative!important;
+ }
+
+ /* queue no longer occupies the bottom of the KTV page */
+ .ktv-queue-panel{
+  position:fixed!important;
+  top:max(10px,env(safe-area-inset-top,0px))!important;
+  right:0!important;
+  bottom:max(10px,env(safe-area-inset-bottom,0px))!important;
+  left:auto!important;
+  width:min(88vw,390px)!important;
+  max-width:390px!important;
+  height:auto!important;
+  max-height:calc(100dvh - 20px - env(safe-area-inset-top,0px) - env(safe-area-inset-bottom,0px))!important;
+  margin:0!important;
+  padding:16px 12px 14px!important;
+  overflow-y:auto!important;
+  transform:translateX(105%)!important;
+  transition:transform .22s ease!important;
+  z-index:100050!important;
+  box-shadow:-16px 0 36px rgba(0,0,0,.38)!important;
+  border-radius:16px 0 0 16px!important;
+  visibility:hidden!important;
+  pointer-events:none!important;
+ }
+
+ .ktv-queue-panel.drawer-open{
+  transform:translateX(0)!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+ }
+
+ .ktv-queue-drawer-btn{
+  display:flex!important;
+  position:fixed!important;
+  right:max(8px,env(safe-area-inset-right,0px))!important;
+  top:44%!important;
+  transform:translateY(-50%)!important;
+  z-index:100040!important;
+  min-width:74px!important;
+  min-height:46px!important;
+  padding:8px 10px!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:5px!important;
+  border-radius:14px 0 0 14px!important;
+  background:linear-gradient(135deg,#438ff0,#6677ee)!important;
+  color:#fff!important;
+  box-shadow:-7px 8px 22px rgba(0,0,0,.28)!important;
+  font-weight:900!important;
+ }
+
+ .ktv-queue-drawer-btn #ktvQueueDrawerCount{
+  display:inline-flex;
+  min-width:22px;
+  height:22px;
+  padding:0 6px;
+  border-radius:999px;
+  align-items:center;
+  justify-content:center;
+  background:#ff4f70;
+  color:#fff;
+  font-size:11px;
+ }
+
+ .ktv-queue-drawer-backdrop{
+  display:block!important;
+  position:fixed!important;
+  inset:0!important;
+  z-index:100045!important;
+  background:rgba(2,7,14,.58)!important;
+  backdrop-filter:blur(2px);
+ }
+
+ .ktv-queue-drawer-backdrop.hidden{
+  display:none!important;
+ }
+
+ .ktv-queue-drawer-close{
+  display:flex!important;
+  position:sticky!important;
+  top:0!important;
+  margin-left:auto!important;
+  margin-bottom:6px!important;
+  width:42px!important;
+  height:42px!important;
+  min-height:42px!important;
+  padding:0!important;
+  align-items:center!important;
+  justify-content:center!important;
+  border-radius:12px!important;
+  z-index:2!important;
+ }
+
+ body.ktv-queue-drawer-open{
+  overflow:hidden!important;
+ }
+
+ /* keep main KTV content full width */
+ .ktv-main{
+  width:100%!important;
+  max-width:100%!important;
+ }
+}
+
+@media(max-width:480px){
+ .ktv-queue-panel{
+  width:min(92vw,360px)!important;
+ }
+ .ktv-queue-drawer-btn{
+  min-width:66px!important;
+  font-size:11px!important;
+  padding:7px 8px!important;
+ }
+}
+
+@media(min-width:901px){
+ .ktv-queue-drawer-btn,
+ .ktv-queue-drawer-backdrop,
+ .ktv-queue-drawer-close{
+  display:none!important;
+ }
+ .ktv-queue-panel{
+  transform:none!important;
+  visibility:visible!important;
+  pointer-events:auto!important;
+ }
+}

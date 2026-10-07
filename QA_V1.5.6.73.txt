@@ -1,0 +1,24 @@
+WATCH_VIDEOtu V1.5.6.73 — KTV Mobile Queue Drawer
+
+需求：
+- 手機 / 平板 KTV 的待唱清單不要再放在頁面最下面。
+- 改成側邊按鈕，點開看待唱清單。
+
+完成：
+1. <=900px 顯示右側浮動「📋 待唱 N」按鈕。
+2. N 與實際 state.ktv.queue 長度同步。
+3. 點擊後從右側滑出待唱清單。
+4. 抽屜內有 ✕ 關閉。
+5. 點半透明背景也會收合。
+6. 左側「已點歌曲」在手機/平板點擊時直接打開抽屜。
+7. KTV 離開時自動關閉抽屜。
+8. 裝置變成 >900px 時自動關閉 mobile drawer。
+9. Desktop >900px 維持原本右側固定待唱清單。
+10. 手機/平板主 KTV 內容不再因待唱清單被推到很長的頁面底部。
+
+Static QA:
+- app.js PASS
+- ktv_singers.js PASS
+- ktv_songs.js PASS
+- sw.js PASS
+- duplicate IDs 0
