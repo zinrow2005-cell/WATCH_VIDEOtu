@@ -1767,3 +1767,64 @@ body.tv-fullscreen #tvMobileDrawerBtn{
   min-height:29px!important;
  }
 }
+
+/* ==========================================================
+   V1.5.6.78 — MOBILE TV DEFAULT TAIWAN + CHANNEL BUTTON
+   ========================================================== */
+@media(max-width:900px){
+ /* Mobile/tablet no longer exposes region chooser. */
+ body.tv-mode-active .tv-embed-sidebar,
+ body.tv-mode-active .tv-drawer-backdrop{
+  display:none!important;
+ }
+
+ body.tv-mode-active #tvMobileDrawerBtn{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  width:46px!important;
+  height:46px!important;
+  min-width:46px!important;
+  min-height:46px!important;
+  border-radius:50%!important;
+  background:linear-gradient(135deg,#4c9eff,#6878f4)!important;
+  color:#fff!important;
+  font-size:18px!important;
+  box-shadow:0 12px 30px rgba(8,20,45,.42)!important;
+ }
+
+ body.tv-mode-active #tvMobileDrawerBtn::after{
+  content:'頻道';
+  position:absolute;
+  right:50px;
+  top:50%;
+  transform:translateY(-50%);
+  padding:5px 8px;
+  border-radius:9px;
+  background:rgba(8,15,26,.88);
+  color:#fff;
+  font-size:10px;
+  font-weight:800;
+  white-space:nowrap;
+  opacity:0;
+  pointer-events:none;
+  transition:opacity .15s ease;
+ }
+ body.tv-mode-active #tvMobileDrawerBtn:active::after{
+  opacity:1;
+ }
+
+ body.tv-mode-active.tv-region-drawer-open .tv-embed-sidebar,
+ body.tv-mode-active .tv-embed-sidebar.drawer-open{
+  display:none!important;
+ }
+
+ body.tv-fullscreen #tvMobileDrawerBtn{
+  display:flex!important;
+  width:36px!important;
+  height:36px!important;
+  min-width:36px!important;
+  min-height:36px!important;
+  font-size:15px!important;
+ }
+}

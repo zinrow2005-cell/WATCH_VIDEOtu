@@ -1,11 +1,11 @@
-const CACHE='watch-v15677';
+const CACHE='watch-v15678';
 const CORE=[
- './styles.css?v=15677',
- './responsive-v63.css?v=15677',
- './ui-v65.css?v=15677',
- './app.js?v=15677',
- './ktv_singers.js?v=15677',
- './ktv_songs.js?v=15677',
+ './styles.css?v=15678',
+ './responsive-v63.css?v=15678',
+ './ui-v65.css?v=15678',
+ './app.js?v=15678',
+ './ktv_singers.js?v=15678',
+ './ktv_songs.js?v=15678',
  './manifest.webmanifest'
 ];
 

@@ -1,0 +1,24 @@
+WATCH_VIDEOtu V1.5.6.78 — Mobile TV Channel Button
+
+依需求調整：
+1. 手機 / 平板移除地區選擇功能。
+2. 進入 TV 模式時固定預設台灣（tw）。
+3. 右下浮動按鈕從 🌍 改為 📺 頻道。
+4. 點 📺 時：
+   - 不開地區抽屜
+   - 直接把電視畫面捲回可操作位置
+   - focus 到 Famelack iframe
+   - 顯示提示：請使用電視頁面內的頻道清單選台
+5. 手機 / 平板的外層地區 sidebar/backdrop 強制隱藏。
+6. 桌機仍保留原左側地區欄。
+
+限制：
+Famelack 是跨網域 iframe，外層無法直接讀取/複製它的頻道列表成原生按鈕；
+因此「📺 頻道」目前會把操作焦點帶回 Famelack 自己的頻道清單。
+
+Static QA:
+- app.js PASS
+- ktv_singers.js PASS
+- ktv_songs.js PASS
+- sw.js PASS
+- duplicate IDs 0
