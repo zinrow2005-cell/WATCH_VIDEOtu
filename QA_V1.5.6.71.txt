@@ -1,0 +1,30 @@
+WATCH_VIDEOtu V1.5.6.71 — KTV Fast Network Search
+
+根本問題：
+舊 searchKtv() 在一般搜尋中，只要本機歌曲有結果就直接 return，
+因此根本不會往網路搜尋。
+
+本版修正：
+1. 本機搜尋永遠只是第一階段，不再阻止網路搜尋。
+2. 本機結果立即顯示。
+3. 第一組網路 query 先快速搜尋（6 秒 timeout）。
+4. 第一批結果一拿到就立刻合併顯示。
+5. 其餘 KTV / karaoke / 伴奏 query 再平行搜尋（7.5 秒 timeout）。
+6. 搜尋結果依 KTV 關聯度排序並依 ID/標題去重。
+7. 歌手搜尋同樣採 fast-first + background supplementation。
+8. 搜尋按鈕搜尋中變成「⏳ 搜尋中…」並禁止重複觸發。
+9. 新增四階段進度：
+   ① 本機歌庫
+   ② 網路快搜
+   ③ 補充搜尋
+   ④ 整理完成
+10. 顯示百分比進度條。
+11. 網路逾時/失敗會明確顯示，保留已找到的本機/網路結果。
+
+Static QA:
+- app.js PASS
+- ktv_singers.js PASS
+- ktv_songs.js PASS
+- sw.js PASS
+- duplicate IDs 0
+- local-result early return removed

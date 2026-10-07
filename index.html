@@ -5,11 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#0b1220">
-<title>WATCH_VIDEOtu V1.5.6.70</title>
+<title>WATCH_VIDEOtu V1.5.6.71</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=15670">
-  <link rel="stylesheet" href="responsive-v63.css?v=15670">
-  <link rel="stylesheet" href="ui-v65.css?v=15670">
+<link rel="stylesheet" href="styles.css?v=15671">
+  <link rel="stylesheet" href="responsive-v63.css?v=15671">
+  <link rel="stylesheet" href="ui-v65.css?v=15671">
 
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=15652">
 <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png?v=15652">
@@ -28,7 +28,7 @@
       <circle cx="50" cy="14" r="6" fill="#fff"/><path d="M50 10.7v6.6M46.7 14h6.6" stroke="#ff174d" stroke-width="2.4" stroke-linecap="round"/>
     </svg>
   </span>
-  <span class="brand-copy"><strong>WATCH_VIDEO<span>tu  <span class="brand-version" title="KTV 點歌數量修正版 V1.5.6.70">V1.5.6.70</span>
+  <span class="brand-copy"><strong>WATCH_VIDEO<span>tu  <span class="brand-version" title="KTV 網路快速搜尋版 V1.5.6.71">V1.5.6.71</span>
 </span></strong><small>Kids Video Hub</small></span>
 </button>
 <div class="mode-switch" id="modeSwitch">
@@ -290,7 +290,22 @@
           <button class="ktv-search-type" data-ktvtype="song">依歌名</button>
           <button class="ktv-search-type" data-ktvtype="artist">依歌手</button>
         </div>
-        <div class="ktv-auto-detect-hint">💡 輸入完整歌手名會自動辨識並補抓更多 KTV 歌曲</div><div id="ktvStatus" class="search-hint">可由熱門歌曲、歌手或搜尋開始點歌。</div><div id="ktvSongCategoryBar" class="ktv-song-category-bar"><button class="ktv-song-cat" data-song-cat="__all__">全部歌曲</button><button class="ktv-song-cat" data-song-cat="經典">經典</button><button class="ktv-song-cat" data-song-cat="情歌">情歌</button><button class="ktv-song-cat" data-song-cat="台語金曲">台語</button><button class="ktv-song-cat" data-song-cat="粵語">粵語</button><button class="ktv-song-cat" data-song-cat="對唱">對唱</button><button class="ktv-song-cat" data-song-cat="搖滾">搖滾</button><button class="ktv-song-cat" data-song-cat="2020s">新世代</button><button class="ktv-song-cat" data-song-cat="2000s">2000年代</button><button class="ktv-song-cat" data-song-cat="1990s">90年代</button><button class="ktv-song-cat" data-song-cat="快歌">快歌</button><button class="ktv-song-cat" data-song-cat="民謠">民謠</button></div>
+        <div class="ktv-auto-detect-hint">💡 輸入完整歌手名會自動辨識並補抓更多 KTV 歌曲</div>
+        <div id="ktvSearchProgress" class="ktv-search-progress hidden" aria-live="polite">
+          <div class="ktv-progress-head">
+            <b id="ktvSearchProgressText">準備搜尋…</b>
+            <span id="ktvSearchProgressPercent">0%</span>
+          </div>
+          <div class="ktv-progress-track">
+            <div id="ktvSearchProgressBar" class="ktv-progress-bar"></div>
+          </div>
+          <div class="ktv-progress-steps">
+            <span id="ktvProgressLocal" class="ktv-progress-step">① 本機歌庫</span>
+            <span id="ktvProgressFast" class="ktv-progress-step">② 網路快搜</span>
+            <span id="ktvProgressMore" class="ktv-progress-step">③ 補充搜尋</span>
+            <span id="ktvProgressDone" class="ktv-progress-step">④ 整理完成</span>
+          </div>
+        </div><div id="ktvStatus" class="search-hint">可由熱門歌曲、歌手或搜尋開始點歌。</div><div id="ktvSongCategoryBar" class="ktv-song-category-bar"><button class="ktv-song-cat" data-song-cat="__all__">全部歌曲</button><button class="ktv-song-cat" data-song-cat="經典">經典</button><button class="ktv-song-cat" data-song-cat="情歌">情歌</button><button class="ktv-song-cat" data-song-cat="台語金曲">台語</button><button class="ktv-song-cat" data-song-cat="粵語">粵語</button><button class="ktv-song-cat" data-song-cat="對唱">對唱</button><button class="ktv-song-cat" data-song-cat="搖滾">搖滾</button><button class="ktv-song-cat" data-song-cat="2020s">新世代</button><button class="ktv-song-cat" data-song-cat="2000s">2000年代</button><button class="ktv-song-cat" data-song-cat="1990s">90年代</button><button class="ktv-song-cat" data-song-cat="快歌">快歌</button><button class="ktv-song-cat" data-song-cat="民謠">民謠</button></div>
       </div>
 
       
@@ -417,9 +432,9 @@
 <div id="modal" class="modal hidden">
   <div class="modal-card"><h3>輸入家長 PIN</h3><input id="modalInput" inputmode="numeric" maxlength="6"><div class="modal-actions"><button id="modalCancel">取消</button><button id="modalOk">確定</button></div></div>
 </div>
-<script defer src="ktv_singers.js?v=15670"></script>
-<script defer src="ktv_songs.js?v=15670"></script>
-<script defer src="app.js?v=15670"></script>
+<script defer src="ktv_singers.js?v=15671"></script>
+<script defer src="ktv_songs.js?v=15671"></script>
+<script defer src="app.js?v=15671"></script>
 
 <div id="ktvToast" class="ktv-toast hidden" role="status" aria-live="polite"></div>
 </body>

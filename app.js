@@ -1,11 +1,11 @@
-var APP_VERSION='1.5.6.70';
-var APP_BUILD='15670';
+var APP_VERSION='1.5.6.71';
+var APP_BUILD='15671';
 var watchFullscreenScrollY=0;
 var miniPlayerSuppressUntil=0;
 (function(){
 'use strict';
-var STORAGE='familytube_v15670';
-var OLD_KEYS=['familytube_v15669','familytube_v15668','familytube_v15667','familytube_v15666','familytube_v15665','familytube_v15664','familytube_v15663','familytube_v15662','familytube_v15661','familytube_v15660','familytube_v15659','familytube_v15658','familytube_v15657','familytube_v15656','familytube_v15655','familytube_v15654','familytube_v15653','familytube_v15652','familytube_v15651','familytube_v15650','familytube_v15649','familytube_v15648','familytube_v15647','familytube_v15646','familytube_v15645','familytube_v15644','familytube_v15643','familytube_v15642','familytube_v15641','familytube_v15640','familytube_v15639','familytube_v15638','familytube_v15637','familytube_v15636','familytube_v15635','familytube_v15634','familytube_v15633','familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v15671';
+var OLD_KEYS=['familytube_v15670','familytube_v15669','familytube_v15668','familytube_v15667','familytube_v15666','familytube_v15665','familytube_v15664','familytube_v15663','familytube_v15662','familytube_v15661','familytube_v15660','familytube_v15659','familytube_v15658','familytube_v15657','familytube_v15656','familytube_v15655','familytube_v15654','familytube_v15653','familytube_v15652','familytube_v15651','familytube_v15650','familytube_v15649','familytube_v15648','familytube_v15647','familytube_v15646','familytube_v15645','familytube_v15644','familytube_v15643','familytube_v15642','familytube_v15641','familytube_v15640','familytube_v15639','familytube_v15638','familytube_v15637','familytube_v15636','familytube_v15635','familytube_v15634','familytube_v15633','familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var CURATED_CHILD_VIDEOS=[{"id":"GqO5yfViGDE","title":"妙妙犬布麗 Bluey｜天天都好玩","category":"故事","channel":"YOYOTV","recommended":true,"curated":true,"addedAt":1791281675560,"categoryManual":true,"autoCategory":false},{"id":"Hg7vNCIjIwk","title":"英文學習推薦｜使用者指定影片","category":"英文","channel":"YouTube Kids / English","recommended":true,"curated":true,"addedAt":1791281272281,"categoryManual":true,"autoCategory":false},{"id":"eegWzglBMh0","title":"ABC Chant｜Lingokids 英文字母歌","category":"英文","channel":"Lingokids","recommended":true,"curated":true,"addedAt":1791281271281,"categoryManual":true,"autoCategory":false},{"id":"-MtVI33De6s","title":"ABC Animals｜字母與動物英文學習","category":"英文","channel":"English Learning","recommended":true,"curated":true,"addedAt":1791281270281,"categoryManual":true,"autoCategory":false},{"id":"Z0xPZ47u4z4","title":"ABC Song｜英文字母歌曲","category":"英文","channel":"English Learning","recommended":true,"curated":true,"addedAt":1791281269281,"categoryManual":true,"autoCategory":false},{"id":"yyew5ojyjg8","title":"朱妮托尼｜TOP 經典兒歌合集","category":"兒歌","channel":"朱妮托尼 中文","recommended":true,"curated":true,"addedAt":1791281268281,"categoryManual":true,"autoCategory":false},{"id":"Ya6YAH3YL2E","title":"朱妮托尼｜兒歌童謠與卡通故事合集","category":"兒歌","channel":"朱妮托尼","recommended":true,"curated":true,"addedAt":1791281267281,"categoryManual":true,"autoCategory":false},{"id":"l1yRTzqGLNA","title":"巧虎｜幼兒安全與生活學習","category":"卡通","channel":"巧虎TV","recommended":true,"curated":true,"addedAt":1791281266281,"categoryManual":true,"autoCategory":false},{"id":"4ScOx5ci-YQ","title":"Bebefinn｜兒歌與幼兒學習合集","category":"學習","channel":"Bebefinn","recommended":true,"curated":true,"addedAt":1791281265281,"categoryManual":true,"autoCategory":false},{"id":"eUunYTYia3I","title":"AMAZING ANIMALS｜兒童動物大自然 1 小時","category":"自然／動物","channel":"Nat Geo Kids","recommended":true,"curated":true,"addedAt":1791281264281,"categoryManual":true,"autoCategory":false},{"id":"y_rH7cllMbU","title":"數字顏色推薦｜使用者指定影片 1","category":"數字／顏色","channel":"YouTube Kids","recommended":true,"curated":true,"addedAt":1791281263281,"categoryManual":true,"autoCategory":false},{"id":"G-NEBETYGDI","title":"數字顏色推薦｜使用者指定影片 2","category":"數字／顏色","channel":"YouTube Kids","recommended":true,"curated":true,"addedAt":1791281262281,"categoryManual":true,"autoCategory":false},{"id":"jM6dykYy0xw","title":"Numbers & Colors for Kids｜數字與顏色","category":"數字／顏色","channel":"Kids Fun House","recommended":true,"curated":true,"addedAt":1791281261281,"categoryManual":true,"autoCategory":false},{"id":"P0C1_bOhPV4","title":"Colorful Compilation｜顏色、字母與數字","category":"數字／顏色","channel":"Super Simple Songs","recommended":true,"curated":true,"addedAt":1791281260281,"categoryManual":true,"autoCategory":false},{"id":"zxIpA5nF_LY","title":"What's Your Favorite Color?｜顏色英文歌","category":"數字／顏色","channel":"Super Simple Songs","recommended":true,"curated":true,"addedAt":1791281259281,"categoryManual":true,"autoCategory":false},{"id":"kDdg2M1_EuE","title":"The Alphabet Is So Much Fun｜ABC 英文字母歌","category":"英文","channel":"Super Simple Songs","recommended":true,"curated":true,"addedAt":0,"categoryManual":true,"autoCategory":false},{"id":"vD98OvvDNEs","title":"The Alphabet Song｜英文字母學習","category":"英文","channel":"Super Simple Songs","recommended":true,"curated":true,"addedAt":0,"categoryManual":true,"autoCategory":false}];
 var DEFAULT={
  videos:CURATED_CHILD_VIDEOS.slice(),
@@ -699,43 +699,154 @@ function rankKtvResults(items,artistName){
  }).map(function(x){return x.v});
 }
 
-function onlineSingerSongs(singer){
+
+var ktvSearchSerial=0;
+
+function setKtvSearchProgress(stage,percent,text){
+ var box=$('ktvSearchProgress');
+ if(!box)return;
+ box.classList.remove('hidden');
+ var p=Math.max(0,Math.min(100,Number(percent)||0));
+ if($('ktvSearchProgressBar'))$('ktvSearchProgressBar').style.width=p+'%';
+ if($('ktvSearchProgressPercent'))$('ktvSearchProgressPercent').textContent=Math.round(p)+'%';
+ if($('ktvSearchProgressText'))$('ktvSearchProgressText').textContent=text||'正在搜尋…';
+
+ var ids=['ktvProgressLocal','ktvProgressFast','ktvProgressMore','ktvProgressDone'];
+ var order={local:0,fast:1,more:2,done:3};
+ var current=order[stage];
+ ids.forEach(function(id,i){
+  var el=$(id);if(!el)return;
+  el.classList.toggle('done',typeof current==='number'&&i<current);
+  el.classList.toggle('active',typeof current==='number'&&i===current);
+ });
+}
+
+function finishKtvSearchProgress(text){
+ setKtvSearchProgress('done',100,text||'搜尋完成');
+ setTimeout(function(){
+  var box=$('ktvSearchProgress');
+  if(box)box.classList.add('complete');
+ },250);
+}
+
+function resetKtvSearchProgress(){
+ var box=$('ktvSearchProgress');
+ if(box){
+  box.classList.add('hidden');
+  box.classList.remove('complete');
+ }
+ if($('ktvSearchProgressBar'))$('ktvSearchProgressBar').style.width='0%';
+}
+
+function setKtvSearchBusy(on){
+ ktvBusy=!!on;
+ var b=$('ktvSearchBtn');
+ if(b){
+  b.disabled=!!on;
+  b.textContent=on?'⏳ 搜尋中…':'🔎 搜尋點歌';
+ }
+}
+
+function ktvPromiseTimeout(promise,ms){
+ return new Promise(function(resolve,reject){
+  var done=false;
+  var timer=setTimeout(function(){
+   if(done)return;
+   done=true;
+   reject(new Error('search timeout'));
+  },ms||8000);
+
+  promise.then(function(v){
+   if(done)return;
+   done=true;clearTimeout(timer);resolve(v);
+  },function(e){
+   if(done)return;
+   done=true;clearTimeout(timer);reject(e);
+  });
+ });
+}
+
+function ktvSearchQueries(q,type){
+ var list=[];
+ function add(x){
+  x=String(x||'').trim();
+  if(x&&list.indexOf(x)<0)list.push(x);
+ }
+
+ if(type==='artist'){
+  add(q+' KTV');
+  add(q+' karaoke');
+  add(q+' 伴奏');
+ }else if(type==='song'){
+  add(q+' KTV');
+  add(q+' karaoke 伴奏');
+  add(q+' 純伴奏');
+ }else{
+  add(q+' KTV');
+  add(q+' karaoke');
+  add(q+' 伴奏');
+ }
+ return list;
+}
+
+function normalizeKtvNetworkItems(items,q,region){
+ return rankKtvResults(items||[],q).map(function(v){
+  return {
+   title:v.title||q,
+   artist:v.channel||'',
+   channel:v.channel||'',
+   id:v.id||v.videoId||'',
+   videoId:v.id||v.videoId||'',
+   region:region||'',
+   image:v.image||'',
+   tag:'網路結果',
+   source:'online'
+  };
+ }).filter(function(x){return !!x.id});
+}
+
+function mergeKtvNetworkGroups(groups){
+ var all=[],seen={};
+ (groups||[]).forEach(function(group){
+  (group||[]).forEach(function(x){
+   if(!x)return;
+   var key=(x.id||x.videoId||'')+'|'+normalizeKtvText(x.title||'');
+   if(!key||seen[key])return;
+   seen[key]=1;all.push(x);
+  });
+ });
+ return all;
+}
+
+function fetchKtvQuery(query,q,region,timeoutMs){
+ return ktvPromiseTimeout(fetchSearchWithFallback(query,1),timeoutMs||7500).then(function(res){
+  return normalizeKtvNetworkItems((res&&res.items)||[],q,region);
+ }).catch(function(){return []});
+}
+
+function onlineSingerSongs(singer,onProgress){
  var name=(singer&&singer.name)||'';
  if(!name)return Promise.resolve([]);
 
- var queries=[
-  name+' KTV',
-  name+' karaoke',
-  name+' 伴奏',
-  name+' KTV karaoke 伴奏'
- ];
- var jobs=queries.map(function(query){
-  return fetchSearchWithFallback(query,1).then(function(res){
-   var items=rankKtvResults((res&&res.items)||[],name);
-   return items.map(function(v){
-    return {
-     title:v.title||name,
-     artist:v.channel||name,
-     id:v.id||'',
-     videoId:v.id||'',
-     region:singer.region||'',
-     image:v.image||'',
-     tag:'網路補充',
-     source:'online'
-    };
-   });
-  }).catch(function(){return []});
- });
+ var queries=ktvSearchQueries(name,'artist');
+ var groups=[];
 
- return Promise.all(jobs).then(function(groups){
-  var all=[],seen={};
-  groups.forEach(function(group){
-   (group||[]).forEach(function(x){
-    var k=ktvResultKey(x);
-    if(!seen[k]){seen[k]=1;all.push(x)}
-   });
+ // First query returns as quickly as possible.
+ return fetchKtvQuery(queries[0],name,singer.region||'',6000).then(function(first){
+  groups.push(first||[]);
+  if(onProgress)onProgress('fast',first||[]);
+
+  // Remaining queries run in parallel after the first batch is available.
+  var rest=queries.slice(1).map(function(query){
+   return fetchKtvQuery(query,name,singer.region||'',7500);
   });
-  return all.slice(0,60);
+
+  return Promise.all(rest).then(function(more){
+   more.forEach(function(g){groups.push(g||[])});
+   var all=mergeKtvNetworkGroups(groups).slice(0,60);
+   if(onProgress)onProgress('more',all);
+   return all;
+  });
  });
 }
 function showSingerSongs(singer){
@@ -743,30 +854,49 @@ function showSingerSongs(singer){
  var local=localSongsByArtist(singer.name).map(function(s){
   var x=Object.assign({},s);x.source='local';return x;
  });
+
  $('ktvSingerPanel').classList.add('hidden');
  $('ktvSongPanel').classList.remove('hidden');
 
+ setKtvSearchBusy(true);
+ resetKtvSearchProgress();
+ setKtvSearchProgress('local',12,'正在整理 '+singer.name+' 的本機歌曲…');
+
  if(local.length){
-  renderKtvSongs(local,singer.name+' 的歌曲',local.length+' 首本機歌曲 · 正在補充網路 KTV');
-  $('ktvStatus').textContent='先顯示 '+local.length+' 首本機歌曲，正在補充 '+singer.name+' 的更多 KTV…';
+  renderKtvSongs(local,singer.name+' 的歌曲',local.length+' 首本機歌曲 · 正在搜尋網路');
+  $('ktvStatus').textContent='先顯示 '+local.length+' 首本機歌曲，正在搜尋 '+singer.name+' 的更多 KTV…';
  }else{
-  renderKtvSongs([],singer.name+' 的歌曲','本機尚未收錄，正在搜尋網路 KTV');
+  renderKtvSongs([],singer.name+' 的歌曲','本機尚未收錄 · 正在搜尋網路');
   $('ktvStatus').textContent=singer.name+' 本機尚未收錄歌曲，正在搜尋網路 KTV…';
  }
 
- onlineSingerSongs(singer).then(function(online){
-  var merged=mergeKtvSongLists(local,online);
-  if(merged.length){
-   renderKtvSongs(
-    merged,
-    singer.name+' 的歌曲',
-    local.length+' 首本機 · '+online.length+' 筆網路補充（多組關鍵字）'
-   );
-   $('ktvStatus').textContent='已整理 '+merged.length+' 筆 '+singer.name+' KTV 結果（本機 '+local.length+' ＋ 網路 '+online.length+'）';
-  }else{
-   $('ktvStatus').textContent='目前沒有取得 '+singer.name+' 的 KTV 結果，請稍後再試或直接用上方搜尋。';
-   renderKtvSongs([],singer.name+' 的歌曲','目前沒有可用結果');
+ setKtvSearchProgress('fast',28,'正在快速搜尋網路 KTV…');
+
+ onlineSingerSongs(singer,function(stage,onlineNow){
+  if(stage==='fast'){
+   var fastMerged=mergeKtvSongLists(local,onlineNow);
+   renderKtvSongs(fastMerged,singer.name+' 的歌曲',local.length+' 首本機 · '+onlineNow.length+' 筆網路快搜');
+   setKtvSearchProgress('more',64,'第一批結果已顯示，正在補充更多歌曲…');
   }
+ }).then(function(online){
+  var merged=mergeKtvSongLists(local,online);
+  ktvSearchResults=merged.slice();
+  renderKtvSongs(
+   merged,
+   singer.name+' 的歌曲',
+   local.length+' 首本機 · '+online.length+' 筆網路 · 共 '+merged.length+' 筆'
+  );
+  setKtvSearchBusy(false);
+  finishKtvSearchProgress('搜尋完成：共 '+merged.length+' 筆結果');
+  $('ktvStatus').textContent='搜尋完成｜'+singer.name+'：本機 '+local.length+' 首＋網路 '+online.length+' 筆';
+ }).catch(function(){
+  setKtvSearchBusy(false);
+  renderKtvSongs(local,singer.name+' 的歌曲',local.length+' 首本機歌曲');
+  finishKtvSearchProgress(local.length?'網路暫時無回應，保留本機結果':'網路搜尋失敗');
+  $('ktvStatus').textContent=
+   local.length?
+   '網路補歌暫時失敗，目前先顯示 '+local.length+' 首本機歌曲。':
+   '網路搜尋暫時沒有回應，請稍後再試。';
  });
 }
 
@@ -1040,89 +1170,161 @@ function findKnownKtvSinger(q){
 }
 
 function searchKtv(forceQuery){
- if(ktvBusy)return;
  var q=String(forceQuery||$('ktvSearchInput').value||'').trim();
  if(!q)return;
+ if(ktvBusy)return;
 
+ var searchId=++ktvSearchSerial;
  var knownSinger=findKnownKtvSinger(q);
  var treatAsSinger=(ktvSearchType==='artist'||!!knownSinger);
- var local=searchLocalKtvSongs(q,treatAsSinger?'artist':ktvSearchType);
+ var effectiveType=treatAsSinger?'artist':ktvSearchType;
+ var local=searchLocalKtvSongs(q,effectiveType);
 
- // If the typed text exactly matches a known singer, always do singer supplementation,
- // even when the user leaves the search mode on "全部".
+ setKtvSearchBusy(true);
+ resetKtvSearchProgress();
+ setKtvSearchProgress('local',10,'正在搜尋本機歌庫…');
+
+ $('ktvSingerPanel').classList.add('hidden');
+ $('ktvSongPanel').classList.remove('hidden');
+
+ // Local results always appear immediately, but DO NOT stop network search.
+ ktvSearchResults=local.slice();
+ if(local.length){
+  renderKtvSongs(
+   local,
+   treatAsSinger?(knownSinger?knownSinger.name:q)+' 的歌曲':'搜尋結果',
+   local.length+' 首本機歌曲 · 正在搜尋網路'
+  );
+  $('ktvStatus').textContent='本機先找到 '+local.length+' 首；正在繼續搜尋網路 KTV…';
+ }else{
+  renderKtvSongs(
+   [],
+   treatAsSinger?(knownSinger?knownSinger.name:q)+' 的歌曲':'搜尋結果',
+   '本機沒有結果 · 正在搜尋網路 KTV'
+  );
+  $('ktvStatus').textContent='本機沒有結果，正在搜尋網路 KTV／karaoke／伴奏…';
+ }
+
+ setKtvSearchProgress('fast',28,'正在快速搜尋網路 KTV…');
+
  if(treatAsSinger){
-  ktvBusy=true;
   var singerObj=knownSinger||{name:q,region:'華語'};
-
-  // Visually switch to artist mode so the user can understand why more results are fetched.
   ktvSearchType='artist';
   document.querySelectorAll('.ktv-search-type').forEach(function(x){
    x.classList.toggle('active',x.dataset.ktvtype==='artist');
   });
 
-  $('ktvSingerPanel').classList.add('hidden');
-  $('ktvSongPanel').classList.remove('hidden');
+  onlineSingerSongs(singerObj,function(stage,onlineNow){
+   if(searchId!==ktvSearchSerial)return;
 
-  if(local.length){
-   renderKtvSongs(local,singerObj.name+' 的歌曲',local.length+' 首本機歌曲 · 正在補更多');
-   $('ktvStatus').textContent='已辨識「'+singerObj.name+'」為歌手；先顯示 '+local.length+' 首本機歌曲，正在搜尋更多 KTV…';
-  }else{
-   renderKtvSongs([],singerObj.name+' 的歌曲','正在搜尋網路 KTV');
-   $('ktvStatus').textContent='已辨識「'+singerObj.name+'」為歌手；正在搜尋網路 KTV…';
-  }
+   if(stage==='fast'){
+    var fastMerged=mergeKtvSongLists(local,onlineNow);
+    ktvSearchResults=fastMerged.slice();
+    renderKtvSongs(
+     fastMerged,
+     singerObj.name+' 的歌曲',
+     local.length+' 首本機 · '+onlineNow.length+' 筆網路快搜'
+    );
+    setKtvSearchProgress('more',62,'第一批網路結果已顯示，正在補充更多歌曲…');
+    $('ktvStatus').textContent=
+     '已先顯示 '+fastMerged.length+' 筆；正在繼續搜尋 '+singerObj.name+' 的更多 KTV…';
+   }
+  }).then(function(online){
+   if(searchId!==ktvSearchSerial)return;
 
-  onlineSingerSongs(singerObj).then(function(online){
-   ktvBusy=false;
    var merged=mergeKtvSongLists(local,online);
    ktvSearchResults=merged.slice();
-
    renderKtvSongs(
     merged,
     singerObj.name+' 的歌曲',
-    local.length+' 首本機 · '+online.length+' 筆網路補充'
+    local.length+' 首本機 · '+online.length+' 筆網路 · 共 '+merged.length+' 筆'
    );
 
+   setKtvSearchBusy(false);
+   finishKtvSearchProgress('搜尋完成：共 '+merged.length+' 筆結果');
    $('ktvStatus').textContent=
-    '已辨識歌手 '+singerObj.name+'：本機 '+local.length+
-    ' 首＋網路 '+online.length+' 筆，共 '+merged.length+' 筆結果';
+    '搜尋完成｜本機 '+local.length+' 首＋網路 '+online.length+' 筆，共 '+merged.length+' 筆';
   }).catch(function(){
-   ktvBusy=false;
-   renderKtvSongs(local,singerObj.name+' 的歌曲',local.length+' 首本機歌曲');
-   $('ktvStatus').textContent='網路補歌暫時失敗，目前先顯示 '+local.length+' 首本機歌曲。';
+   if(searchId!==ktvSearchSerial)return;
+
+   setKtvSearchBusy(false);
+   var merged=local.slice();
+   ktvSearchResults=merged;
+   renderKtvSongs(merged,singerObj.name+' 的歌曲',local.length+' 首本機歌曲');
+   finishKtvSearchProgress(local.length?'網路暫時無回應，已保留本機結果':'網路搜尋失敗');
+   $('ktvStatus').textContent=
+    local.length?
+    '網路搜尋暫時沒有回應，目前保留 '+local.length+' 首本機歌曲。':
+    '目前搜尋來源沒有回應，請稍後再試。';
   });
   return;
  }
 
- // Non-singer queries keep the fast local-first behavior.
- if(local.length){
-  ktvSearchResults=local.slice();
-  $('ktvSingerPanel').classList.add('hidden');
-  $('ktvSongPanel').classList.remove('hidden');
-  $('ktvStatus').textContent='本機歌曲資料庫找到 '+local.length+' 首';
-  renderKtvSongs(local,'搜尋結果','優先顯示本機 KTV 歌曲');
-  return;
- }
+ // General/song searches: fast first query, then parallel supplements.
+ var queries=ktvSearchQueries(q,effectiveType);
+ var groups=[];
 
- ktvBusy=true;
- $('ktvStatus').textContent='本機資料庫沒有結果，正在搜尋網路 KTV 歌曲…';
- var query=q;
- if(ktvSearchType==='song')query=q+' KTV 伴奏';
- else query=q+' KTV karaoke 伴奏';
+ fetchKtvQuery(queries[0],q,'',6000).then(function(first){
+  if(searchId!==ktvSearchSerial)return [];
 
- fetchSearchWithFallback(query,1).then(function(res){
-  ktvBusy=false;
-  var items=rankKtvResults((res&&res.items)||[],q);
-  ktvSearchResults=items.map(function(v){
-   return {title:v.title,artist:v.channel||'',id:v.id,videoId:v.id,region:'',image:v.image||'',tag:'網路結果',source:'online'};
+  groups.push(first||[]);
+  var firstMerged=mergeKtvSongLists(local,mergeKtvNetworkGroups(groups));
+  ktvSearchResults=firstMerged.slice();
+
+  if(firstMerged.length){
+   renderKtvSongs(
+    firstMerged,
+    '搜尋結果',
+    local.length+' 首本機 · '+(first||[]).length+' 筆網路快搜'
+   );
+  }
+
+  setKtvSearchProgress('more',62,'第一批結果已顯示，正在補充更多網路歌曲…');
+  $('ktvStatus').textContent=
+   '第一批已找到 '+firstMerged.length+' 筆，正在繼續搜尋更多 KTV／伴奏版本…';
+
+  var rest=queries.slice(1).map(function(query){
+   return fetchKtvQuery(query,q,'',7500);
   });
-  $('ktvSingerPanel').classList.add('hidden');
-  $('ktvSongPanel').classList.remove('hidden');
-  $('ktvStatus').textContent='網路找到 '+ktvSearchResults.length+' 個可點選結果';
-  renderKtvSongs(ktvSearchResults,'搜尋結果','點「＋ 點歌」加入待唱清單');
+  return Promise.all(rest);
+
+ }).then(function(restGroups){
+  if(searchId!==ktvSearchSerial)return;
+
+  (restGroups||[]).forEach(function(g){groups.push(g||[])});
+  var online=mergeKtvNetworkGroups(groups);
+  var merged=mergeKtvSongLists(local,online);
+
+  ktvSearchResults=merged.slice();
+  renderKtvSongs(
+   merged,
+   '搜尋結果',
+   local.length+' 首本機 · '+online.length+' 筆網路 · 共 '+merged.length+' 筆'
+  );
+
+  setKtvSearchBusy(false);
+  finishKtvSearchProgress('搜尋完成：共 '+merged.length+' 筆結果');
+  $('ktvStatus').textContent=
+   '搜尋完成｜本機 '+local.length+' 首＋網路 '+online.length+' 筆，共 '+merged.length+' 筆';
+
  }).catch(function(){
-  ktvBusy=false;
-  $('ktvStatus').textContent='目前搜尋來源沒有回應，請稍後再試。';
-  renderKtvSongs([],'搜尋結果','');
+  if(searchId!==ktvSearchSerial)return;
+
+  var online=mergeKtvNetworkGroups(groups);
+  var merged=mergeKtvSongLists(local,online);
+  ktvSearchResults=merged.slice();
+
+  setKtvSearchBusy(false);
+
+  if(merged.length){
+   renderKtvSongs(merged,'搜尋結果','目前已取得 '+merged.length+' 筆結果');
+   finishKtvSearchProgress('部分網路來源逾時，已顯示目前結果');
+   $('ktvStatus').textContent='部分網路搜尋逾時，目前先顯示 '+merged.length+' 筆可用結果。';
+  }else{
+   renderKtvSongs([],'搜尋結果','');
+   finishKtvSearchProgress('網路搜尋失敗');
+   $('ktvStatus').textContent='目前搜尋來源沒有回應，請稍後再試。';
+  }
  });
 }
 
