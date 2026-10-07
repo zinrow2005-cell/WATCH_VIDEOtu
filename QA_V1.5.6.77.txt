@@ -1,0 +1,20 @@
+WATCH_VIDEOtu V1.5.6.77 — Mobile Header / TV Fullscreen Fix
+
+修正：
+- 手機 Header 改成三層：品牌、首頁/家長、四模式；版本不再壓到 Logo。
+- 手機四模式改 2x2，避免 KTV/全球電視被擠出畫面。
+- TV 四控制按鈕手機縮小為單列。
+- 地區按鈕以 tv-region-drawer-open + drawer-open 雙重狀態控制，確保點 🌍 真正顯示抽屜。
+- TV 全螢幕改成 main + tvMode 固定佔滿 100vw/100dvh。
+- 全螢幕頂部保留縮小工具列；收藏 / 播放控制 / 退出 / 重整均可操作。
+- iframe 只使用工具列下方剩餘空間，不再被頁面其他元素裁切。
+- 全螢幕右下仍保留小地區按鈕。
+
+Static QA:
+- app.js: PASS
+- ktv_singers.js: PASS
+- ktv_songs.js: PASS
+- sw.js: PASS
+Duplicate IDs: 0
+Buttons scanned: 55
+Unbound candidates: 0

@@ -1418,3 +1418,352 @@ body.tv-fullscreen #tvFullscreenExitBtn{
 
 /* old pseudo exit marker no longer needed */
 body.tv-fullscreen::after{display:none!important}
+
+/* ==========================================================
+   V1.5.6.77 FINAL — MOBILE HEADER + TV DRAWER + FULLSCREEN
+   ========================================================== */
+
+/* Small phones: brand gets its own row, actions second row, modes third row. */
+@media(max-width:700px){
+ .topbar{
+  display:grid!important;
+  grid-template-columns:1fr!important;
+  grid-template-areas:
+   "brand"
+   "actions"
+   "modes"!important;
+  gap:7px!important;
+  align-items:center!important;
+ }
+
+ .brand-videotu{
+  grid-area:brand!important;
+  width:100%!important;
+  min-width:0!important;
+  max-width:100%!important;
+  overflow:hidden!important;
+ }
+
+ .brand-videotu .brand-copy{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  grid-template-areas:"title version"!important;
+  align-items:center!important;
+  gap:6px!important;
+  width:100%!important;
+  min-width:0!important;
+ }
+
+ .brand-videotu .brand-copy strong{
+  grid-area:title!important;
+  display:block!important;
+  min-width:0!important;
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+  font-size:clamp(18px,6vw,28px)!important;
+  line-height:1!important;
+ }
+
+ .brand-videotu .brand-copy small{
+  display:none!important;
+ }
+
+ .brand-videotu .brand-version{
+  grid-area:version!important;
+  position:static!important;
+  transform:none!important;
+  margin:0!important;
+  padding:4px 7px!important;
+  font-size:9px!important;
+  line-height:1!important;
+  white-space:nowrap!important;
+ }
+
+ .top-actions{
+  grid-area:actions!important;
+  display:flex!important;
+  justify-content:flex-end!important;
+  width:100%!important;
+  gap:6px!important;
+ }
+
+ .top-actions .pill{
+  min-height:36px!important;
+  padding:7px 10px!important;
+  font-size:11px!important;
+ }
+
+ .mode-switch{
+  grid-area:modes!important;
+  width:100%!important;
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:5px!important;
+ }
+
+ .mode-btn{
+  width:100%!important;
+  min-width:0!important;
+  min-height:42px!important;
+  font-size:11px!important;
+  line-height:1.15!important;
+  padding:6px 5px!important;
+ }
+}
+
+/* Compact TV controls on phone/iPad */
+@media(max-width:900px){
+ body.tv-mode-active .tv-embed-actions{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:5px!important;
+  width:100%!important;
+ }
+
+ body.tv-mode-active .tv-embed-actions .tv-action-btn{
+  display:flex!important;
+  flex-direction:row!important;
+  align-items:center!important;
+  justify-content:center!important;
+  gap:3px!important;
+  min-width:0!important;
+  min-height:38px!important;
+  height:38px!important;
+  padding:3px 4px!important;
+  border-radius:9px!important;
+ }
+
+ body.tv-mode-active .tv-embed-actions .tv-action-icon{
+  width:16px!important;
+  height:16px!important;
+  font-size:14px!important;
+ }
+
+ body.tv-mode-active .tv-embed-actions .tv-action-label{
+  font-size:9px!important;
+  white-space:nowrap!important;
+ }
+
+ /* Region drawer must actually appear */
+ body.tv-mode-active .tv-embed-sidebar{
+  display:block!important;
+  visibility:hidden!important;
+  transform:translateX(calc(-100% - 30px))!important;
+  opacity:0!important;
+  pointer-events:none!important;
+ }
+
+ body.tv-mode-active.tv-region-drawer-open .tv-embed-sidebar,
+ body.tv-mode-active .tv-embed-sidebar.drawer-open{
+  visibility:visible!important;
+  transform:translateX(0)!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+ }
+
+ body.tv-mode-active #tvDrawerBackdrop:not(.hidden){
+  display:block!important;
+ }
+
+ body.tv-mode-active #tvMobileDrawerBtn{
+  display:flex!important;
+  position:fixed!important;
+  right:max(10px,env(safe-area-inset-right,0px))!important;
+  bottom:max(12px,calc(env(safe-area-inset-bottom,0px) + 8px))!important;
+  width:46px!important;
+  height:46px!important;
+  min-width:46px!important;
+  min-height:46px!important;
+  padding:0!important;
+  border-radius:50%!important;
+  z-index:100090!important;
+  align-items:center!important;
+  justify-content:center!important;
+  font-size:19px!important;
+ }
+}
+
+/* TV fullscreen: top mini toolbar + uncropped iframe */
+body.tv-fullscreen{
+ position:fixed!important;
+ inset:0!important;
+ width:100vw!important;
+ height:100dvh!important;
+ overflow:hidden!important;
+ background:#000!important;
+ z-index:100000!important;
+}
+
+body.tv-fullscreen .topbar,
+body.tv-fullscreen #tvFullscreenExitBtn{
+ display:none!important;
+}
+
+body.tv-fullscreen main{
+ position:fixed!important;
+ inset:0!important;
+ width:100vw!important;
+ height:100dvh!important;
+ max-width:none!important;
+ margin:0!important;
+ padding:0!important;
+ overflow:hidden!important;
+ background:#000!important;
+ z-index:100001!important;
+}
+
+body.tv-fullscreen #tvMode{
+ display:block!important;
+ position:absolute!important;
+ inset:0!important;
+ width:100%!important;
+ height:100%!important;
+ min-height:0!important;
+ margin:0!important;
+ padding:max(3px,env(safe-area-inset-top,0px))
+         max(3px,env(safe-area-inset-right,0px))
+         max(3px,env(safe-area-inset-bottom,0px))
+         max(3px,env(safe-area-inset-left,0px))!important;
+ overflow:hidden!important;
+ background:#000!important;
+}
+
+body.tv-fullscreen #tvEmbedMain{
+ display:grid!important;
+ grid-template-columns:1fr!important;
+ grid-template-rows:auto minmax(0,1fr)!important;
+ gap:3px!important;
+ width:100%!important;
+ height:100%!important;
+ min-width:0!important;
+ min-height:0!important;
+ overflow:hidden!important;
+}
+
+body.tv-fullscreen .tv-embed-toolbar{
+ grid-row:1!important;
+ display:grid!important;
+ grid-template-columns:minmax(0,1fr) auto!important;
+ align-items:center!important;
+ gap:5px!important;
+ width:100%!important;
+ min-height:38px!important;
+ margin:0!important;
+ padding:3px 5px!important;
+ border-radius:8px!important;
+ background:rgba(8,15,26,.96)!important;
+}
+
+body.tv-fullscreen .tv-embed-title{
+ min-width:0!important;
+}
+body.tv-fullscreen .tv-embed-title .eyebrow,
+body.tv-fullscreen .tv-embed-title p{
+ display:none!important;
+}
+body.tv-fullscreen .tv-embed-title h2{
+ margin:0!important;
+ font-size:12px!important;
+ overflow:hidden!important;
+ text-overflow:ellipsis!important;
+ white-space:nowrap!important;
+}
+
+body.tv-fullscreen .tv-embed-actions{
+ display:grid!important;
+ grid-template-columns:repeat(4,34px)!important;
+ gap:3px!important;
+ width:auto!important;
+}
+
+body.tv-fullscreen .tv-embed-actions .tv-action-btn{
+ width:34px!important;
+ min-width:34px!important;
+ height:32px!important;
+ min-height:32px!important;
+ padding:0!important;
+ border-radius:8px!important;
+}
+
+body.tv-fullscreen .tv-embed-actions .tv-action-label{
+ display:none!important;
+}
+body.tv-fullscreen .tv-embed-actions .tv-action-icon{
+ width:auto!important;
+ height:auto!important;
+ font-size:15px!important;
+}
+
+body.tv-fullscreen #tvMobileHint,
+body.tv-fullscreen #tvStatus,
+body.tv-fullscreen #tvMobileQuickRail,
+body.tv-fullscreen .tv-embed-sidebar,
+body.tv-fullscreen .tv-drawer-backdrop{
+ display:none!important;
+}
+
+body.tv-fullscreen #tvEmbedWrap{
+ grid-row:2!important;
+ position:relative!important;
+ inset:auto!important;
+ width:100%!important;
+ height:100%!important;
+ min-width:0!important;
+ min-height:0!important;
+ max-height:none!important;
+ margin:0!important;
+ padding:0!important;
+ overflow:hidden!important;
+ background:#000!important;
+ border-radius:0!important;
+}
+
+body.tv-fullscreen #tvWebFrame{
+ position:absolute!important;
+ inset:0!important;
+ width:100%!important;
+ height:100%!important;
+ max-width:none!important;
+ max-height:none!important;
+ min-width:0!important;
+ min-height:0!important;
+ margin:0!important;
+ padding:0!important;
+ border:0!important;
+}
+
+/* keep region globe visible in fullscreen, small at bottom right */
+body.tv-fullscreen #tvMobileDrawerBtn{
+ display:flex!important;
+ position:absolute!important;
+ right:7px!important;
+ bottom:7px!important;
+ width:36px!important;
+ height:36px!important;
+ min-width:36px!important;
+ min-height:36px!important;
+ border-radius:50%!important;
+ z-index:100020!important;
+ font-size:16px!important;
+}
+
+/* landscape TV fullscreen: maximum picture area */
+@media(max-width:900px) and (orientation:landscape){
+ body.tv-fullscreen .tv-embed-toolbar{
+  min-height:34px!important;
+  padding:2px 4px!important;
+ }
+ body.tv-fullscreen .tv-embed-title h2{
+  font-size:10px!important;
+ }
+ body.tv-fullscreen .tv-embed-actions{
+  grid-template-columns:repeat(4,31px)!important;
+ }
+ body.tv-fullscreen .tv-embed-actions .tv-action-btn{
+  width:31px!important;
+  min-width:31px!important;
+  height:29px!important;
+  min-height:29px!important;
+ }
+}
