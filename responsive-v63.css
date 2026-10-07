@@ -1052,3 +1052,224 @@ body.tv-mode-active.tv-landscape #tvEmbedMain{
 body.tv-mode-active.tv-portrait #tvEmbedMain{
  min-width:0!important;
 }
+
+
+/* ==========================================================
+   V1.5.6.75 — MOBILE HEADER + TV REGION DRAWER REWORK
+   ========================================================== */
+
+.brand-copy{gap:4px!important}
+.brand-copy .brand-tu{color:#ff496f!important}
+.brand-copy .brand-version{
+ display:inline-flex!important;
+ align-items:center!important;
+ justify-content:center!important;
+ padding:4px 9px!important;
+ border-radius:999px!important;
+ line-height:1!important;
+ font-size:11px!important;
+ font-weight:900!important;
+ background:linear-gradient(135deg,rgba(255,123,97,.88),rgba(132,94,247,.82))!important;
+ box-shadow:0 8px 24px rgba(15,23,42,.18)!important;
+}
+.top-actions #profileBtn{display:none!important}
+
+@media(max-width:700px){
+ .topbar{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  grid-template-areas:
+   "brand actions"
+   "modes modes"!important;
+  gap:10px 8px!important;
+  align-items:start!important;
+ }
+ .brand-videotu{
+  min-width:0!important;
+  width:100%!important;
+ }
+ .brand-videotu .brand-copy{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) auto!important;
+  grid-template-areas:
+   "title version"
+   "tag tag"!important;
+  align-items:center!important;
+  column-gap:6px!important;
+  row-gap:3px!important;
+  min-width:0!important;
+ }
+ .brand-videotu .brand-copy strong{
+  grid-area:title!important;
+  min-width:0!important;
+  white-space:nowrap!important;
+  font-size:clamp(18px,6.2vw,31px)!important;
+  letter-spacing:-.04em!important;
+ }
+ .brand-videotu .brand-copy small{
+  grid-area:tag!important;
+  display:block!important;
+  margin-top:0!important;
+  font-size:8px!important;
+  letter-spacing:.12em!important;
+ }
+ .brand-videotu .brand-version{
+  grid-area:version!important;
+  justify-self:start!important;
+  margin-left:0!important;
+  font-size:10px!important;
+  padding:4px 7px!important;
+ }
+ .top-actions{
+  grid-area:actions!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:flex-end!important;
+  gap:6px!important;
+  min-width:0!important;
+ }
+ .top-actions .pill{
+  min-height:38px!important;
+  padding:8px 11px!important;
+  font-size:13px!important;
+ }
+ .mode-switch{
+  grid-area:modes!important;
+  margin-top:0!important;
+ }
+}
+
+/* --- TV mobile UX: keep screen/channel content primary, region chooser as drawer --- */
+@media(max-width:900px){
+ body.tv-mode-active #tvMobileQuickRail{
+  display:none!important;
+ }
+
+ body.tv-mode-active #tvEmbedMain{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:10px!important;
+  width:100%!important;
+  min-width:0!important;
+ }
+
+ body.tv-mode-active .tv-embed-toolbar{
+  display:flex!important;
+  flex-direction:column!important;
+  gap:10px!important;
+ }
+
+ body.tv-mode-active .tv-embed-actions{
+  display:grid!important;
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:8px!important;
+  width:100%!important;
+ }
+
+ body.tv-mode-active .tv-embed-actions button{
+  min-width:0!important;
+ }
+
+ body.tv-mode-active #tvMobileDrawerBtn{
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  align-self:flex-start!important;
+  min-height:40px!important;
+  padding:10px 14px!important;
+  margin:0 0 6px 0!important;
+  border-radius:14px!important;
+  background:linear-gradient(135deg,#7aa2ff,#8f84ff)!important;
+  color:#fff!important;
+  box-shadow:0 10px 24px rgba(18,33,64,.28)!important;
+ }
+
+ body.tv-mode-active #tvMobileHint{
+  display:block!important;
+  margin:0!important;
+  padding:4px 0 0!important;
+  white-space:normal!important;
+  color:#bfd0e7!important;
+ }
+
+ body.tv-mode-active #tvStatus{
+  display:block!important;
+  margin:0!important;
+  white-space:normal!important;
+ }
+
+ body.tv-mode-active #tvEmbedWrap{
+  width:100%!important;
+  max-width:100%!important;
+  height:72svh!important;
+  min-height:420px!important;
+  position:relative!important;
+  inset:auto!important;
+ }
+
+ body.tv-mode-active .tv-embed-sidebar{
+  position:fixed!important;
+  left:12px!important;
+  top:calc(env(safe-area-inset-top,0px) + 66px)!important;
+  bottom:12px!important;
+  width:min(86vw,340px)!important;
+  max-width:340px!important;
+  min-height:0!important;
+  margin:0!important;
+  z-index:80!important;
+  overflow:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+  transform:translateX(calc(-100% - 28px))!important;
+  opacity:0!important;
+  pointer-events:none!important;
+  transition:transform .22s ease,opacity .22s ease!important;
+  box-shadow:0 20px 60px rgba(2,6,23,.45)!important;
+ }
+
+ body.tv-mode-active:not(.tv-sidebar-collapsed) .tv-embed-sidebar{
+  transform:translateX(0)!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+ }
+
+ body.tv-mode-active .tv-drawer-backdrop{
+  position:fixed!important;
+  inset:0!important;
+  background:rgba(2,6,23,.58)!important;
+  backdrop-filter:blur(4px)!important;
+  z-index:70!important;
+ }
+
+ body.tv-mode-active.tv-sidebar-collapsed .tv-drawer-backdrop,
+ body.tv-mode-active .tv-drawer-backdrop.hidden{
+  display:none!important;
+ }
+
+ body.tv-mode-active .tv-country-search{
+  position:sticky!important;
+  top:0!important;
+  z-index:2!important;
+  background:#0e1727!important;
+  padding-top:6px!important;
+ }
+
+ body.tv-mode-active .tv-country-list{
+  max-height:none!important;
+ }
+
+ body.tv-mode-active #tvEmbedSidebar .tv-nav{
+  min-height:44px!important;
+ }
+
+ body.tv-mode-active .tv-sidebar-toggle{
+  display:none!important;
+ }
+}
+
+@media(max-width:900px) and (orientation:landscape){
+ body.tv-mode-active #tvEmbedWrap{
+  height:calc(100dvh - 178px)!important;
+  min-height:260px!important;
+ }
+}
+
