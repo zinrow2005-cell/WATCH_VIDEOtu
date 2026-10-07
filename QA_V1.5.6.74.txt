@@ -1,0 +1,27 @@
+WATCH_VIDEOtu V1.5.6.74 — TV Orientation Stability
+
+問題：
+手機/平板從直立旋轉成橫式時，iOS Safari 會先回報中間尺寸。
+舊版 TV drawer / portrait layout 狀態沒有完整清除，造成：
+- 地區欄殘留直立寬度
+- 提示文字被擠成直排
+- 主 TV 區沒有重新撐滿
+- drawer / mini 狀態殘留
+
+修正：
+1. orientationchange + resize 都會呼叫 scheduleTvOrientationLayout。
+2. 旋轉時立即、260ms、650ms 三次重算，避開 iOS Safari 中間 viewport。
+3. resetTvTransientLayout 清除 drawer、mini-player、inline layout 殘留。
+4. 增加 body.tv-landscape / body.tv-portrait 狀態。
+5. Portrait：TV 上方，快速地區在下方。
+6. Landscape：TV 左側、快速地區右側。
+7. 提示/status 強制 horizontal writing mode，避免直排字。
+8. iPad landscape 使用固定 230px 右側地區欄。
+9. 離開 TV 模式時清除 orientation classes。
+
+Static QA:
+- app.js PASS
+- ktv_singers.js PASS
+- ktv_songs.js PASS
+- sw.js PASS
+- duplicate IDs 0

@@ -895,3 +895,160 @@ body.watch-mode.watch-fullscreen #playerSection .watch-center{
   pointer-events:auto!important;
  }
 }
+
+/* ==========================================================
+   V1.5.6.74 — TV ORIENTATION ROTATION STABILITY
+   ========================================================== */
+
+/* Never allow status/hint text to collapse to vertical characters. */
+body.tv-mode-active .tv-mobile-hint,
+body.tv-mode-active #tvStatus,
+body.tv-mode-active .tv-embed-toolbar,
+body.tv-mode-active .tv-embed-toolbar *{
+ writing-mode:horizontal-tb!important;
+ text-orientation:mixed!important;
+ word-break:normal!important;
+ overflow-wrap:break-word!important;
+ min-width:0!important;
+}
+
+/* Portrait: TV first, quick regions below. */
+@media(max-width:900px) and (orientation:portrait){
+ body.tv-mode-active #tvEmbedMain{
+  display:flex!important;
+  flex-direction:column!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  gap:8px!important;
+ }
+
+ body.tv-mode-active #tvEmbedWrap{
+  order:2!important;
+  width:100%!important;
+  max-width:100%!important;
+  height:62svh!important;
+  min-height:420px!important;
+  position:relative!important;
+  inset:auto!important;
+  margin:0!important;
+ }
+
+ body.tv-mode-active #tvMobileQuickRail{
+  order:3!important;
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  width:100%!important;
+  height:auto!important;
+  max-height:none!important;
+  overflow:visible!important;
+ }
+
+ body.tv-mode-active .tv-mobile-hint,
+ body.tv-mode-active #tvStatus{
+  width:100%!important;
+  max-width:100%!important;
+  white-space:normal!important;
+ }
+}
+
+/* Landscape phone/tablet: TV left, quick region list right. */
+@media(max-width:1180px) and (orientation:landscape){
+ body.tv-mode-active #tvEmbedMain{
+  display:grid!important;
+  grid-template-columns:minmax(0,1fr) minmax(180px,min(30vw,280px))!important;
+  grid-template-areas:
+   "toolbar toolbar"
+   "hint hint"
+   "screen rail"!important;
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  height:auto!important;
+  gap:8px!important;
+  align-items:start!important;
+ }
+
+ body.tv-mode-active .tv-embed-toolbar{
+  grid-area:toolbar!important;
+  width:100%!important;
+ }
+
+ body.tv-mode-active .tv-mobile-hint,
+ body.tv-mode-active #tvStatus{
+  grid-area:hint!important;
+  width:100%!important;
+  display:block!important;
+  white-space:normal!important;
+  margin:0!important;
+ }
+
+ body.tv-mode-active #tvEmbedWrap{
+  grid-area:screen!important;
+  width:100%!important;
+  max-width:100%!important;
+  height:calc(100dvh - 170px)!important;
+  min-height:280px!important;
+  position:relative!important;
+  inset:auto!important;
+  margin:0!important;
+  overflow:hidden!important;
+ }
+
+ body.tv-mode-active #tvMobileQuickRail{
+  grid-area:rail!important;
+  display:flex!important;
+  flex-direction:column!important;
+  gap:6px!important;
+  width:100%!important;
+  max-width:280px!important;
+  height:calc(100dvh - 170px)!important;
+  max-height:calc(100dvh - 170px)!important;
+  overflow-y:auto!important;
+  overflow-x:hidden!important;
+  padding:0 2px 0 0!important;
+  margin:0!important;
+  -webkit-overflow-scrolling:touch!important;
+ }
+
+ body.tv-mode-active .tv-quick-country{
+  width:100%!important;
+  min-width:0!important;
+  min-height:40px!important;
+  flex:0 0 auto!important;
+  white-space:nowrap!important;
+ }
+
+ body.tv-mode-active .tv-quick-country b{
+  overflow:hidden!important;
+  text-overflow:ellipsis!important;
+  white-space:nowrap!important;
+ }
+
+ body.tv-mode-active .tv-embed-sidebar,
+ body.tv-mode-active .tv-mobile-drawer-btn,
+ body.tv-mode-active .tv-drawer-backdrop{
+  display:none!important;
+ }
+}
+
+/* Extra protection for iPad landscape. */
+@media(min-width:701px) and (max-width:1180px) and (orientation:landscape){
+ body.tv-mode-active main{
+  padding:8px!important;
+ }
+ body.tv-mode-active #tvEmbedMain{
+  grid-template-columns:minmax(0,1fr) 230px!important;
+ }
+ body.tv-mode-active #tvMobileQuickRail{
+  max-width:230px!important;
+ }
+}
+
+/* Rotation state classes reinforce orientation after iOS intermediate viewport frames. */
+body.tv-mode-active.tv-landscape #tvEmbedMain{
+ min-width:0!important;
+}
+body.tv-mode-active.tv-portrait #tvEmbedMain{
+ min-width:0!important;
+}
