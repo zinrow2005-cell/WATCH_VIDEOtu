@@ -1,0 +1,51 @@
+WATCH_VIDEOtu V1.5.6.76 — TV Controls + Mobile/iPad QA
+
+本版完成
+========
+1. 「🌍 地區」改成手機/平板右下角 48px 浮動圓形按鈕。
+2. TV 四個工具按鈕改成現代化 icon + label 卡片：
+   ☆ 收藏 / ⏯ 播放控制 / ⛶ 全螢幕 / ↻ 重整。
+3. 修正舊的「暫停直播」錯誤：
+   舊版是把 iframe src 改成 about:blank，所以會直接停止頻道並跳掉。
+   新版不再清空或重載 iframe。
+4. 因 Famelack 是 cross-origin iframe，父頁依瀏覽器 Same-Origin Policy
+   無法直接呼叫 iframe 裡的 video.pause()/play()。
+   新版播放控制只保留目前頻道，並提示使用 Famelack 畫面內的 ▶ / ⏸。
+5. 修正 TV 全螢幕無法退出：
+   - 新增真正可點擊的右上角 ✕ 按鈕。
+   - Escape 也可退出。
+   - 離開 TV 模式自動清除 fullscreen 狀態。
+6. 手機 / iPad TV 地區仍使用抽屜，不再佔主畫面。
+7. 外層不再顯示地區 quick rail；頻道清單由 Famelack 內頁本身顯示。
+
+靜態 QA
+========
+Syntax:
+- app.js: PASS
+- ktv_singers.js: PASS
+- ktv_songs.js: PASS
+- sw.js: PASS
+
+Duplicate IDs: 0
+JS DOM references missing from HTML: 7
+ID-bearing buttons scanned: 55
+Buttons without obvious binding: 0
+
+Missing refs:
+- line 630: ktvQueuePanelCount
+- line 1041: ktvQueueCount
+- line 1826: autoCategoryPreview
+- line 2531: profileBtn
+- line 2531: profileBtn
+- line 3460: profileBtn
+- line 3460: profileBtn
+
+Unbound candidates:
+- none
+
+重要限制
+========
+Famelack 目前是第三方跨網域 iframe。外層 WATCH_VIDEOtu 不可安全/可靠地
+直接控制其內部 HTML5 video 的 pause/play。若要讓外層按鈕做到真正一鍵暫停/
+繼續，需要下一階段改成「直接串流播放器模式」（由 WATCH_VIDEOtu 自己播放
+可用的 HLS/YouTube live source），而不是只嵌入 Famelack 整頁。

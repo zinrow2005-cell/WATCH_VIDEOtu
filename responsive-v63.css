@@ -1273,3 +1273,148 @@ body.tv-mode-active.tv-portrait #tvEmbedMain{
  }
 }
 
+
+/* ==========================================================
+   V1.5.6.76 — TV MODERN CONTROLS + SAFE FULLSCREEN
+   ========================================================== */
+.tv-embed-actions .tv-action-btn{
+ display:inline-flex!important;
+ align-items:center!important;
+ justify-content:center!important;
+ gap:7px!important;
+ min-height:42px!important;
+ padding:9px 12px!important;
+ border-radius:14px!important;
+ border:1px solid rgba(255,255,255,.11)!important;
+ background:linear-gradient(180deg,rgba(31,48,76,.98),rgba(20,34,56,.98))!important;
+ color:#eaf3ff!important;
+ box-shadow:0 8px 22px rgba(0,0,0,.16)!important;
+ transition:transform .16s ease,background .16s ease,border-color .16s ease!important;
+}
+.tv-embed-actions .tv-action-btn:active{
+ transform:scale(.97)!important;
+}
+.tv-embed-actions .tv-action-primary{
+ background:linear-gradient(135deg,#4b9cff,#6877f4)!important;
+ border-color:rgba(142,190,255,.72)!important;
+ color:#fff!important;
+}
+.tv-embed-actions .tv-action-icon{
+ display:inline-flex!important;
+ align-items:center!important;
+ justify-content:center!important;
+ width:22px!important;
+ height:22px!important;
+ font-size:18px!important;
+ line-height:1!important;
+}
+.tv-embed-actions .tv-action-label{
+ font-size:12px!important;
+ font-weight:900!important;
+ white-space:nowrap!important;
+}
+#tvFavBtn.active{
+ background:linear-gradient(135deg,#f8c34f,#f59b3c)!important;
+ color:#17120a!important;
+ border-color:rgba(255,226,151,.76)!important;
+}
+
+/* mobile region = small floating circle */
+@media(max-width:900px){
+ body.tv-mode-active #tvMobileDrawerBtn{
+  position:fixed!important;
+  right:max(12px,env(safe-area-inset-right,0px))!important;
+  bottom:max(18px,calc(env(safe-area-inset-bottom,0px) + 12px))!important;
+  top:auto!important;
+  left:auto!important;
+  z-index:92!important;
+  width:48px!important;
+  height:48px!important;
+  min-width:48px!important;
+  min-height:48px!important;
+  padding:0!important;
+  margin:0!important;
+  border-radius:50%!important;
+  font-size:21px!important;
+  line-height:1!important;
+  box-shadow:0 12px 30px rgba(8,20,45,.42)!important;
+ }
+
+ body.tv-mode-active:not(.tv-sidebar-collapsed) #tvMobileDrawerBtn{
+  background:linear-gradient(135deg,#ff5c6f,#f14e48)!important;
+ }
+
+ body.tv-mode-active .tv-embed-actions{
+  grid-template-columns:repeat(4,minmax(0,1fr))!important;
+  gap:7px!important;
+ }
+ body.tv-mode-active .tv-embed-actions .tv-action-btn{
+  min-height:48px!important;
+  padding:7px 4px!important;
+  flex-direction:column!important;
+  gap:3px!important;
+ }
+ body.tv-mode-active .tv-embed-actions .tv-action-icon{
+  font-size:19px!important;
+  width:20px!important;
+  height:20px!important;
+ }
+ body.tv-mode-active .tv-embed-actions .tv-action-label{
+  font-size:10px!important;
+ }
+}
+
+/* transient hint, never blocks the iframe */
+.tv-control-hint{
+ position:absolute!important;
+ left:50%!important;
+ bottom:18px!important;
+ transform:translateX(-50%)!important;
+ width:min(92%,520px)!important;
+ z-index:15!important;
+ pointer-events:none!important;
+}
+.tv-control-hint.hidden{display:none!important}
+.tv-control-hint-card{
+ display:flex!important;
+ flex-direction:column!important;
+ gap:3px!important;
+ padding:11px 14px!important;
+ border-radius:14px!important;
+ background:rgba(7,15,28,.92)!important;
+ border:1px solid rgba(255,255,255,.14)!important;
+ box-shadow:0 12px 30px rgba(0,0,0,.32)!important;
+ color:#fff!important;
+ backdrop-filter:blur(10px)!important;
+}
+.tv-control-hint-card b{font-size:13px!important}
+.tv-control-hint-card span{font-size:11px!important;color:#c8d7ea!important;line-height:1.45!important}
+
+/* real clickable exit control in TV fullscreen */
+.tv-fullscreen-exit{
+ display:none;
+}
+body.tv-fullscreen #tvFullscreenExitBtn{
+ display:flex!important;
+ position:fixed!important;
+ right:max(14px,env(safe-area-inset-right,0px))!important;
+ top:max(14px,calc(env(safe-area-inset-top,0px) + 8px))!important;
+ z-index:100100!important;
+ width:48px!important;
+ height:48px!important;
+ min-width:48px!important;
+ min-height:48px!important;
+ padding:0!important;
+ align-items:center!important;
+ justify-content:center!important;
+ border-radius:50%!important;
+ background:rgba(8,15,26,.82)!important;
+ border:1px solid rgba(255,255,255,.24)!important;
+ color:#fff!important;
+ font-size:24px!important;
+ box-shadow:0 10px 30px rgba(0,0,0,.42)!important;
+ backdrop-filter:blur(10px)!important;
+}
+
+/* old pseudo exit marker no longer needed */
+body.tv-fullscreen::after{display:none!important}
