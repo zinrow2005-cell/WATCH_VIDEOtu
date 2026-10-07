@@ -1,11 +1,11 @@
-var APP_VERSION='1.5.6.78';
-var APP_BUILD='15678';
+var APP_VERSION='1.5.6.79';
+var APP_BUILD='15679';
 var watchFullscreenScrollY=0;
 var miniPlayerSuppressUntil=0;
 (function(){
 'use strict';
-var STORAGE='familytube_v15678';
-var OLD_KEYS=['familytube_v15677','familytube_v15676','familytube_v15675','familytube_v15674','familytube_v15673','familytube_v15672','familytube_v15671','familytube_v15670','familytube_v15669','familytube_v15668','familytube_v15667','familytube_v15666','familytube_v15665','familytube_v15664','familytube_v15663','familytube_v15662','familytube_v15661','familytube_v15660','familytube_v15659','familytube_v15658','familytube_v15657','familytube_v15656','familytube_v15655','familytube_v15654','familytube_v15653','familytube_v15652','familytube_v15651','familytube_v15650','familytube_v15649','familytube_v15648','familytube_v15647','familytube_v15646','familytube_v15645','familytube_v15644','familytube_v15643','familytube_v15642','familytube_v15641','familytube_v15640','familytube_v15639','familytube_v15638','familytube_v15637','familytube_v15636','familytube_v15635','familytube_v15634','familytube_v15633','familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v15679';
+var OLD_KEYS=['familytube_v15678','familytube_v15677','familytube_v15676','familytube_v15675','familytube_v15674','familytube_v15673','familytube_v15672','familytube_v15671','familytube_v15670','familytube_v15669','familytube_v15668','familytube_v15667','familytube_v15666','familytube_v15665','familytube_v15664','familytube_v15663','familytube_v15662','familytube_v15661','familytube_v15660','familytube_v15659','familytube_v15658','familytube_v15657','familytube_v15656','familytube_v15655','familytube_v15654','familytube_v15653','familytube_v15652','familytube_v15651','familytube_v15650','familytube_v15649','familytube_v15648','familytube_v15647','familytube_v15646','familytube_v15645','familytube_v15644','familytube_v15643','familytube_v15642','familytube_v15641','familytube_v15640','familytube_v15639','familytube_v15638','familytube_v15637','familytube_v15636','familytube_v15635','familytube_v15634','familytube_v15633','familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var CURATED_CHILD_VIDEOS=[{"id":"GqO5yfViGDE","title":"妙妙犬布麗 Bluey｜天天都好玩","category":"故事","channel":"YOYOTV","recommended":true,"curated":true,"addedAt":1791281675560,"categoryManual":true,"autoCategory":false},{"id":"Hg7vNCIjIwk","title":"英文學習推薦｜使用者指定影片","category":"英文","channel":"YouTube Kids / English","recommended":true,"curated":true,"addedAt":1791281272281,"categoryManual":true,"autoCategory":false},{"id":"eegWzglBMh0","title":"ABC Chant｜Lingokids 英文字母歌","category":"英文","channel":"Lingokids","recommended":true,"curated":true,"addedAt":1791281271281,"categoryManual":true,"autoCategory":false},{"id":"-MtVI33De6s","title":"ABC Animals｜字母與動物英文學習","category":"英文","channel":"English Learning","recommended":true,"curated":true,"addedAt":1791281270281,"categoryManual":true,"autoCategory":false},{"id":"Z0xPZ47u4z4","title":"ABC Song｜英文字母歌曲","category":"英文","channel":"English Learning","recommended":true,"curated":true,"addedAt":1791281269281,"categoryManual":true,"autoCategory":false},{"id":"yyew5ojyjg8","title":"朱妮托尼｜TOP 經典兒歌合集","category":"兒歌","channel":"朱妮托尼 中文","recommended":true,"curated":true,"addedAt":1791281268281,"categoryManual":true,"autoCategory":false},{"id":"Ya6YAH3YL2E","title":"朱妮托尼｜兒歌童謠與卡通故事合集","category":"兒歌","channel":"朱妮托尼","recommended":true,"curated":true,"addedAt":1791281267281,"categoryManual":true,"autoCategory":false},{"id":"l1yRTzqGLNA","title":"巧虎｜幼兒安全與生活學習","category":"卡通","channel":"巧虎TV","recommended":true,"curated":true,"addedAt":1791281266281,"categoryManual":true,"autoCategory":false},{"id":"4ScOx5ci-YQ","title":"Bebefinn｜兒歌與幼兒學習合集","category":"學習","channel":"Bebefinn","recommended":true,"curated":true,"addedAt":1791281265281,"categoryManual":true,"autoCategory":false},{"id":"eUunYTYia3I","title":"AMAZING ANIMALS｜兒童動物大自然 1 小時","category":"自然／動物","channel":"Nat Geo Kids","recommended":true,"curated":true,"addedAt":1791281264281,"categoryManual":true,"autoCategory":false},{"id":"y_rH7cllMbU","title":"數字顏色推薦｜使用者指定影片 1","category":"數字／顏色","channel":"YouTube Kids","recommended":true,"curated":true,"addedAt":1791281263281,"categoryManual":true,"autoCategory":false},{"id":"G-NEBETYGDI","title":"數字顏色推薦｜使用者指定影片 2","category":"數字／顏色","channel":"YouTube Kids","recommended":true,"curated":true,"addedAt":1791281262281,"categoryManual":true,"autoCategory":false},{"id":"jM6dykYy0xw","title":"Numbers & Colors for Kids｜數字與顏色","category":"數字／顏色","channel":"Kids Fun House","recommended":true,"curated":true,"addedAt":1791281261281,"categoryManual":true,"autoCategory":false},{"id":"P0C1_bOhPV4","title":"Colorful Compilation｜顏色、字母與數字","category":"數字／顏色","channel":"Super Simple Songs","recommended":true,"curated":true,"addedAt":1791281260281,"categoryManual":true,"autoCategory":false},{"id":"zxIpA5nF_LY","title":"What's Your Favorite Color?｜顏色英文歌","category":"數字／顏色","channel":"Super Simple Songs","recommended":true,"curated":true,"addedAt":1791281259281,"categoryManual":true,"autoCategory":false},{"id":"kDdg2M1_EuE","title":"The Alphabet Is So Much Fun｜ABC 英文字母歌","category":"英文","channel":"Super Simple Songs","recommended":true,"curated":true,"addedAt":0,"categoryManual":true,"autoCategory":false},{"id":"vD98OvvDNEs","title":"The Alphabet Song｜英文字母學習","category":"英文","channel":"Super Simple Songs","recommended":true,"curated":true,"addedAt":0,"categoryManual":true,"autoCategory":false}];
 var DEFAULT={
  videos:CURATED_CHILD_VIDEOS.slice(),
@@ -1452,25 +1452,13 @@ function showTvMode(){
 
 
 
-function focusTvChannelArea(){
- var wrap=$('tvEmbedWrap');
- var frame=$('tvWebFrame');
- try{
-  if(wrap&&wrap.scrollIntoView)wrap.scrollIntoView({behavior:'smooth',block:'start'});
- }catch(e){
-  try{if(wrap&&wrap.scrollIntoView)wrap.scrollIntoView()}catch(ignore){}
- }
- setTimeout(function(){
-  try{if(frame)frame.focus()}catch(e){}
-  showTvControlHint('已預設台灣；請直接在電視頁面右側／下方的頻道清單選台。');
- },180);
-}
+
 
 function updateTvMobileHint(){
  var hint=$('tvMobileHint');
  if(!hint)return;
  if(window.innerWidth<=900){
-  hint.textContent='已預設台灣頻道；按右下「📺」可快速回到電視頻道清單操作。';
+  hint.textContent='已預設台灣頻道；請直接使用電視頁面內的頻道清單切台。';
  }else{
   hint.textContent='選擇地區後，請直接在下方電視頁面內點選頻道。';
  }
@@ -1804,18 +1792,6 @@ function setTvSidebarCollapsed(on){
  if($('tvSidebarToggleBtn')){
   $('tvSidebarToggleBtn').textContent=tvSidebarCollapsed?'☰':'✕';
   $('tvSidebarToggleBtn').setAttribute('aria-label',tvSidebarCollapsed?'展開國家欄':'收合國家欄');
- }
- if($('tvMobileDrawerBtn')){
-  if(window.innerWidth<=900){
-   $('tvMobileDrawerBtn').textContent='📺';
-   $('tvMobileDrawerBtn').setAttribute('aria-expanded','false');
-   $('tvMobileDrawerBtn').setAttribute('aria-label','頻道選項');
-   $('tvMobileDrawerBtn').setAttribute('title','頻道選項');
-  }else{
-   $('tvMobileDrawerBtn').textContent=tvSidebarCollapsed?'🌍':'✕';
-   $('tvMobileDrawerBtn').setAttribute('aria-expanded',tvSidebarCollapsed?'false':'true');
-   $('tvMobileDrawerBtn').setAttribute('aria-label',tvSidebarCollapsed?'開啟地區選單':'關閉地區選單');
-  }
  }
  var side=$('tvEmbedSidebar');
  if(side)side.classList.toggle('drawer-open',!tvSidebarCollapsed&&window.innerWidth<=900);
@@ -3356,8 +3332,6 @@ document.addEventListener('DOMContentLoaded',function(){
  }catch(criticalNavError){
   try{console.error('Critical navigation binding failed',criticalNavError)}catch(ignore){}
  }
-
- if($('tvMobileDrawerBtn'))$('tvMobileDrawerBtn').onclick=focusTvChannelArea;
  if($('tvDrawerBackdrop'))$('tvDrawerBackdrop').onclick=function(){setTvSidebarCollapsed(true)};
  window.addEventListener('orientationchange',function(){if(tvModeActive)setTimeout(function(){setTvSidebarCollapsed(true)},180)});
 

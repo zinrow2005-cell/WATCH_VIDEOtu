@@ -1,0 +1,19 @@
+WATCH_VIDEOtu V1.5.6.79 — Mobile TV Simplified
+
+修正：
+- 刪除手機／平板右下角 📺 頻道按鈕。
+- 刪除 focusTvChannelArea 相關 JS。
+- 手機／平板進 TV 仍預設台灣。
+- 頻道切換只使用 Famelack 內嵌頁面自己的頻道清單。
+- 全螢幕也不再顯示任何外層頻道／地區浮動按鈕。
+
+原因：
+Famelack 為跨網域 iframe，外層頁面無法直接打開它內部的頻道清單。
+因此保留 📺 按鈕無法可靠達成預期操作。
+
+Static QA:
+- app.js PASS
+- ktv_singers.js PASS
+- ktv_songs.js PASS
+- sw.js PASS
+- duplicate IDs 0

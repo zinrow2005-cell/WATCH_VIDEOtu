@@ -1828,3 +1828,16 @@ body.tv-fullscreen #tvMobileDrawerBtn{
   font-size:15px!important;
  }
 }
+
+/* ==========================================================
+   V1.5.6.79 — REMOVE MOBILE TV FLOATING BUTTON
+   ========================================================== */
+#tvMobileDrawerBtn{
+ display:none!important;
+}
+@media(max-width:900px){
+ body.tv-mode-active #tvMobileDrawerBtn,
+ body.tv-fullscreen #tvMobileDrawerBtn{
+  display:none!important;
+ }
+}
