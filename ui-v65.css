@@ -566,3 +566,25 @@ textarea:focus{
   justify-content:center;
  }
 }
+
+/* V1.5.6.72 interaction reliability */
+button:disabled,
+.button:disabled,
+.btn:disabled{
+ opacity:.58!important;
+ cursor:wait!important;
+ transform:none!important;
+ box-shadow:none!important;
+}
+.mode-btn{
+ pointer-events:auto!important;
+ position:relative;
+ z-index:2;
+}
+.music-mode,
+.ktv-mode,
+.tv-mode,
+#kidsHome,
+#playerSection{
+ pointer-events:auto;
+}

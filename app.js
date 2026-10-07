@@ -1,11 +1,11 @@
-var APP_VERSION='1.5.6.71';
-var APP_BUILD='15671';
+var APP_VERSION='1.5.6.72';
+var APP_BUILD='15672';
 var watchFullscreenScrollY=0;
 var miniPlayerSuppressUntil=0;
 (function(){
 'use strict';
-var STORAGE='familytube_v15671';
-var OLD_KEYS=['familytube_v15670','familytube_v15669','familytube_v15668','familytube_v15667','familytube_v15666','familytube_v15665','familytube_v15664','familytube_v15663','familytube_v15662','familytube_v15661','familytube_v15660','familytube_v15659','familytube_v15658','familytube_v15657','familytube_v15656','familytube_v15655','familytube_v15654','familytube_v15653','familytube_v15652','familytube_v15651','familytube_v15650','familytube_v15649','familytube_v15648','familytube_v15647','familytube_v15646','familytube_v15645','familytube_v15644','familytube_v15643','familytube_v15642','familytube_v15641','familytube_v15640','familytube_v15639','familytube_v15638','familytube_v15637','familytube_v15636','familytube_v15635','familytube_v15634','familytube_v15633','familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
+var STORAGE='familytube_v15672';
+var OLD_KEYS=['familytube_v15671','familytube_v15670','familytube_v15669','familytube_v15668','familytube_v15667','familytube_v15666','familytube_v15665','familytube_v15664','familytube_v15663','familytube_v15662','familytube_v15661','familytube_v15660','familytube_v15659','familytube_v15658','familytube_v15657','familytube_v15656','familytube_v15655','familytube_v15654','familytube_v15653','familytube_v15652','familytube_v15651','familytube_v15650','familytube_v15649','familytube_v15648','familytube_v15647','familytube_v15646','familytube_v15645','familytube_v15644','familytube_v15643','familytube_v15642','familytube_v15641','familytube_v15640','familytube_v15639','familytube_v15638','familytube_v15637','familytube_v15636','familytube_v15635','familytube_v15634','familytube_v15633','familytube_v15632','familytube_v15631','familytube_v15630','familytube_v15629','familytube_v15628','familytube_v15627','familytube_v15626','familytube_v15625','familytube_v15624','familytube_v15623','familytube_v15622','familytube_v15621','familytube_v15620','familytube_v15619','familytube_v15618','familytube_v15617','familytube_v15616','familytube_v15615','familytube_v15614','familytube_v15613','familytube_v15612','familytube_v15611','familytube_v15610','familytube_v1569','familytube_v1568','familytube_v1567','familytube_v1566','familytube_v1565','familytube_v1564','familytube_v1563','familytube_v1562','familytube_v1561','familytube_v156','familytube_v155','familytube_v154','familytube_v153','familytube_v152','familytube_v151','familytube_v15','familytube_v14','familytube_v13','familytube_v12'];
 var CURATED_CHILD_VIDEOS=[{"id":"GqO5yfViGDE","title":"妙妙犬布麗 Bluey｜天天都好玩","category":"故事","channel":"YOYOTV","recommended":true,"curated":true,"addedAt":1791281675560,"categoryManual":true,"autoCategory":false},{"id":"Hg7vNCIjIwk","title":"英文學習推薦｜使用者指定影片","category":"英文","channel":"YouTube Kids / English","recommended":true,"curated":true,"addedAt":1791281272281,"categoryManual":true,"autoCategory":false},{"id":"eegWzglBMh0","title":"ABC Chant｜Lingokids 英文字母歌","category":"英文","channel":"Lingokids","recommended":true,"curated":true,"addedAt":1791281271281,"categoryManual":true,"autoCategory":false},{"id":"-MtVI33De6s","title":"ABC Animals｜字母與動物英文學習","category":"英文","channel":"English Learning","recommended":true,"curated":true,"addedAt":1791281270281,"categoryManual":true,"autoCategory":false},{"id":"Z0xPZ47u4z4","title":"ABC Song｜英文字母歌曲","category":"英文","channel":"English Learning","recommended":true,"curated":true,"addedAt":1791281269281,"categoryManual":true,"autoCategory":false},{"id":"yyew5ojyjg8","title":"朱妮托尼｜TOP 經典兒歌合集","category":"兒歌","channel":"朱妮托尼 中文","recommended":true,"curated":true,"addedAt":1791281268281,"categoryManual":true,"autoCategory":false},{"id":"Ya6YAH3YL2E","title":"朱妮托尼｜兒歌童謠與卡通故事合集","category":"兒歌","channel":"朱妮托尼","recommended":true,"curated":true,"addedAt":1791281267281,"categoryManual":true,"autoCategory":false},{"id":"l1yRTzqGLNA","title":"巧虎｜幼兒安全與生活學習","category":"卡通","channel":"巧虎TV","recommended":true,"curated":true,"addedAt":1791281266281,"categoryManual":true,"autoCategory":false},{"id":"4ScOx5ci-YQ","title":"Bebefinn｜兒歌與幼兒學習合集","category":"學習","channel":"Bebefinn","recommended":true,"curated":true,"addedAt":1791281265281,"categoryManual":true,"autoCategory":false},{"id":"eUunYTYia3I","title":"AMAZING ANIMALS｜兒童動物大自然 1 小時","category":"自然／動物","channel":"Nat Geo Kids","recommended":true,"curated":true,"addedAt":1791281264281,"categoryManual":true,"autoCategory":false},{"id":"y_rH7cllMbU","title":"數字顏色推薦｜使用者指定影片 1","category":"數字／顏色","channel":"YouTube Kids","recommended":true,"curated":true,"addedAt":1791281263281,"categoryManual":true,"autoCategory":false},{"id":"G-NEBETYGDI","title":"數字顏色推薦｜使用者指定影片 2","category":"數字／顏色","channel":"YouTube Kids","recommended":true,"curated":true,"addedAt":1791281262281,"categoryManual":true,"autoCategory":false},{"id":"jM6dykYy0xw","title":"Numbers & Colors for Kids｜數字與顏色","category":"數字／顏色","channel":"Kids Fun House","recommended":true,"curated":true,"addedAt":1791281261281,"categoryManual":true,"autoCategory":false},{"id":"P0C1_bOhPV4","title":"Colorful Compilation｜顏色、字母與數字","category":"數字／顏色","channel":"Super Simple Songs","recommended":true,"curated":true,"addedAt":1791281260281,"categoryManual":true,"autoCategory":false},{"id":"zxIpA5nF_LY","title":"What's Your Favorite Color?｜顏色英文歌","category":"數字／顏色","channel":"Super Simple Songs","recommended":true,"curated":true,"addedAt":1791281259281,"categoryManual":true,"autoCategory":false},{"id":"kDdg2M1_EuE","title":"The Alphabet Is So Much Fun｜ABC 英文字母歌","category":"英文","channel":"Super Simple Songs","recommended":true,"curated":true,"addedAt":0,"categoryManual":true,"autoCategory":false},{"id":"vD98OvvDNEs","title":"The Alphabet Song｜英文字母學習","category":"英文","channel":"Super Simple Songs","recommended":true,"curated":true,"addedAt":0,"categoryManual":true,"autoCategory":false}];
 var DEFAULT={
  videos:CURATED_CHILD_VIDEOS.slice(),
@@ -136,12 +136,14 @@ var RADIO_CATEGORIES={
  news:{label:'新聞／談話',tag:'news,talk'}
 };
 var radioCategory='popular';
+var radioLoadSerial=0;
+
 
 var musicModeActive=false,musicItems=[],musicCurrent=null,musicIndex=-1,musicBusy=false,musicNav='search';
 
 function showVideoMode(){
- if(typeof leaveTvMode==='function')leaveTvMode();
- if(typeof leaveKtvMode==='function')leaveKtvMode();
+ try{if(typeof leaveTvMode==='function')leaveTvMode()}catch(e){}
+ try{if(typeof leaveKtvMode==='function')leaveKtvMode()}catch(e){}
  document.body.classList.remove('music-mode-active');
  musicModeActive=false;
  if($('musicMode'))$('musicMode').classList.add('hidden');
@@ -154,11 +156,11 @@ function showVideoMode(){
 }
 
 function showMusicMode(){
- if(typeof leaveTvMode==='function')leaveTvMode();
- if(typeof leaveKtvMode==='function')leaveKtvMode();
+ try{if(typeof leaveTvMode==='function')leaveTvMode()}catch(e){}
+ try{if(typeof leaveKtvMode==='function')leaveKtvMode()}catch(e){}
  document.body.classList.add('music-mode-active');
- if(immersiveFull)exitImmersiveFullscreen();
- stopPlaybackForHome();
+ try{if(immersiveFull)exitImmersiveFullscreen()}catch(e){}
+ try{stopPlaybackForHome()}catch(e){}
  musicModeActive=true;
  document.body.classList.remove('watch-mode');
  if($('hero'))$('hero').classList.add('hidden');
@@ -337,32 +339,46 @@ function fetchRadioCategory(cat){
  return oneTag();
 }
 function loadRadioCategory(cat){
+ var loadId=++radioLoadSerial;
  radioCategory=cat||'popular';
+
  document.querySelectorAll('.radio-cat').forEach(function(b){
   b.classList.toggle('active',b.dataset.radioCat===radioCategory);
  });
+
  var cfg=RADIO_CATEGORIES[radioCategory]||RADIO_CATEGORIES.popular;
- $('musicSearchStatus').textContent='正在尋找可用電台伺服器…';
+ if($('musicSearchStatus'))$('musicSearchStatus').textContent='正在尋找可用電台伺服器…';
+
  discoverRadioServers().then(function(){
-  $('musicSearchStatus').textContent='正在載入「'+cfg.label+'」…';
+  if(loadId!==radioLoadSerial)return [];
+  if($('musicSearchStatus'))$('musicSearchStatus').textContent='正在載入「'+cfg.label+'」…';
   return fetchRadioCategory(radioCategory);
  }).then(function(arr){
+  if(loadId!==radioLoadSerial)return;
+
   var seen={},items=[],blocked=0;
   (arr||[]).forEach(function(x){
    var st=normalizeStation(x);
    if(!st.url){blocked++;return}
-   if(st.stationuuid&&!seen[st.stationuuid]){seen[st.stationuuid]=1;items.push(st)}
+   if(st.stationuuid&&!seen[st.stationuuid]){
+    seen[st.stationuuid]=1;
+    items.push(st);
+   }
   });
+
   if(items.length){
-   $('musicSearchStatus').textContent='目前可播放 '+items.length+' 個「'+cfg.label+'」來源';
+   if($('musicSearchStatus'))$('musicSearchStatus').textContent='目前可播放 '+items.length+' 個「'+cfg.label+'」來源';
   }else if(blocked){
-   $('musicSearchStatus').textContent='找到電台，但來源不是安全 HTTPS 串流，手機瀏覽器無法播放。請換分類或重試。';
+   if($('musicSearchStatus'))$('musicSearchStatus').textContent='找到電台，但來源不是安全 HTTPS 串流，手機瀏覽器無法播放。請換分類或重試。';
   }else{
-   $('musicSearchStatus').textContent='目前沒有取得可播放電台，請按「重新載入」。';
+   if($('musicSearchStatus'))$('musicSearchStatus').textContent='目前沒有取得可播放電台，請按「重新載入」。';
   }
+
   renderMusicItems(items.slice(0,80));
+
  }).catch(function(){
-  $('musicSearchStatus').textContent='目前無法取得電台清單，請按「重新載入」再試。';
+  if(loadId!==radioLoadSerial)return;
+  if($('musicSearchStatus'))$('musicSearchStatus').textContent='目前無法取得電台清單，請按「重新載入」再試。';
   renderMusicItems([]);
  });
 }
@@ -534,10 +550,10 @@ var KTV_HOT=[
 ];
 
 function showKtvMode(){
- if(typeof leaveTvMode==='function')leaveTvMode();
- if(immersiveFull)exitImmersiveFullscreen();
- stopPlaybackForHome();
- stopMusic();
+ try{if(typeof leaveTvMode==='function')leaveTvMode()}catch(e){}
+ try{if(immersiveFull)exitImmersiveFullscreen()}catch(e){}
+ try{stopPlaybackForHome()}catch(e){}
+ try{stopMusic()}catch(e){}
  ktvModeActive=true;
  musicModeActive=false;
  document.body.classList.remove('watch-mode','music-mode-active');
@@ -996,7 +1012,7 @@ function renderKtvQueue(){
  var root=$('ktvQueue');if(!root)return;
  var q=state.ktv.queue||[];
  updateKtvQueueCount();
- $('ktvQueueCount').textContent=String(q.length);
+ var legacyQueueCount=$('ktvQueueCount');if(legacyQueueCount)legacyQueueCount.textContent=String(q.length);
  root.innerHTML='';
  if(!q.length){root.innerHTML='<div class="ktv-queue-empty">還沒有點歌</div>';return}
  q.forEach(function(song,i){
@@ -1362,10 +1378,10 @@ function leaveTvMode(){
 
 function showTvMode(){
  tvPortraitMiniDismissed=false;setTvPortraitMini(false);
- if(immersiveFull)exitImmersiveFullscreen();
- leaveKtvMode();
- stopPlaybackForHome();
- stopMusic();
+ try{if(immersiveFull)exitImmersiveFullscreen()}catch(e){}
+ try{leaveKtvMode()}catch(e){}
+ try{stopPlaybackForHome()}catch(e){}
+ try{stopMusic()}catch(e){}
  tvModeActive=true;
  musicModeActive=false;
  document.body.classList.remove('watch-mode');document.body.classList.remove('music-mode-active');document.body.classList.remove('ktv-mode-active');
@@ -3103,11 +3119,28 @@ function bindUiSafely(){
 }
 
 document.addEventListener('DOMContentLoaded',function(){
+ // Critical top-level navigation is bound first so an optional mode error
+ // can never make Video / Music / KTV / TV buttons unclickable.
+ try{
+  if($('videoModeBtn'))$('videoModeBtn').onclick=showVideoMode;
+  if($('musicModeBtn'))$('musicModeBtn').onclick=showMusicMode;
+  if($('ktvModeBtn'))$('ktvModeBtn').onclick=showKtvMode;
+  if($('tvModeBtn'))$('tvModeBtn').onclick=showTvMode;
+  if($('brandHomeBtn'))$('brandHomeBtn').onclick=showVideoMode;
+ }catch(criticalNavError){
+  try{console.error('Critical navigation binding failed',criticalNavError)}catch(ignore){}
+ }
+
  if($('tvMobileDrawerBtn'))$('tvMobileDrawerBtn').onclick=toggleTvSidebar;
  if($('tvDrawerBackdrop'))$('tvDrawerBackdrop').onclick=function(){setTvSidebarCollapsed(true)};
  window.addEventListener('orientationchange',function(){if(tvModeActive)setTimeout(function(){setTvSidebarCollapsed(true)},180)});
 
  if($('musicRetryBtn'))$('musicRetryBtn').onclick=function(){RADIO_SERVER_DISCOVERY_DONE=false;loadRadioCategory(radioCategory);};
+ if($('searchMoreBtn'))$('searchMoreBtn').onclick=function(){runInternalSearch(false)};
+ if($('tvMiniCloseBtn'))$('tvMiniCloseBtn').onclick=function(){
+  tvPortraitMiniDismissed=true;
+  setTvPortraitMini(false);
+ };
  document.addEventListener('touchmove',function(e){
   if(document.body.classList.contains('watch-scroll-lock'))e.preventDefault();
  },{passive:false});
@@ -3169,7 +3202,13 @@ if($('ktvClosePlayerBtn'))$('ktvClosePlayerBtn').onclick=closeKtvPlayer;
   if(!confirm('確定清空所有已點歌曲？'))return;
   state.ktv.queue=[];save();renderKtvQueue();
  };
- renderKtvSingers();renderKtvQueue();
+ try{
+  renderKtvSingers();
+  renderKtvQueue();
+ }catch(ktvInitError){
+  try{console.error('KTV initial render failed',ktvInitError)}catch(ignore){}
+  if($('ktvStatus'))$('ktvStatus').textContent='KTV 資料初始化部分失敗，可切換頁面後重試。';
+ }
 
  document.querySelectorAll('.radio-cat').forEach(function(b){
   b.onclick=function(){loadRadioCategory(b.dataset.radioCat)};
@@ -3193,7 +3232,9 @@ if($('ktvClosePlayerBtn'))$('ktvClosePlayerBtn').onclick=closeKtvPlayer;
   $('musicAudio').addEventListener('pause',function(){$('musicPlayBtn').textContent='▶';if('mediaSession' in navigator)navigator.mediaSession.playbackState='paused'});
   $('musicAudio').addEventListener('error',function(){$('musicSearchStatus').textContent='目前串流來源中斷，請換另一個來源。'});
  }
- setupMediaSessionActions();
+ try{setupMediaSessionActions()}catch(mediaSessionError){
+  try{console.warn('Media Session not available',mediaSessionError)}catch(ignore){}
+ }
 
  if($('loopBtn'))$('loopBtn').onclick=toggleLoopPlayback;
  updateLoopBtn();

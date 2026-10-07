@@ -1,0 +1,50 @@
+WATCH_VIDEOtu V1.5.6.72 — Full UI / Button QA
+
+找到的主要錯誤
+================
+KTV renderKtvQueue() 還在直接執行：
+  $('ktvQueueCount').textContent=...
+但 HTML 已沒有 ktvQueueCount。
+
+DOMContentLoaded 的順序是：
+  KTV 初始化 -> renderKtvQueue() -> 音樂模式按鈕綁定
+
+因此 renderKtvQueue() 發生 TypeError 後，外層 optional mode init 直接跳到 catch，
+後面的 musicModeBtn.onclick = showMusicMode 根本沒有執行。
+這就是「音樂模式完全無法點擊」的直接原因。
+
+本版修正
+========
+1. ktvQueueCount 改成存在才更新。
+2. 影片 / 音樂 / KTV / 全球電視四個主模式按鈕改成 DOMContentLoaded 一開始就綁定。
+3. 即使 KTV / TV / Media Session 某個選配功能初始化失敗，也不能再阻斷主模式切換。
+4. KTV 初次 renderKtvSingers / renderKtvQueue 改成獨立 try/catch。
+5. setupMediaSessionActions 改為 optional try/catch，舊 Safari 不會影響其他按鈕。
+6. 補上「載入更多」按鈕原本缺少的 onclick。
+7. 補上 TV mini-player 關閉按鈕原本缺少的 onclick。
+8. 音樂電台分類增加 load serial，連續快速點分類時舊請求不會覆蓋新結果。
+9. 四個 show*Mode() 的跨模式停止動作改成容錯處理。
+10. mode button 強制 pointer-events:auto，避免新版 UI 層擋觸控。
+
+Static QA
+=========
+JS syntax:
+- app.js: PASS
+- ktv_singers.js: PASS
+- ktv_songs.js: PASS
+- sw.js: PASS
+
+HTML duplicate IDs: 0
+Missing DOM refs found: 3
+Unsafe missing refs after fix: 0
+
+ID-bearing buttons checked: 53
+Rough unbound buttons after fix: 0
+- none
+
+Browser automation note
+=======================
+This execution environment blocks localhost/file navigation in Chromium with
+ERR_BLOCKED_BY_ADMINISTRATOR, so a real pixel/click browser run could not be completed here.
+The DOM, event bindings, syntax, missing IDs, and critical mode initialization path were
+therefore checked statically and by source-level execution-order audit.
