@@ -1,5 +1,5 @@
-var APP_VERSION='1.5.6.90';
-var APP_BUILD='15690';
+var APP_VERSION='1.5.6.92';
+var APP_BUILD='15691';
 var watchFullscreenScrollY=0;
 var miniPlayerSuppressUntil=0;
 (function(){
@@ -1125,6 +1125,7 @@ function showKtvPlayer(song,videoId){
  $('ktvPlayerArtist').textContent=song.artist||song.channel||'';
  $('ktvNowMini').textContent=(song.title||'')+(song.artist?' · '+song.artist:'');
  $('ktvPlayerPanel').classList.remove('hidden');
+ if(typeof window.ktvEnterTheatre==='function')window.ktvEnterTheatre();
  $('ktvPlayerFrame').src=ktvEmbedUrl(videoId);
  bindKtvFrameEvents();
  setTimeout(subscribeKtvFrame,1200);
@@ -1138,6 +1139,7 @@ function closeKtvPlayer(){
  var f=$('ktvPlayerFrame');
  if(f)f.src='about:blank';
  $('ktvPlayerPanel').classList.add('hidden');
+ if(typeof window.ktvExitTheatre==='function')window.ktvExitTheatre();
 }
 function replayKtvCurrent(){
  if(!ktvCurrent)return;
