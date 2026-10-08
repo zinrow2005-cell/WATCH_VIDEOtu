@@ -1,5 +1,5 @@
 var APP_VERSION='1.5.6.88';
-var APP_BUILD='15687';
+var APP_BUILD='15689';
 var watchFullscreenScrollY=0;
 var miniPlayerSuppressUntil=0;
 (function(){
@@ -1108,7 +1108,15 @@ function autoNextKtvSong(){
 
 function ktvEmbedUrl(id){
  var origin=encodeURIComponent(location.origin);
- return 'https://www.youtube.com/embed/'+encodeURIComponent(id)+'?autoplay=1&playsinline=1&rel=0&enablejsapi=1&origin='+origin;
+ return 'https://www.youtube.com/embed/'+encodeURIComponent(id)+'?autoplay=1&playsinline=1&rel=0&fs=0&enablejsapi=1&origin='+origin;
+}
+function pauseActiveKtvSong(){
+ var f=$('ktvPlayerFrame');
+ if(!f||!f.contentWindow||!f.src||f.src==='about:blank')return false;
+ try{
+  f.contentWindow.postMessage(JSON.stringify({event:'command',func:'pauseVideo',args:[]}), 'https://www.youtube.com');
+  return true;
+ }catch(e){console.warn('Unable to pause KTV iframe',e);return false}
 }
 function showKtvPlayer(song,videoId){
  if(!song||!videoId)return;

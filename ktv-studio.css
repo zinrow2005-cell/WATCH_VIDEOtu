@@ -26,7 +26,7 @@
 #ktvCamFloat.ktv-cutout-on.ktv-no-mirror #ktvLiveCutout{transform:none}
 #ktvCamFloat.ktv-cutout-on video{visibility:hidden}
 
-/* V1.5.6.88 — compact full-screen KTV controls */
+/* V1.5.6.89 — compact full-screen KTV controls */
 #ktvCamFloat .ktv-cam-label,#ktvCamFloat .ktv-cam-grip{display:none!important}
 #ktvCamFloat.ktv-cutout-on{outline:0!important;border:0!important}
 .ktv-player-fullbar{display:flex;align-items:center;gap:10px;margin:10px 0 0}
@@ -45,3 +45,12 @@
 #ktvPlayerPanel.ktv-fs-active.ktv-tools-open #ktvFullscreenToolbox button{width:100%;min-height:38px}
 #ktvPlayerPanel.ktv-fs-active.ktv-tools-open .ktv-live-mix{width:100%;box-sizing:border-box}
 @media(max-width:600px){#ktvPlayerPanel.ktv-fs-active.ktv-tools-open #ktvFullscreenToolbox{display:flex!important}}
+
+/* V1.5.6.89: persistent accessible theatre controls. */
+body.ktv-theatre-open{overflow:hidden!important}
+#ktvPlayerPanel.ktv-ios-fullscreen{position:fixed!important;inset:0!important;z-index:2147483000!important;visibility:visible!important;display:flex!important}
+#ktvPlayerPanel.ktv-fs-active .ktv-player-fullbar{display:flex!important;pointer-events:auto!important;z-index:2147483640!important}
+#ktvPlayerPanel.ktv-fs-active .ktv-player-fullbar button{pointer-events:auto!important;touch-action:manipulation;min-height:44px}
+#ktvPlayerPanel.ktv-fs-active.ktv-tools-open #ktvFullscreenToolbox{z-index:2147483639!important;pointer-events:auto!important}
+#ktvPlayerPanel:not(.ktv-fs-active) #ktvFullscreenMenu{display:inline-flex!important}
+#ktvPlayerPanel:not(.ktv-fs-active).ktv-tools-open #ktvFullscreenToolbox{display:flex}

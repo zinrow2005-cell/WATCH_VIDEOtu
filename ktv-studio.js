@@ -8,7 +8,13 @@ let bgImg=null,bgVideoUrl=null,title='我的 KTV 作品';
 const maskCanvas=document.createElement('canvas'),maskCtx=maskCanvas.getContext('2d',{willReadFrequently:true});let segmenter=null,segmentBusy=false,segmentReady=false,segmentTimer=null,cutoutFrame=null,cutoutCanvas=document.createElement('canvas'),cutoutCtx=cutoutCanvas.getContext('2d');cutoutCanvas.width=640;cutoutCanvas.height=360;const liveCutout=document.createElement('canvas');liveCutout.id='ktvLiveCutout';liveCutout.width=640;liveCutout.height=360;float.appendChild(liveCutout);const liveCtx=liveCutout.getContext('2d');let cutoutFailures=0;
 function updateMirror(){float.classList.toggle('ktv-no-mirror',!$('ktvMirrorCamera').checked)}
 function updateCutoutUI(){float.classList.toggle('ktv-cutout-on',!!($('ktvRemoveBackground').checked&&cutoutFrame));}
-function pauseKtvOnStop(){try{if(typeof playerMode!=='undefined'&&playerMode==='iframe'&&typeof sendDirectCommand==='function')sendDirectCommand('pauseVideo');else if(typeof player!=='undefined'&&player&&typeof player.pauseVideo==='function')player.pauseVideo();else if(typeof sendDirectCommand==='function')sendDirectCommand('pauseVideo')}catch(e){console.warn('KTV pause failed',e)}try{if($('studioBackground').value==='video')video.pause()}catch(e){}}
+function pauseKtvOnStop(){
+ // This is the KTV-specific YouTube iframe, not the general video player.
+ try{if(typeof pauseActiveKtvSong==='function')pauseActiveKtvSong();else{
+ const f=$('ktvPlayerFrame');if(f?.contentWindow)f.contentWindow.postMessage(JSON.stringify({event:'command',func:'pauseVideo',args:[]}), 'https://www.youtube.com');
+ }}catch(e){console.warn('KTV pause failed',e)}
+ try{if($('studioBackground').value==='video')video.pause()}catch(e){}
+}
 $('ktvMirrorCamera').addEventListener('change',updateMirror);updateMirror();
 function drawCamera(x,y,w,h,cutout){
  const source=cutout&&cutoutFrame?cutoutCanvas:cam;
@@ -106,9 +112,20 @@ async function renderHistory(){const wrap=$('studioHistory');try{const records=a
 $('studioHistoryRefresh').onclick=renderHistory;
 $('ktvStudioDetails').addEventListener('toggle',()=>{if($('ktvStudioDetails').open)renderHistory()});
 const fsPanel=$('ktvPlayerPanel'),fsButton=$('ktvFullscreenBtn'),fsMenu=$('ktvFullscreenMenu');
-function updateFsUi(){const active=document.fullscreenElement===fsPanel||fsPanel.classList.contains('ktv-ios-fullscreen');fsPanel.classList.toggle('ktv-fs-active',active);fsButton.textContent=active?'⤢ 退出全螢幕':'⛶ 全螢幕';if(!active){fsPanel.classList.remove('ktv-tools-open');fsMenu.setAttribute('aria-expanded','false')}}
-fsButton.addEventListener('click',async()=>{try{if(document.fullscreenElement===fsPanel){await document.exitFullscreen()}else if(fsPanel.classList.contains('ktv-ios-fullscreen')){fsPanel.classList.remove('ktv-ios-fullscreen')}else if(fsPanel.requestFullscreen){await fsPanel.requestFullscreen()}else{fsPanel.classList.add('ktv-ios-fullscreen')}updateFsUi()}catch(err){status('全螢幕無法啟用：'+err.message)}});
-fsMenu.addEventListener('click',()=>{const open=!fsPanel.classList.contains('ktv-tools-open');fsPanel.classList.toggle('ktv-tools-open',open);fsMenu.setAttribute('aria-expanded',String(open))});
-document.addEventListener('fullscreenchange',updateFsUi);document.addEventListener('keydown',e=>{if(e.key==='Escape'&&fsPanel.classList.contains('ktv-ios-fullscreen')){fsPanel.classList.remove('ktv-ios-fullscreen');updateFsUi()}});
+// Use in-page theatre mode instead of native iframe fullscreen: the exit buttons remain accessible.
+function updateFsUi(){
+ const active=fsPanel.classList.contains('ktv-ios-fullscreen');
+ fsPanel.classList.toggle('ktv-fs-active',active);
+ document.body.classList.toggle('ktv-theatre-open',active);
+ fsButton.textContent=active?'✕ 退出全螢幕':'⛶ 全螢幕';
+ fsButton.setAttribute('aria-pressed',String(active));
+ fsMenu.textContent=fsPanel.classList.contains('ktv-tools-open')?'✕ 收合工具':'⚙ 工具';
+ fsMenu.setAttribute('aria-expanded',String(fsPanel.classList.contains('ktv-tools-open')));
+ if(!active){fsPanel.classList.remove('ktv-tools-open');fsMenu.setAttribute('aria-expanded','false');fsMenu.textContent='⚙ 工具'}
+}
+fsButton.addEventListener('click',()=>{fsPanel.classList.toggle('ktv-ios-fullscreen');updateFsUi()});
+fsMenu.addEventListener('click',()=>{if(!fsPanel.classList.contains('ktv-ios-fullscreen'))fsPanel.classList.add('ktv-ios-fullscreen');fsPanel.classList.toggle('ktv-tools-open');updateFsUi()});
+document.addEventListener('keydown',e=>{if(e.key==='Escape'&&fsPanel.classList.contains('ktv-ios-fullscreen')){fsPanel.classList.remove('ktv-ios-fullscreen');updateFsUi()}});
+$('ktvClosePlayerBtn')?.addEventListener('click',()=>{fsPanel.classList.remove('ktv-ios-fullscreen');updateFsUi()});
 updateMixer();frame();window.addEventListener('pagehide',()=>{stopStream(camStream);stopStream(screenStream);stopStream(micStream);if(segmentTimer)clearInterval(segmentTimer);if(segmenter)segmenter.close?.();if(raf)cancelAnimationFrame(raf)});
 })();
