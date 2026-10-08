@@ -1,5 +1,5 @@
-var APP_VERSION='1.5.6.88';
-var APP_BUILD='15689';
+var APP_VERSION='1.5.6.90';
+var APP_BUILD='15690';
 var watchFullscreenScrollY=0;
 var miniPlayerSuppressUntil=0;
 (function(){

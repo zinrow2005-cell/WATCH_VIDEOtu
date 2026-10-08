@@ -54,3 +54,22 @@ body.ktv-theatre-open{overflow:hidden!important}
 #ktvPlayerPanel.ktv-fs-active.ktv-tools-open #ktvFullscreenToolbox{z-index:2147483639!important;pointer-events:auto!important}
 #ktvPlayerPanel:not(.ktv-fs-active) #ktvFullscreenMenu{display:inline-flex!important}
 #ktvPlayerPanel:not(.ktv-fs-active).ktv-tools-open #ktvFullscreenToolbox{display:flex}
+
+/* V1.5.6.90 mobile/tablet ergonomics */
+#ktvCapabilityNote{flex-basis:100%;width:100%;font-size:13px;line-height:1.5;margin:4px 0 0;padding:9px 11px;color:#fff0bf;background:rgba(8,21,42,.65);border-radius:9px;box-sizing:border-box}
+#ktvPlayerPanel .ktv-player-fullbar button,#ktvPlayerPanel .ktv-player-tools button{min-height:44px;touch-action:manipulation}
+#ktvPlayerPanel.ktv-fs-active.ktv-tools-open #ktvFullscreenToolbox{overscroll-behavior:contain;-webkit-overflow-scrolling:touch;max-height:calc(100dvh - 78px - env(safe-area-inset-bottom));padding-bottom:calc(12px + env(safe-area-inset-bottom))}
+#ktvPlayerPanel.ktv-fs-active .ktv-player-fullbar{top:calc(8px + env(safe-area-inset-top));right:calc(8px + env(safe-area-inset-right))}
+@media(max-width:780px){
+ #ktvPlayerPanel{min-width:0;width:100%;box-sizing:border-box}
+ #ktvPlayerPanel .ktv-player-head{display:flex;gap:8px;align-items:start}
+ #ktvPlayerPanel .ktv-player-head h2{overflow-wrap:anywhere;font-size:clamp(17px,4vw,24px)}
+ #ktvPlayerPanel .ktv-player-fullbar{flex-wrap:wrap}
+ #ktvPlayerPanel:not(.ktv-fs-active) .ktv-player-tools{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+ #ktvPlayerPanel .ktv-player-tools button{min-width:0;white-space:normal;line-height:1.3}
+ #ktvPlayerPanel .ktv-player-tools .ktv-live-mix{grid-column:1/-1;max-width:100%;box-sizing:border-box}
+ #ktvPlayerPanel.ktv-fs-active.ktv-tools-open #ktvFullscreenToolbox{display:flex!important;grid-template-columns:none}
+ #ktvStudio .studio-settings{grid-template-columns:repeat(2,minmax(0,1fr))}
+}
+@media(max-width:420px){#ktvStudio .studio-settings{grid-template-columns:minmax(0,1fr)}#ktvPlayerPanel .ktv-player-fullbar button{flex:1;font-size:14px}}
+@media (orientation:landscape) and (max-height:500px){#ktvPlayerPanel.ktv-fs-active .ktv-player-fullbar button{font-size:12px;min-height:38px;padding:5px 9px}#ktvPlayerPanel.ktv-fs-active.ktv-tools-open #ktvFullscreenToolbox{top:53px;max-height:calc(100dvh - 62px);width:min(300px,50vw)}}
