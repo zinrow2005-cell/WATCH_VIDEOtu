@@ -1,0 +1,1 @@
+V1.5.7.15: scrollable touch pointer timeline for synchronized LRC; drag individual lyrics with 0.1-second quantization; shares localStorage corrections with V1.5.7.14; timeline scale and seek to currently reported YouTube time. Code validation is not device camera/recording QA.
