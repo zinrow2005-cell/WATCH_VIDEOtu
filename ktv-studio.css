@@ -120,3 +120,20 @@ body.ktv-preview-open{overflow:hidden!important}
 #ktvPlayerPanel.ktv-fs-active #ktvRecordLiveStatus{position:absolute;top:calc(58px + env(safe-area-inset-top));left:8px;z-index:2147483002;max-width:min(60vw,300px);padding:4px 8px;background:rgba(12,23,42,.65);border-radius:10px}
 @media(max-width:680px){#ktvStudio{padding:7px}#ktvStudio .studio-settings{grid-template-columns:1fr 1fr}.ktv-quick-controls button,.ktv-quick-cut{font-size:13px;padding:7px 9px}#ktvPlayerPanel.ktv-fs-active .ktv-quick-controls{bottom:calc(3px + env(safe-area-inset-bottom))}}
 @media(orientation:landscape) and (max-height:500px){#ktvPlayerPanel.ktv-fs-active .ktv-quick-controls{right:6px;left:auto;transform:none;bottom:calc(3px + env(safe-area-inset-bottom));gap:3px;padding:3px}#ktvPlayerPanel.ktv-fs-active .ktv-quick-controls button,#ktvPlayerPanel.ktv-fs-active .ktv-quick-cut{min-height:35px;font-size:12px;padding:4px 7px}}
+
+/* V1.5.6.94: mobile-first visible camera + compact functional settings */
+#ktvPlayerPanel{isolation:isolate}
+#ktvQuickCamera{background:rgba(22,67,105,.9)}
+#ktvPlayerPanel #ktvStudio{display:none!important}
+#ktvPlayerPanel #ktvStudio.ktv-settings-open{display:block!important;position:fixed!important;left:50%!important;top:50%!important;transform:translate(-50%,-50%)!important;width:min(500px,calc(100vw - 20px))!important;max-height:min(78dvh,650px)!important;overflow:auto!important;z-index:2147483646!important;background:rgba(16,28,50,.97)!important;color:#fff!important;box-shadow:0 15px 70px #000c!important;border:1px solid #9cacc5!important;border-radius:18px!important;padding:12px!important;box-sizing:border-box!important}
+#ktvPlayerPanel #ktvStudio.ktv-settings-open #ktvStudioDetails{display:block!important}
+#ktvPlayerPanel #ktvStudio.ktv-settings-open .studio-top{display:flex;align-items:center;justify-content:space-between;gap:8px}
+#ktvSettingsClose{min-height:40px;background:#38475e;color:#fff;border-radius:10px;padding:7px 12px}
+#ktvPlayerPanel #ktvStudio .studio-advanced,#ktvPlayerPanel #ktvStudio .studio-hint:not(#ktvCutoutHint),#ktvPlayerPanel #ktvStudio .studio-history-title,#ktvPlayerPanel #ktvStudio #studioHistory{display:none!important}
+#ktvPlayerPanel #ktvStudio .studio-settings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+#ktvPlayerPanel #ktvStudio .studio-settings label{min-width:0}
+#ktvPlayerPanel #ktvFullscreenToolbox #ktvCompatibilityControls{display:none!important}
+#ktvPlayerPanel.ktv-fs-active .ktv-quick-controls{z-index:2147483600!important}
+#ktvPlayerPanel #ktvCamFloat:not(.hidden){display:block!important;visibility:visible!important;opacity:1!important;z-index:2147483590!important}
+@media(max-width:680px){#ktvPlayerPanel .ktv-quick-controls{gap:5px;padding:5px 4px}#ktvPlayerPanel .ktv-quick-controls button,#ktvPlayerPanel .ktv-quick-cut{font-size:12px;padding:6px 7px;min-height:40px}#ktvPlayerPanel #ktvStudio .studio-settings{grid-template-columns:1fr}#ktvPlayerPanel #ktvStudio.ktv-settings-open{max-height:85dvh!important}}
+@media(orientation:landscape) and (max-height:500px){#ktvPlayerPanel #ktvStudio.ktv-settings-open{max-height:94dvh!important;max-width:75vw!important}#ktvPlayerPanel.ktv-fs-active .ktv-quick-controls{left:50%;right:auto;transform:translateX(-50%);bottom:calc(4px + env(safe-area-inset-bottom))}}
