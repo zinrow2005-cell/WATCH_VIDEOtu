@@ -1,0 +1,1 @@
+Duplicate camera prevention in captured KTV tab, mirrored output option, visible exit controls for recording playback, brand build stamp / PWA cache version synchronized. Chrome/Edge tab share still needs share audio enabled; browser native fullscreen may hide page buttons, exit fullscreen first. Static JS syntax and zip tested, not actual device recordings.
