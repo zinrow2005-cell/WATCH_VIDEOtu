@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#0b1220">
-<title>WATCH_VIDEOtu V1.5.7.07</title>
+<title>WATCH_VIDEOtu V1.5.7.08</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="styles.css?v=15694">
   <link rel="stylesheet" href="responsive-v63.css?v=15694">
@@ -16,8 +16,8 @@
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-180.png?v=15652">
 <meta name="apple-mobile-web-app-title" content="WATCH_VIDEOtu">
 
-<link rel="stylesheet" href="ktv-studio.css?v=15707">
-<link rel="stylesheet" href="ktv-lyrics.css?v=15707">
+<link rel="stylesheet" href="ktv-studio.css?v=15708">
+<link rel="stylesheet" href="ktv-lyrics.css?v=15708">
 </head>
 <body>
 <header class="topbar">
@@ -30,7 +30,7 @@
       <circle cx="50" cy="14" r="6" fill="#fff"/><path d="M50 10.7v6.6M46.7 14h6.6" stroke="#ff174d" stroke-width="2.4" stroke-linecap="round"/>
     </svg>
   </span>
-  <span class="brand-copy"><strong>WATCH_VIDEO<span class="brand-tu">tu</span></strong><span class="brand-version" title="手機 TV 簡化版 V1.5.7.07">V1.5.7.07</span><small>Kids Video Hub</small></span>
+  <span class="brand-copy"><strong>WATCH_VIDEO<span class="brand-tu">tu</span></strong><span class="brand-version" title="手機 TV 簡化版 V1.5.7.08">V1.5.7.08</span><small>Kids Video Hub</small></span>
 </button>
 <div class="mode-switch" id="modeSwitch">
   <button id="videoModeBtn" class="mode-btn active" type="button">🎬 影片模式</button>
@@ -332,7 +332,7 @@
  <label><span>📱 喇叭錄音模式</span> <select id="ktvSpeakerMode"><option value="balanced" selected>平衡模式（建議：喇叭播放＋唱歌）</option><option value="voice">人聲優先（減少伴奏串音）</option><option value="raw">原音保留（較少切音；可能有回音）</option></select></label><p class="studio-hint" id="ktvAudioModeHint">平衡模式：回音消除開啟、強力降噪關閉、固定音量；若人聲斷續可試「原音保留」。</p><label class="studio-advanced"><input id="ktvNoiseControl" type="checkbox">舊版降噪設定（已由錄音模式取代）</label><p class="studio-hint" id="ktvMicDeviceStatus" role="status">錄影開始後顯示實際麥克風處理能力。</p>
  <p class="studio-hint studio-advanced">桌面 Chrome／Edge：開始錄影後選擇「目前分頁」，並開啟「同時分享分頁音訊」，才可能收錄 KTV 影片與伴奏。請勿選擇其他視窗或整個螢幕。戴耳機可避免伴奏被麥克風重複收音。音量滑桿控制的是<strong>錄製成品混音</strong>，不是 YouTube 播放器自身音量。</p></div>
  <div class="ktv-setting-section-title">📷 人像與鏡頭</div><label class="ktv-setting-check"><input type="checkbox" id="ktvRemoveBackground"> 🧍 人像去背（只保留人物輪廓；需要網路載入模型）</label>
-<label class="ktv-setting-check"><input type="checkbox" id="ktvMirrorCamera" checked> 🪞 自拍鏡像（預覽與輸出同方向）</label>
+<label class="ktv-cutout-mode">人像去背品質<select id="ktvCutoutQuality"><option value="standard">標準・速度優先（手機／平板建議）</option><option value="quality">高畫質・頭髮與衣物辨識（電腦建議）</option></select></label><label class="ktv-setting-check"><input type="checkbox" id="ktvMirrorCamera" checked> 🪞 自拍鏡像（預覽與輸出同方向）</label>
 <p class="studio-hint" id="ktvCutoutHint">去背為實驗功能。光線充足、單人正面時效果較佳；舊裝置可能不支援。</p>
 <div class="studio-controls" style="display:none"><button type="button" id="studioCamera">📷 開啟鏡頭</button><button type="button" id="studioScreen">🖥️ 分享 KTV 畫面（支援時）</button><button type="button" id="studioRec" class="studio-record">🔴 開始錄製</button><button type="button" id="studioStop" class="studio-stop" disabled>■ 結束錄製</button></div>
  <div class="studio-canvas-wrap" style="display:none"><canvas id="studioCanvas" width="1280" height="720"></canvas></div>
@@ -491,8 +491,8 @@
 <script defer src="ktv_singers.js?v=15694"></script>
 <script defer src="ktv_songs.js?v=15694"></script>
 <script defer src="app.js?v=15694"></script>
-<script defer src="ktv-studio.js?v=15707"></script>
-<script defer src="ktv-lyrics.js?v=15707"></script>
+<script defer src="ktv-studio.js?v=15708"></script>
+<script defer src="ktv-lyrics.js?v=15708"></script>
 
 <div id="ktvToast" class="ktv-toast hidden" role="status" aria-live="polite"></div>
 </body>

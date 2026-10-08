@@ -1,0 +1,6 @@
+V1.5.7.08
+- Standard original MediaPipe selfie segmentation retained.
+- Optional high-quality MediaPipe Tasks multi-class segmenter for hair / face / skin / clothing.
+- Automatic fallback on CDN/model failure; preserved cutout frame while switching.
+- Mode switch is blocked during an active recording.
+- External CDN and real camera tests require user device.

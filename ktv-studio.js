@@ -34,6 +34,7 @@ function setRecordSummary(b){
 }
 
 const maskCanvas=document.createElement('canvas'),maskCtx=maskCanvas.getContext('2d',{willReadFrequently:true});let segmenter=null,segmentBusy=false,segmentReady=false,segmentTimer=null,cutoutFrame=null,cutoutCanvas=document.createElement('canvas'),cutoutCtx=cutoutCanvas.getContext('2d');cutoutCanvas.width=640;cutoutCanvas.height=360;const liveCutout=document.createElement('canvas');liveCutout.id='ktvLiveCutout';liveCutout.width=640;liveCutout.height=360;float.appendChild(liveCutout);const liveCtx=liveCutout.getContext('2d');let cutoutFailures=0,cutoutGoodFrames=0,cutoutLastSuccess=0;
+let qualityTask=null,qualityModeActive='standard',cutoutInitPromise=null;const qualityMaskCanvas=document.createElement('canvas');const qualityMaskCtx=qualityMaskCanvas.getContext('2d');
 function updateMirror(){float.classList.toggle('ktv-no-mirror',!$('ktvMirrorCamera').checked)}
 function updateCutoutUI(){float.classList.toggle('ktv-cutout-on',!!$('ktvRemoveBackground').checked);float.setAttribute('data-cutout-status',$('ktvRemoveBackground').checked?(cutoutFrame?'ready':'loading'):'off');}
 function pauseKtvOnStop(){
@@ -57,11 +58,70 @@ function drawCamera(x,y,w,h,cutout){
 }
 async function initCutout(){
  if(segmentReady)return true;
+ if(cutoutInitPromise)return cutoutInitPromise;
+ cutoutInitPromise=startCutoutEngine();
+ try{return await cutoutInitPromise}finally{cutoutInitPromise=null}
+}
+async function startCutoutEngine(){
+ const highQuality=$('ktvCutoutQuality')?.value==='quality';
+ if(highQuality){
+   try{return await initHighQualityCutout()}catch(err){
+     $('ktvCutoutHint').textContent='⚠️ 高畫質去背不可用，已自動退回標準模式：'+err.message;
+     if($('ktvCutoutQuality'))$('ktvCutoutQuality').value='standard';
+     qualityModeActive='standard';
+   }
+ }
+ return initStandardCutout();
+}
+async function initHighQualityCutout(){
+ if(!navigator.onLine)throw Error('需要網路下載高畫質模型');
+ // The official MediaPipe Tasks model detects background / hair / skin / clothes.
+ const mp=await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/+esm');
+ const resolver=await mp.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/wasm');
+ qualityTask=await mp.ImageSegmenter.createFromOptions(resolver,{
+   baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_multiclass_256x256/float32/latest/selfie_multiclass_256x256.tflite',delegate:'CPU'},
+   runningMode:'VIDEO',outputCategoryMask:true,outputConfidenceMasks:false
+ });
+ qualityModeActive='quality';segmentReady=true;
+ let lastTimestamp=0;
+ segmentTimer=setInterval(()=>{
+   if(!camStream||cam.readyState<2||!cam.videoWidth||segmentBusy||!$('ktvRemoveBackground').checked)return;
+   segmentBusy=true;
+   try{
+     const timestamp=Math.max(performance.now(),lastTimestamp+1);lastTimestamp=timestamp;
+     const result=qualityTask.segmentForVideo(cam,timestamp);
+     try{
+       const cm=result.categoryMask;
+       if(!cm)throw Error('模型沒有回傳人物遮罩');
+       const sw=cm.width,sh=cm.height,classes=cm.getAsUint8Array();
+       if(qualityMaskCanvas.width!==sw||qualityMaskCanvas.height!==sh){qualityMaskCanvas.width=sw;qualityMaskCanvas.height=sh}
+       const img=qualityMaskCtx.createImageData(sw,sh);
+       for(let i=0;i<classes.length;i++){
+         // 0 background; remaining labels are hair, skin, clothing, or accessories.
+         const value=classes[i]===0?0:255,j=i*4;
+         img.data[j]=img.data[j+1]=img.data[j+2]=value;img.data[j+3]=255;
+       }
+       qualityMaskCtx.putImageData(img,0,0);
+       processCutoutResults({segmentationMask:qualityMaskCanvas,image:cam});
+     }finally{result.close?.()}
+   }catch(err){cutoutFailures++;if(cutoutFailures>=3)$('ktvCutoutHint').textContent='⚠️ 高畫質辨識暫停，保留上一張人物：'+err.message}
+   finally{segmentBusy=false}
+ },mobileCapture?320:220);
+ $('ktvCutoutHint').textContent='✅ 高畫質多類別人物分割已啟動（頭髮／皮膚／衣服）';
+ return true;
+}
+async function initStandardCutout(){
+
  if(!navigator.onLine)throw Error('目前離線，無法載入人物去背模型');
  if(!window.SelfieSegmentation){await new Promise((resolve,reject)=>{const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1/selfie_segmentation.js';sc.onload=resolve;sc.onerror=()=>reject(Error('人物去背模型下載失敗'));document.head.appendChild(sc)})}
  segmenter=new window.SelfieSegmentation({locateFile:f=>'https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1/'+f});
  segmenter.setOptions({modelSelection:1,selfieMode:false});
- segmenter.onResults(r=>{try{
+ segmenter.onResults(processCutoutResults);
+ qualityModeActive='standard';segmentReady=true;
+ segmentTimer=setInterval(async()=>{if(!camStream||cam.readyState<2||!cam.videoWidth||segmentBusy||!$('ktvRemoveBackground').checked)return;segmentBusy=true;try{await segmenter.send({image:cam})}catch(e){if(++cutoutFailures>=3)$('ktvCutoutHint').textContent='⚠️ 標準模式暫停：'+e.message}finally{segmentBusy=false}},mobileCapture?240:160);
+ return true;
+}
+function processCutoutResults(r){try{
  const w=Math.min(cam.videoWidth||640,640),h=Math.round(w*(cam.videoHeight||480)/(cam.videoWidth||640));
  if(cutoutCanvas.width!==w||cutoutCanvas.height!==h){cutoutCanvas.width=liveCutout.width=maskCanvas.width=w;cutoutCanvas.height=liveCutout.height=maskCanvas.height=h}
  // V1.5.7.07: feather a tighter alpha mask; filter detached background components.
@@ -115,9 +175,16 @@ if(enoughPerson){liveCtx.clearRect(0,0,w,h);liveCtx.drawImage(cutoutCanvas,0,0,w
 // A lost segmentation frame does not switch to raw video during recording.
 cutoutFailures=0;updateCutoutUI();
 $('ktvCutoutHint').textContent=enoughPerson?'✅ 去背持續運作中':cutoutFrame?'⏳ 暫時未辨識到人物，保持上一張去背畫面':'⏳ 正在尋找人物，不會閃回原始背景';
- }catch(e){updateCutoutUI();$('ktvCutoutHint').textContent='⚠️ 去背暫時未更新，保留最後人物影像：'+e.message}});
- segmentReady=true;segmentTimer=setInterval(async()=>{if(!camStream||cam.readyState<2||!cam.videoWidth||segmentBusy||!$('ktvRemoveBackground').checked)return;segmentBusy=true;try{await segmenter.send({image:cam})}catch(e){if(++cutoutFailures>=3){updateCutoutUI();$('ktvCutoutHint').textContent='⚠️ 去背模型暫停，保留最後人物畫面：'+e.message}}finally{segmentBusy=false}},mobileCapture?240:160);return true;
-}
+ }catch(e){updateCutoutUI();$('ktvCutoutHint').textContent='⚠️ 去背暫時未更新，保留最後人物影像：'+e.message}}
+$('ktvCutoutQuality').addEventListener('change',async e=>{
+ if(recording){e.target.value=qualityModeActive==='quality'?'quality':'standard';status('錄影進行中不能切換去背引擎，請先停止錄影。');return}
+ if(!camStream||!$('ktvRemoveBackground').checked){$('ktvCutoutHint').textContent='已選擇'+(e.target.value==='quality'?'高畫質':'標準')+'模式，開啟鏡頭及去背後生效。';return}
+ clearInterval(segmentTimer);segmentTimer=null;segmentReady=false;segmentBusy=false;
+ try{qualityTask?.close?.()}catch(err){}qualityTask=null;
+ try{segmenter?.close?.()}catch(err){}segmenter=null;
+ $('ktvCutoutHint').textContent='⏳ 正在切換去背引擎，上一張人物畫面會保留…';
+ try{await initCutout()}catch(err){$('ktvCutoutHint').textContent='⚠️ 去背引擎切換失敗：'+err.message}
+});
 $('ktvRemoveBackground').addEventListener('change',async e=>{
  if(e.target.checked){try{if(!camStream){$('ktvCutoutHint').textContent='✅ 已選擇人像去背。請另外點「開啟鏡頭」，不會自動開始錄影。';return;} $('ktvCutoutHint').textContent='⏳ 人物去背模型載入中…';await initCutout();$('studioOverlay').checked=true;if(!cutoutFrame)$('ktvCutoutHint').textContent='⏳ 模型已載入，正在辨識人物…';}catch(err){e.target.checked=false;cutoutFrame=false;updateCutoutUI();$('ktvQuickCutout').checked=false;$('ktvCutoutHint').textContent='⚠️ '+err.message;status('去背無法啟動：'+err.message)}}
  else{cutoutFrame=false;updateCutoutUI();$('ktvCutoutHint').textContent='去背已關閉，使用一般自拍小視窗。'}

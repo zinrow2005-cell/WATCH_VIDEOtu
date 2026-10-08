@@ -232,3 +232,7 @@ body > #studioPreviewTheatre.ktv-preview-theatre #studioPlaybackBack{display:non
 #ktvStudio .studio-advanced{display:none!important}
 #ktvStudio #studioDeviceNote,#ktvStudio #studioStatus{font-size:13px}
 @media(max-width:600px){#ktvPlayerPanel #ktvStudio.ktv-settings-open{padding:13px!important;max-height:calc(100dvh - 16px)!important}#ktvStudio .studio-top{top:-13px}#ktvStudio #ktvSettingsClose{min-width:46px}}
+
+/* V1.5.7.08 cutout quality selector */
+.ktv-cutout-mode{display:flex;flex-direction:column;gap:7px;min-width:0;width:100%;font-weight:650;margin:10px 0}
+.ktv-cutout-mode select{width:100%;max-width:100%;min-width:0;padding:11px 12px;border-radius:10px;white-space:normal}
