@@ -1,0 +1,3 @@
+V1.5.7.16
+Full-page responsive lyric editing workspace. Moves the existing KTV stage, timeline and line editor into a single dialog and restores original DOM position on exit. No duplicate YouTube player. Keeps original per-video localStorage corrections.
+Manual on-device testing still required for camera, YouTube iframe timing and mobile touch.
