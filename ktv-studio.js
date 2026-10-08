@@ -35,7 +35,7 @@ function setRecordSummary(b){
 
 const maskCanvas=document.createElement('canvas'),maskCtx=maskCanvas.getContext('2d',{willReadFrequently:true});let segmenter=null,segmentBusy=false,segmentReady=false,segmentTimer=null,cutoutFrame=null,cutoutCanvas=document.createElement('canvas'),cutoutCtx=cutoutCanvas.getContext('2d');cutoutCanvas.width=640;cutoutCanvas.height=360;const liveCutout=document.createElement('canvas');liveCutout.id='ktvLiveCutout';liveCutout.width=640;liveCutout.height=360;float.appendChild(liveCutout);const liveCtx=liveCutout.getContext('2d');let cutoutFailures=0,cutoutGoodFrames=0,cutoutLastSuccess=0;
 function updateMirror(){float.classList.toggle('ktv-no-mirror',!$('ktvMirrorCamera').checked)}
-function updateCutoutUI(){float.classList.toggle('ktv-cutout-on',!!($('ktvRemoveBackground').checked&&cutoutFrame));float.setAttribute('data-cutout-status',$('ktvRemoveBackground').checked?(cutoutFrame?'ready':'loading'):'off');}
+function updateCutoutUI(){float.classList.toggle('ktv-cutout-on',!!$('ktvRemoveBackground').checked);float.setAttribute('data-cutout-status',$('ktvRemoveBackground').checked?(cutoutFrame?'ready':'loading'):'off');}
 function pauseKtvOnStop(){
  // This is the KTV-specific YouTube iframe, not the general video player.
  try{if(typeof pauseActiveKtvSong==='function')pauseActiveKtvSong();else{
@@ -51,8 +51,8 @@ cam.addEventListener('loadedmetadata',syncCameraRatio);
 window.addEventListener('orientationchange',()=>setTimeout(syncCameraRatio,200));
 $('ktvMirrorCamera').addEventListener('change',updateMirror);updateMirror();
 function drawCamera(x,y,w,h,cutout){
- const source=cutout&&cutoutFrame?liveCutout:cam;
- if(!source || (!cutoutFrame&&cam.readyState<2))return;
+ const source=cutout?(cutoutFrame?liveCutout:null):cam;
+ if(!source || (!cutout&&cam.readyState<2))return;
  ctx.save();const sw=source.videoWidth||source.width||640,sh=source.videoHeight||source.height||480;const scale=Math.min(w/sw,h/sh),dw=sw*scale,dh=sh*scale,dx=x+(w-dw)/2,dy=y+(h-dh)/2;if($('ktvMirrorCamera').checked){ctx.translate(x+w,0);ctx.scale(-1,1);ctx.drawImage(source,x+w-(dx+dw),dy,dw,dh)}else ctx.drawImage(source,dx,dy,dw,dh);ctx.restore();
 }
 async function initCutout(){
@@ -64,10 +64,10 @@ async function initCutout(){
  segmenter.onResults(r=>{try{
  const w=Math.min(cam.videoWidth||640,640),h=Math.round(w*(cam.videoHeight||480)/(cam.videoWidth||640));
  if(cutoutCanvas.width!==w||cutoutCanvas.height!==h){cutoutCanvas.width=liveCutout.width=maskCanvas.width=w;cutoutCanvas.height=liveCutout.height=maskCanvas.height=h}
- // Smooth minor background artifacts and contract soft borders so stray outlines disappear.
- maskCtx.clearRect(0,0,w,h);maskCtx.save();maskCtx.filter='blur(1.35px)';maskCtx.drawImage(r.segmentationMask,0,0,w,h);maskCtx.restore();
+ // V1.5.7.07: feather a tighter alpha mask; filter detached background components.
+ maskCtx.clearRect(0,0,w,h);maskCtx.save();maskCtx.filter='blur(1.8px)';maskCtx.drawImage(r.segmentationMask,0,0,w,h);maskCtx.restore();
  const mask=maskCtx.getImageData(0,0,w,h),px=mask.data;
- for(let i=0;i<px.length;i+=4){const m=px[i]/255;const t=Math.max(0,Math.min(1,(m-.28)/.58));const a=t*t*(3-2*t);px[i]=px[i+1]=px[i+2]=255;px[i+3]=Math.round(a*255)}
+ for(let i=0;i<px.length;i+=4){const m=px[i]/255;const t=Math.max(0,Math.min(1,(m-.34)/.48));const a=t*t*(3-2*t);px[i]=px[i+1]=px[i+2]=255;px[i+3]=Math.round(a*255)}
  // Remove disconnected segmentation islands (background furniture, tiny ghost figures).
  // Analyze a reduced mask so the camera loop stays responsive on desktop/mobile.
  const cell=4, gw=Math.ceil(w/cell), gh=Math.ceil(h/cell), occupancy=new Uint8Array(gw*gh);
@@ -76,7 +76,7 @@ async function initCutout(){
    occupancy[gy*gw+gx]=px[(yy*w+xx)*4+3]>125?1:0;
  }
  const visited=new Uint8Array(gw*gh),queue=new Int32Array(gw*gh);
- let best=[],bestSize=0;
+ let best=[],bestSize=0,bestScore=-1;
  for(let start=0;start<occupancy.length;start++){
    if(!occupancy[start]||visited[start])continue;
    let front=0,end=1;queue[0]=start;visited[start]=1;
@@ -84,7 +84,13 @@ async function initCutout(){
      const neighbors=[x>0?v-1:-1,x<gw-1?v+1:-1,y>0?v-gw:-1,y<gh-1?v+gw:-1];
      for(const n of neighbors)if(n>=0&&occupancy[n]&&!visited[n]){visited[n]=1;queue[end++]=n;}
    }
-   if(end>bestSize){bestSize=end;best=Array.from(queue.subarray(0,end));}
+   // Prefer the sizeable connected shape nearest the image centre/lower torso.
+   // This avoids selecting a large stray background component at an edge.
+   let sx=0,sy=0;for(let q=0;q<end;q++){const k=queue[q];sx+=k%gw;sy+=(k/gw)|0;}
+   const cx=sx/end/gw,cy=sy/end/gh;
+   const d=Math.hypot((cx-.5)*1.35,(cy-.61)*.85);
+   const score=end*(1-.60*Math.min(1,d));
+   if(score>bestScore){bestScore=score;bestSize=end;best=Array.from(queue.subarray(0,end));}
  }
  // Skip destructive filtering if confidence is too low; retain previous valid frame instead.
  if(bestSize>Math.max(40,gw*gh*.009)){
@@ -138,7 +144,7 @@ if(bg==='camera'&&cam.readyState>=2)drawCover(cam);
 if(window.ktvLyricsEngine)window.ktvLyricsEngine.draw(ctx,canvas.width,canvas.height);
 if(float&&!float.classList.contains('hidden')&&cam.readyState>=2) {const r=stage.getBoundingClientRect(); if(r.width){float.style.width=(overlay.w*100)+'%';float.style.left=(Math.min(overlay.x,1-overlay.w)*100)+'%';float.style.top=(Math.min(overlay.y,Math.max(0,1-(overlay.w*(cam.videoHeight||720)/(cam.videoWidth||1280))*r.width/r.height))*100)+'%';}}
 if($('studioOverlay').checked&&cam.readyState>=2&&bg!=='camera') {
- const cutout=$('ktvRemoveBackground').checked&&segmentReady&&cutoutFrame;
+ const cutout=$('ktvRemoveBackground').checked;
  // Sharing this same browser tab already captures the ordinary floating camera.
  // Compositing it again would create the user's duplicated / opposite-direction image.
  const inCapturedTab=(bg==='screen'&&screenStream&&screenStream.active&&!float.classList.contains('hidden')); // Avoid duplicate camera on shared KTV page
