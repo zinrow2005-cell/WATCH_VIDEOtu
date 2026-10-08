@@ -137,3 +137,8 @@ body.ktv-preview-open{overflow:hidden!important}
 #ktvPlayerPanel #ktvCamFloat:not(.hidden){display:block!important;visibility:visible!important;opacity:1!important;z-index:2147483590!important}
 @media(max-width:680px){#ktvPlayerPanel .ktv-quick-controls{gap:5px;padding:5px 4px}#ktvPlayerPanel .ktv-quick-controls button,#ktvPlayerPanel .ktv-quick-cut{font-size:12px;padding:6px 7px;min-height:40px}#ktvPlayerPanel #ktvStudio .studio-settings{grid-template-columns:1fr}#ktvPlayerPanel #ktvStudio.ktv-settings-open{max-height:85dvh!important}}
 @media(orientation:landscape) and (max-height:500px){#ktvPlayerPanel #ktvStudio.ktv-settings-open{max-height:94dvh!important;max-width:75vw!important}#ktvPlayerPanel.ktv-fs-active .ktv-quick-controls{left:50%;right:auto;transform:translateX(-50%);bottom:calc(4px + env(safe-area-inset-bottom))}}
+
+/* V1.5.6.95: prevent black camera preview caused by conflicting video layers */
+#ktvCamFloat video{display:block!important;opacity:1!important;visibility:visible;object-fit:contain!important;background:#141824}
+#ktvCamFloat.ktv-cutout-on video{visibility:hidden!important}
+#ktvCamFloat:not(.ktv-cutout-on) #ktvLiveCutout{display:none!important}
