@@ -236,3 +236,10 @@ body > #studioPreviewTheatre.ktv-preview-theatre #studioPlaybackBack{display:non
 /* V1.5.7.08 cutout quality selector */
 .ktv-cutout-mode{display:flex;flex-direction:column;gap:7px;min-width:0;width:100%;font-weight:650;margin:10px 0}
 .ktv-cutout-mode select{width:100%;max-width:100%;min-width:0;padding:11px 12px;border-radius:10px;white-space:normal}
+
+/* v1.5.7.09: cutout tuning controls */
+.ktv-cutout-tuning{display:grid;gap:8px;min-width:0;padding:13px;margin:10px 0;border:1px solid rgba(145,177,228,.35);border-radius:14px;background:rgba(27,48,79,.62)}
+.ktv-tuning-header{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}.ktv-tune-reset{padding:7px 10px!important;font-size:13px!important;min-height:36px!important}
+.ktv-cutout-tuning label{display:flex;align-items:center;justify-content:space-between;gap:10px;font-weight:650;font-size:14px;white-space:normal!important;min-width:0}.ktv-cutout-tuning output{font-variant-numeric:tabular-nums;flex:none}
+.ktv-cutout-tuning input[type=range]{width:100%;min-width:0;max-width:100%;accent-color:#6cadff;touch-action:pan-y}.ktv-cutout-tuning small,.ktv-tune-note{font-size:12px;line-height:1.45;color:#c2d3ec;overflow-wrap:anywhere}.ktv-tune-note{padding:6px 8px;border-radius:8px;background:rgba(22,40,64,.7)}
+@media(max-width:600px){.ktv-cutout-tuning{padding:10px}.ktv-tuning-header strong{font-size:14px}}
