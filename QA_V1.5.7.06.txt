@@ -1,0 +1,1 @@
+V1.5.7.06: Chrome tab-share UI is browser security interface, not GitHub sharing. Release all screen share tracks after MediaRecorder onstop (post-final chunk), on capture failure, cancelled sharing, retry/discard and pagehide. Recorder output remains reviewable. In-progress banner cannot be suppressed by a website. Static checks only; real browser capture not verified.
