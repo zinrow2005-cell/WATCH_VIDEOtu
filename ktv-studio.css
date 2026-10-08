@@ -243,3 +243,6 @@ body > #studioPreviewTheatre.ktv-preview-theatre #studioPlaybackBack{display:non
 .ktv-cutout-tuning label{display:flex;align-items:center;justify-content:space-between;gap:10px;font-weight:650;font-size:14px;white-space:normal!important;min-width:0}.ktv-cutout-tuning output{font-variant-numeric:tabular-nums;flex:none}
 .ktv-cutout-tuning input[type=range]{width:100%;min-width:0;max-width:100%;accent-color:#6cadff;touch-action:pan-y}.ktv-cutout-tuning small,.ktv-tune-note{font-size:12px;line-height:1.45;color:#c2d3ec;overflow-wrap:anywhere}.ktv-tune-note{padding:6px 8px;border-radius:8px;background:rgba(22,40,64,.7)}
 @media(max-width:600px){.ktv-cutout-tuning{padding:10px}.ktv-tuning-header strong{font-size:14px}}
+
+/* V1.5.7.11: make real cutout controls visible and readable. */
+#ktvStudio details.ktv-cutout-tuning{display:block!important;width:100%;overflow:visible}#ktvStudio .ktv-cutout-tuning>summary{cursor:pointer;font-weight:750;padding:6px 3px;color:#bfe3ff}#ktvStudio .ktv-tune-panel{display:grid;gap:8px;padding-top:8px}#ktvStudio .ktv-cutout-tuning input[type=range]{display:block!important;visibility:visible!important;opacity:1!important;height:24px!important}#ktvStudio .ktv-cutout-tuning small{display:block}

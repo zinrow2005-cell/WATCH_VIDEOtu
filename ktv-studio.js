@@ -34,6 +34,68 @@ function setRecordSummary(b){
 }
 
 const maskCanvas=document.createElement('canvas'),maskCtx=maskCanvas.getContext('2d',{willReadFrequently:true});let segmenter=null,segmentBusy=false,segmentReady=false,segmentTimer=null,cutoutFrame=null,cutoutCanvas=document.createElement('canvas'),cutoutCtx=cutoutCanvas.getContext('2d');cutoutCanvas.width=640;cutoutCanvas.height=360;const liveCutout=document.createElement('canvas');liveCutout.id='ktvLiveCutout';liveCutout.width=640;liveCutout.height=360;float.appendChild(liveCutout);const liveCtx=liveCutout.getContext('2d');let cutoutFailures=0,cutoutGoodFrames=0,cutoutLastSuccess=0;
+// V1.5.7.11: real-time person matting parameters, persisted per browser.
+const cutoutTune={residue:50,feather:35,detail:50};
+function setTune(name,value){cutoutTune[name]=Math.max(0,Math.min(100,Number(value)||0));const suffix={residue:'Residue',feather:'Feather',detail:'Detail'}[name];const slider=$('ktvTune'+suffix),out=$('ktvTune'+suffix+'Val');if(slider)slider.value=cutoutTune[name];if(out)out.textContent=String(cutoutTune[name]);try{localStorage.setItem('ktvCutoutTune_'+name,String(cutoutTune[name]))}catch(e){}}
+for(const name of ['residue','feather','detail']){const suffix={residue:'Residue',feather:'Feather',detail:'Detail'}[name];let val=({residue:50,feather:35,detail:50})[name];try{const stored=localStorage.getItem('ktvCutoutTune_'+name);if(stored!==null&&Number.isFinite(Number(stored)))val=Number(stored)}catch(e){}setTune(name,val);$('ktvTune'+suffix)?.addEventListener('input',e=>setTune(name,e.target.value))}
+$('ktvTuneReset')?.addEventListener('click',()=>{setTune('residue',50);setTune('feather',35);setTune('detail',50)});
+// V1.5.7.10: adaptive segmentation load guard. Only model rate is reduced,
+// while camera preview/recording remain independent to protect audio continuity.
+let cutoutPerfMode='balanced', cutoutSamples=0, cutoutAvgMs=0, cutoutLastAt=0;
+let cutoutSlowStreak=0, cutoutFastStreak=0, currentSegmentMs=0;
+function segmentPeriod(){return cutoutPerfMode==='performance'?(mobileCapture?380:250):cutoutPerfMode==='detail'?(mobileCapture?250:130):(mobileCapture?300:190)}
+function trackSegmentCost(start){
+ const elapsed=Math.max(0,performance.now()-start);
+ cutoutAvgMs=cutoutSamples?cutoutAvgMs*.85+elapsed*.15:elapsed;cutoutSamples++;
+ if(cutoutAvgMs>segmentPeriod()*.78){cutoutSlowStreak++;cutoutFastStreak=0}
+ else if(cutoutAvgMs<segmentPeriod()*.36){cutoutFastStreak++;cutoutSlowStreak=0}
+ const label=$('ktvCutoutPerfStatus');
+ if(label && (cutoutSamples%5===0 || cutoutSamples===1)) label.textContent='去背處理：約 '+Math.round(cutoutAvgMs)+' ms／次 · '+(cutoutSlowStreak>=3?'裝置負載偏高，建議效能優先':'運作中');
+ if(cutoutSlowStreak>=3 && cutoutPerfMode==='detail'){
+   cutoutPerfMode='balanced';const select=$('ktvCutoutPerfMode');if(select)select.value='balanced';
+   if(label)label.textContent='⚠️ 已自動轉平衡模式，降低去背運算負擔';
+   restartSegmentationTimer(); cutoutSlowStreak=0;
+ }
+}
+function restartSegmentationTimer(){
+ if(!segmentReady||!camStream||!$('ktvRemoveBackground').checked)return;
+ if(segmentTimer)clearInterval(segmentTimer);segmentTimer=null;
+ const period=segmentPeriod();
+ if(qualityModeActive==='quality'){
+  let lastTimestamp=0;
+  segmentTimer=setInterval(()=>{
+   if(!camStream||cam.readyState<2||!cam.videoWidth||segmentBusy||!$('ktvRemoveBackground').checked)return;
+   segmentBusy=true;const started=performance.now();
+   try{
+    const timestamp=Math.max(performance.now(),lastTimestamp+1);lastTimestamp=timestamp;
+    const result=qualityTask.segmentForVideo(cam,timestamp);
+    try{
+     const cm=result.categoryMask;if(!cm)throw Error('模型沒有回傳人物遮罩');
+     const sw=cm.width,sh=cm.height,classes=cm.getAsUint8Array();
+     if(qualityMaskCanvas.width!==sw||qualityMaskCanvas.height!==sh){qualityMaskCanvas.width=sw;qualityMaskCanvas.height=sh}
+     const img=qualityMaskCtx.createImageData(sw,sh);
+     for(let i=0;i<classes.length;i++){const value=classes[i]===0?0:255,j=i*4;img.data[j]=img.data[j+1]=img.data[j+2]=value;img.data[j+3]=255;}
+     qualityMaskCtx.putImageData(img,0,0);processCutoutResults({segmentationMask:qualityMaskCanvas,image:cam});
+    }finally{result.close?.()}
+   }catch(err){if(++cutoutFailures>=3)$('ktvCutoutHint').textContent='⚠️ 去背運算暫停，保留最後畫面：'+err.message}
+   finally{segmentBusy=false;trackSegmentCost(started)}
+  },period);
+ }else{
+  segmentTimer=setInterval(async()=>{
+   if(!camStream||cam.readyState<2||!cam.videoWidth||segmentBusy||!$('ktvRemoveBackground').checked)return;
+   segmentBusy=true;const started=performance.now();
+   try{await segmenter.send({image:cam})}catch(e){if(++cutoutFailures>=3)$('ktvCutoutHint').textContent='⚠️ 標準去背暫停：'+e.message}
+   finally{segmentBusy=false;trackSegmentCost(started)}
+  },period);
+ }
+}
+const perfChoice=$('ktvCutoutPerfMode');
+if(perfChoice)perfChoice.addEventListener('change',()=>{
+ cutoutPerfMode=perfChoice.value;cutoutSlowStreak=cutoutFastStreak=0;
+ try{localStorage.setItem('ktvCutoutPerfMode',cutoutPerfMode)}catch(e){}
+ restartSegmentationTimer();
+});
+try{let savedPerf=localStorage.getItem('ktvCutoutPerfMode');if(['performance','balanced','detail'].includes(savedPerf)){cutoutPerfMode=savedPerf;if(perfChoice)perfChoice.value=savedPerf}}catch(e){}
 let qualityTask=null,qualityModeActive='standard',cutoutInitPromise=null;const qualityMaskCanvas=document.createElement('canvas');const qualityMaskCtx=qualityMaskCanvas.getContext('2d');
 function updateMirror(){float.classList.toggle('ktv-no-mirror',!$('ktvMirrorCamera').checked)}
 function updateCutoutUI(){float.classList.toggle('ktv-cutout-on',!!$('ktvRemoveBackground').checked);float.setAttribute('data-cutout-status',$('ktvRemoveBackground').checked?(cutoutFrame?'ready':'loading'):'off');}
@@ -83,30 +145,7 @@ async function initHighQualityCutout(){
    runningMode:'VIDEO',outputCategoryMask:true,outputConfidenceMasks:false
  });
  qualityModeActive='quality';segmentReady=true;
- let lastTimestamp=0;
- segmentTimer=setInterval(()=>{
-   if(!camStream||cam.readyState<2||!cam.videoWidth||segmentBusy||!$('ktvRemoveBackground').checked)return;
-   segmentBusy=true;
-   try{
-     const timestamp=Math.max(performance.now(),lastTimestamp+1);lastTimestamp=timestamp;
-     const result=qualityTask.segmentForVideo(cam,timestamp);
-     try{
-       const cm=result.categoryMask;
-       if(!cm)throw Error('模型沒有回傳人物遮罩');
-       const sw=cm.width,sh=cm.height,classes=cm.getAsUint8Array();
-       if(qualityMaskCanvas.width!==sw||qualityMaskCanvas.height!==sh){qualityMaskCanvas.width=sw;qualityMaskCanvas.height=sh}
-       const img=qualityMaskCtx.createImageData(sw,sh);
-       for(let i=0;i<classes.length;i++){
-         // 0 background; remaining labels are hair, skin, clothing, or accessories.
-         const value=classes[i]===0?0:255,j=i*4;
-         img.data[j]=img.data[j+1]=img.data[j+2]=value;img.data[j+3]=255;
-       }
-       qualityMaskCtx.putImageData(img,0,0);
-       processCutoutResults({segmentationMask:qualityMaskCanvas,image:cam});
-     }finally{result.close?.()}
-   }catch(err){cutoutFailures++;if(cutoutFailures>=3)$('ktvCutoutHint').textContent='⚠️ 高畫質辨識暫停，保留上一張人物：'+err.message}
-   finally{segmentBusy=false}
- },mobileCapture?320:220);
+ restartSegmentationTimer();
  $('ktvCutoutHint').textContent='✅ 高畫質多類別人物分割已啟動（頭髮／皮膚／衣服）';
  return true;
 }
@@ -118,22 +157,22 @@ async function initStandardCutout(){
  segmenter.setOptions({modelSelection:1,selfieMode:false});
  segmenter.onResults(processCutoutResults);
  qualityModeActive='standard';segmentReady=true;
- segmentTimer=setInterval(async()=>{if(!camStream||cam.readyState<2||!cam.videoWidth||segmentBusy||!$('ktvRemoveBackground').checked)return;segmentBusy=true;try{await segmenter.send({image:cam})}catch(e){if(++cutoutFailures>=3)$('ktvCutoutHint').textContent='⚠️ 標準模式暫停：'+e.message}finally{segmentBusy=false}},mobileCapture?240:160);
+ restartSegmentationTimer();
  return true;
 }
 function processCutoutResults(r){try{
  const w=Math.min(cam.videoWidth||640,640),h=Math.round(w*(cam.videoHeight||480)/(cam.videoWidth||640));
  if(cutoutCanvas.width!==w||cutoutCanvas.height!==h){cutoutCanvas.width=liveCutout.width=maskCanvas.width=w;cutoutCanvas.height=liveCutout.height=maskCanvas.height=h}
  // V1.5.7.07: feather a tighter alpha mask; filter detached background components.
- maskCtx.clearRect(0,0,w,h);maskCtx.save();maskCtx.filter='blur(1.8px)';maskCtx.drawImage(r.segmentationMask,0,0,w,h);maskCtx.restore();
+ maskCtx.clearRect(0,0,w,h);maskCtx.save();maskCtx.filter='blur('+(.4+cutoutTune.feather*.04).toFixed(2)+'px)';maskCtx.drawImage(r.segmentationMask,0,0,w,h);maskCtx.restore();
  const mask=maskCtx.getImageData(0,0,w,h),px=mask.data;
- for(let i=0;i<px.length;i+=4){const m=px[i]/255;const t=Math.max(0,Math.min(1,(m-.34)/.48));const a=t*t*(3-2*t);px[i]=px[i+1]=px[i+2]=255;px[i+3]=Math.round(a*255)}
+ for(let i=0;i<px.length;i+=4){const m=px[i]/255;const threshold=.29+cutoutTune.residue*.0017-cutoutTune.detail*.0009;const width=.52-cutoutTune.feather*.0018+cutoutTune.detail*.0005;const t=Math.max(0,Math.min(1,(m-threshold)/Math.max(.18,width)));const a=t*t*(3-2*t);px[i]=px[i+1]=px[i+2]=255;px[i+3]=Math.round(a*255)}
  // Remove disconnected segmentation islands (background furniture, tiny ghost figures).
  // Analyze a reduced mask so the camera loop stays responsive on desktop/mobile.
  const cell=4, gw=Math.ceil(w/cell), gh=Math.ceil(h/cell), occupancy=new Uint8Array(gw*gh);
  for(let gy=0;gy<gh;gy++)for(let gx=0;gx<gw;gx++){
    const xx=Math.min(w-1,gx*cell+2),yy=Math.min(h-1,gy*cell+2);
-   occupancy[gy*gw+gx]=px[(yy*w+xx)*4+3]>125?1:0;
+   occupancy[gy*gw+gx]=px[(yy*w+xx)*4+3]>(95+Math.round(cutoutTune.residue*.45))?1:0;
  }
  const visited=new Uint8Array(gw*gh),queue=new Int32Array(gw*gh);
  let best=[],bestSize=0,bestScore=-1;
