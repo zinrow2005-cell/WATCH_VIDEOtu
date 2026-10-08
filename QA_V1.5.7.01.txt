@@ -1,0 +1,5 @@
+V1.5.7.01 – static/mobile and tablet source QA
+Verified: JavaScript parsed by node --check; complete archive by unzip -t; all required KTV element IDs present.
+Changes: normalize mobile toolbar wrapping / touch sizes and landscape safe area; prevent clipping in settings and recording library; dismiss expanded toolbox when completed recording preview opens; align version and PWA cache.
+Limitation: automated Chromium runs for mobile portrait/landscape, tablet portrait/landscape, desktop all failed with ERR_BLOCKED_BY_ADMINISTRATOR before page load. Real camera/microphone/full playback NOT verified.
+Important: mobile cannot reliably capture YouTube iframe music/video; local licensed video is needed for complete backing track capture.
