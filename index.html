@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#0b1220">
-<title>WATCH_VIDEOtu V1.5.7.16</title>
+<title>WATCH_VIDEOtu V1.5.7.17</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="styles.css?v=15694">
   <link rel="stylesheet" href="responsive-v63.css?v=15694">
@@ -18,7 +18,7 @@
 
 <link rel="stylesheet" href="ktv-studio.css?v=15715">
 <link rel="stylesheet" href="ktv-lyrics.css?v=15715">
-<link rel="stylesheet" href="ktv-lyric-workspace.css?v=15716">
+<link rel="stylesheet" href="ktv-lyric-workspace.css?v=15717">
 </head>
 <body>
 <header class="topbar">
@@ -31,7 +31,7 @@
       <circle cx="50" cy="14" r="6" fill="#fff"/><path d="M50 10.7v6.6M46.7 14h6.6" stroke="#ff174d" stroke-width="2.4" stroke-linecap="round"/>
     </svg>
   </span>
-  <span class="brand-copy"><strong>WATCH_VIDEO<span class="brand-tu">tu</span></strong><span class="brand-version" title="手機 TV 簡化版 V1.5.7.16">V1.5.7.16</span><small>Kids Video Hub</small></span>
+  <span class="brand-copy"><strong>WATCH_VIDEO<span class="brand-tu">tu</span></strong><span class="brand-version" title="手機 TV 簡化版 V1.5.7.17">V1.5.7.17</span><small>Kids Video Hub</small></span>
 </button>
 <div class="mode-switch" id="modeSwitch">
   <button id="videoModeBtn" class="mode-btn active" type="button">🎬 影片模式</button>
@@ -489,7 +489,7 @@
 
 <div id="ktvLyricStudio" class="ktv-lyric-studio" hidden role="dialog" aria-modal="true" aria-labelledby="ktvLyricStudioHeading">
   <header class="ktv-lyric-studio-bar"><div><strong id="ktvLyricStudioHeading">🎛️ 字幕編輯工作室</strong><small>左側播放影片，右側調整同步時間；修改會沿用原本的逐行校正紀錄</small></div><button type="button" id="ktvLyricStudioClose" class="ktv-lyric-studio-close">✕ 返回 KTV</button></header>
-  <div class="ktv-lyric-studio-layout"><section class="ktv-lyric-studio-preview" aria-label="目前歌曲播放畫面"><div id="ktvLyricStudioStageSlot" class="ktv-lyric-stage-slot"><div class="ktv-lyric-studio-empty">請先選擇並播放 KTV 歌曲</div></div><p>影片播放仍由原本的 YouTube 播放器控制；此視窗不會另開第二支影片。</p></section><section class="ktv-lyric-studio-edit" aria-label="字幕時間軸校正"><div class="ktv-lyric-studio-info">先確認歌詞版本與時間標記正確，再拖曳節點或按「對齊目前播放」。</div><div id="ktvLyricStudioTimelineSlot"></div><div id="ktvLyricStudioLineSlot"></div></section></div>
+  <div class="ktv-lyric-studio-layout"><section class="ktv-lyric-studio-preview" aria-label="目前歌曲播放畫面"><div id="ktvLyricStudioStageSlot" class="ktv-lyric-stage-slot"><div class="ktv-lyric-studio-empty">請先選擇並播放 KTV 歌曲</div></div><p>影片播放仍由原本的 YouTube 播放器控制；此視窗不會另開第二支影片。</p></section><section class="ktv-lyric-studio-edit" aria-label="字幕時間軸校正"><div class="ktv-lyric-studio-info">先確認歌詞版本與時間標記正確，再拖曳節點或按「對齊目前播放」。</div><div class="ktv-studio-sync" aria-live="polite"><span id="ktvStudioSyncStatus">○ 未同步</span><label><input type="checkbox" id="ktvStudioFollow" checked> 跟隨播放</label></div><div class="ktv-studio-lines"><strong id="ktvStudioCurrentLine">等待歌詞…</strong><span id="ktvStudioNextLine">下一句：—</span></div><div class="ktv-studio-guide">歌詞段落與播放位置</div><div class="ktv-studio-guide-track" id="ktvTimelineRuler" data-follow="true"><div id="ktvStudioPlayhead" class="ktv-studio-playhead" hidden></div></div><div id="ktvLyricStudioTimelineSlot"></div><div id="ktvLyricStudioLineSlot"></div></section></div>
 </div>
 <div id="modal" class="modal hidden">
   <div class="modal-card"><h3>輸入家長 PIN</h3><input id="modalInput" inputmode="numeric" maxlength="6"><div class="modal-actions"><button id="modalCancel">取消</button><button id="modalOk">確定</button></div></div>
@@ -497,10 +497,10 @@
 <script defer src="ktv_singers.js?v=15694"></script>
 <script defer src="ktv_songs.js?v=15694"></script>
 <script defer src="app.js?v=15694"></script>
-<script defer src="ktv-studio.js?v=15716"></script>
-<script defer src="ktv-lyrics.js?v=15716"></script>
+<script defer src="ktv-studio.js?v=15717"></script>
+<script defer src="ktv-lyrics.js?v=15717"></script>
 
 <div id="ktvToast" class="ktv-toast hidden" role="status" aria-live="polite"></div>
-<script defer src="ktv-lyric-workspace.js?v=15716"></script>
+<script defer src="ktv-lyric-workspace.js?v=15717"></script>
 </body>
 </html>
