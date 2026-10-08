@@ -1,0 +1,1 @@
+V1.5.6.84: correct duplicate selfie on captured browser tab, consistent mirror choice, optional MediaPipe person cutout, standalone close-preview control, UI/app/service worker version sync. Browser-dependent screen/audio capture remains subject to permissions; cutout needs CDN network. Not validated on actual iPad/iPhone.
