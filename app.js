@@ -1,4 +1,4 @@
-var APP_VERSION='1.5.7.02';
+var APP_VERSION='1.5.7.03';
 var APP_BUILD='15691';
 var watchFullscreenScrollY=0;
 var miniPlayerSuppressUntil=0;
@@ -1123,6 +1123,7 @@ function showKtvPlayer(song,videoId){
  ktvCurrent=song;
  $('ktvPlayerTitle').textContent=song.title||'KTV';
  $('ktvPlayerArtist').textContent=song.artist||song.channel||'';
+ window.dispatchEvent(new CustomEvent('ktv-song-changed',{detail:{title:song.title||'',artist:song.artist||song.channel||''}}));
  $('ktvNowMini').textContent=(song.title||'')+(song.artist?' · '+song.artist:'');
  $('ktvPlayerPanel').classList.remove('hidden');
  if(typeof window.ktvEnterTheatre==='function')window.ktvEnterTheatre();

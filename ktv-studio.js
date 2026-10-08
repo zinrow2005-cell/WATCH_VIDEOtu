@@ -1,4 +1,4 @@
-/* V1.5.7.02: combined mobile AV permission, lean audio path, explicit background status. */
+/* V1.5.7.03: combined mobile AV permission, lean audio path, explicit background status. */
 (function(){'use strict';
 const $=id=>document.getElementById(id); const el=$('ktvStudio');if(!el)return;
 const canvas=$('studioCanvas'),ctx=canvas.getContext('2d');const stage=$('ktvPlayerStage'),float=$('ktvCamFloat'),preview=$('ktvCamPreview');canvas.width=1280;canvas.height=720;const mobileCapture=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -77,6 +77,7 @@ function explainFormat(b){const mp4=b?.type?.includes('mp4');$('studioFormatNote
 function drawCover(src){const sw=src.videoWidth||src.naturalWidth,sh=src.videoHeight||src.naturalHeight;if(!sw||!sh)return;const k=Math.max(canvas.width/sw,canvas.height/sh);ctx.drawImage(src,(canvas.width-sw*k)/2,(canvas.height-sh*k)/2,sw*k,sh*k)}
 function frame(now=0){raf=requestAnimationFrame(frame);if(mobileCapture&&recording&&now-lastDrawTime<50)return;lastDrawTime=now;const bg=$('studioBackground').value;ctx.fillStyle='#132039';ctx.fillRect(0,0,1280,720);if(bg==='gradient'){const g=ctx.createLinearGradient(0,0,1280,720);g.addColorStop(0,'#151641');g.addColorStop(.5,'#7d2e69');g.addColorStop(1,'#14112e');ctx.fillStyle=g;ctx.fillRect(0,0,1280,720)}else if(bg==='stage'){const g=ctx.createRadialGradient(640,170,20,640,400,850);g.addColorStop(0,'#a35e9d');g.addColorStop(.4,'#39275b');g.addColorStop(1,'#080b1e');ctx.fillStyle=g;ctx.fillRect(0,0,1280,720);for(let i=0;i<7;i++){ctx.strokeStyle='rgba(255,210,255,.13)';ctx.lineWidth=24;ctx.beginPath();ctx.moveTo((i*220)-200,0);ctx.lineTo(640+(i-3)*70,720);ctx.stroke()}}else if(bg==='photo'&&bgImg)drawCover(bgImg);else if(bg==='video'&&video.readyState>=2)drawCover(video);else if(bg==='screen'&&video.readyState>=2)drawCover(video);
 if(bg==='camera'&&cam.readyState>=2)drawCover(cam);
+if(window.ktvLyricsEngine)window.ktvLyricsEngine.draw(ctx,canvas.width,canvas.height);
 if(float&&!float.classList.contains('hidden')&&cam.readyState>=2) {const r=stage.getBoundingClientRect(); if(r.width){float.style.width=(overlay.w*100)+'%';float.style.left=(Math.min(overlay.x,1-overlay.w)*100)+'%';float.style.top=(Math.min(overlay.y,Math.max(0,1-(overlay.w*(cam.videoHeight||720)/(cam.videoWidth||1280))*r.width/r.height))*100)+'%';}}
 if($('studioOverlay').checked&&cam.readyState>=2&&bg!=='camera') {
  const cutout=$('ktvRemoveBackground').checked&&segmentReady&&cutoutFrame;
@@ -93,7 +94,8 @@ ctx.textAlign='left';ctx.shadowColor='rgba(0,0,0,.75)';ctx.shadowBlur=8;ctx.font
 if(recording){ctx.fillStyle='#f04468';ctx.beginPath();ctx.arc(1195,42,12,0,Math.PI*2);ctx.fill();ctx.font='24px sans-serif';ctx.fillStyle='white';ctx.fillText(Math.floor((Date.now()-startTime)/1000)+'s',1100,85)}}
 function stopStream(s){if(s)s.getTracks().forEach(t=>t.stop())}
 function setMedia(file,type){if(!file)return;const u=URL.createObjectURL(file);if(type==='image'){const im=new Image();im.onload=()=>{bgImg=im};im.src=u}else{if(bgVideoUrl)URL.revokeObjectURL(bgVideoUrl);bgVideoUrl=u;video.src=u;video.play().catch(()=>status('影片已載入；請點擊預覽或播放以啟用影片。'))}}
-$('studioPhoto').onchange=e=>{setMedia(e.target.files[0],'image');$('studioBackground').value='photo'};
+try{const saved=localStorage.getItem('ktv-custom-photo-v15703');if(saved){const im=new Image();im.onload=()=>{bgImg=im;if(mobileCapture&&$('studioBackground').value==='screen')$('studioBackground').value='photo';};im.src=saved;}}catch(err){}
+$('studioPhoto').onchange=e=>{setMedia(e.target.files[0],'image');$('studioBackground').value='photo';try{const file=e.target.files[0];if(file&&file.size<3500000){const reader=new FileReader();reader.onload=()=>{try{localStorage.setItem('ktv-custom-photo-v15703',reader.result);$('ktvPhotoNotice').textContent='✅ 已記住背景圖片';}catch(err){$('ktvPhotoNotice').textContent='圖片已載入，但本機空間不足，無法記住';}};reader.readAsDataURL(file);}else $('ktvPhotoNotice').textContent='已套用圖片。大於 3.5MB 的圖片不會持久儲存。'}catch(err){}};
 $('studioVideo').onchange=e=>{setMedia(e.target.files[0],'video');$('studioBackground').value='video'};
 $('studioCamera').onclick=async()=>{try{
  if(!navigator.mediaDevices?.getUserMedia)throw Error('此瀏覽器無法使用攝影機，或網頁不是 HTTPS');
@@ -155,6 +157,7 @@ async function getStableMicrophone(){
 }
 async function startRecording(){if(recording)return;if(!window.MediaRecorder||!canvas.captureStream){status('本裝置不支援此錄影方式。');return}try{let bg=$('studioBackground').value;const caps=deviceCapabilities();
  if(!caps.secure||!caps.media){status(capabilityDescription());return}
+ if(bg==='screen'&&!caps.display&&bgImg){bg='photo';$('studioBackground').value='photo';status('手機已自動使用預先設定的背景圖片，歌詞將疊加錄製。');}
  if(bg==='screen'&&!caps.display){
    const agreed=confirm('手機瀏覽器無法直接擷取 YouTube 嵌入的 KTV 畫面與伴奏。\n\n按「確定」會立即以演唱會背景開始錄製鏡頭＋麥克風；按「取消」可先在設定選擇自己的背景影片（含有權使用的音樂）。');
    if(!agreed){openCompactSettings(true);status('已取消錄製。請選擇可用的背景影片，或改為演唱會背景。');return;}

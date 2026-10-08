@@ -1,0 +1,1 @@
+V1.5.7.03: LRCLIB API auto lookup; selectable matches, LRC TXT import, timed lyrics overlay; persisted image background; composite lyrics into canvas. YouTube player audio/video not capturable on mobile. Real-device media validation still required.
