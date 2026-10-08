@@ -182,8 +182,32 @@ async function saveRecord(){if(!blob)return;const file=makeFilename(blob),name=(
 $('studioSave').onclick=saveRecord;
 function closePlayback(){exitPreviewTheatre();const v=$('studioPlayback');v.pause();if(document.fullscreenElement){document.exitFullscreen?.().catch(()=>{});}try{v.webkitExitFullscreen?.()}catch(e){}$('studioResult').classList.add('studio-hidden');$('ktvPlayerStage').scrollIntoView({behavior:'smooth',block:'center'});}
 const previewWrap=$('studioPreviewTheatre');
-function exitPreviewTheatre(){if(!previewWrap)return;previewWrap.classList.remove('ktv-preview-theatre');document.body.classList.remove('ktv-preview-open');$('studioPreviewFullscreen').textContent='⛶ 全螢幕預覽';$('studioPreviewFullscreen').setAttribute('aria-pressed','false');}
-function togglePreviewTheatre(){if(!previewWrap)return;const active=previewWrap.classList.toggle('ktv-preview-theatre');document.body.classList.toggle('ktv-preview-open',active);$('studioPreviewFullscreen').textContent=active?'⤢ 縮小預覽':'⛶ 全螢幕預覽';$('studioPreviewFullscreen').setAttribute('aria-pressed',String(active));if(active){$('studioPlayback').scrollIntoView({block:'nearest'});}}
+// A fixed element cannot escape a transformed / isolated settings panel. Portal it to
+// document.body for review, then restore the original DOM position afterwards.
+const previewHome=previewWrap?.parentNode, previewNext=previewWrap?.nextSibling;
+let previewTheatreActive=false;
+function exitPreviewTheatre(){
+ if(!previewWrap)return;
+ previewTheatreActive=false;
+ previewWrap.classList.remove('ktv-preview-theatre');
+ document.body.classList.remove('ktv-preview-open');
+ if(previewHome&&previewWrap.parentNode!==previewHome)previewHome.insertBefore(previewWrap,previewNext);
+ $('studioPreviewFullscreen').textContent='⛶ 全螢幕預覽';
+ $('studioPreviewFullscreen').setAttribute('aria-pressed','false');
+}
+async function togglePreviewTheatre(){
+ if(!previewWrap)return;
+ if(previewTheatreActive){exitPreviewTheatre();return;}
+ // If a native fullscreen element exists, body-level overlays cannot display over it.
+ if(document.fullscreenElement){try{await document.exitFullscreen()}catch(e){}}
+ previewTheatreActive=true;
+ document.body.appendChild(previewWrap);
+ previewWrap.classList.add('ktv-preview-theatre');
+ document.body.classList.add('ktv-preview-open');
+ $('studioPreviewFullscreen').textContent='⤢ 縮小預覽';
+ $('studioPreviewFullscreen').setAttribute('aria-pressed','true');
+ // No scrollIntoView here: it scrolls the KTV player beneath the full-screen review.
+}
 $('studioPreviewFullscreen').onclick=togglePreviewTheatre;
 $('studioPreviewExit').onclick=exitPreviewTheatre;
 document.addEventListener('keydown',e=>{if(e.key==='Escape')exitPreviewTheatre()});
