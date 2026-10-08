@@ -1,4 +1,4 @@
-/* V1.5.7.03: combined mobile AV permission, lean audio path, explicit background status. */
+/* V1.5.7.04: combined mobile AV permission, lean audio path, explicit background status. */
 (function(){'use strict';
 const $=id=>document.getElementById(id); const el=$('ktvStudio');if(!el)return;
 const canvas=$('studioCanvas'),ctx=canvas.getContext('2d');const stage=$('ktvPlayerStage'),float=$('ktvCamFloat'),preview=$('ktvCamPreview');canvas.width=1280;canvas.height=720;const mobileCapture=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
@@ -23,7 +23,7 @@ function setRecordSummary(b){
  summary.textContent='錄製長度：約 '+Math.max(0,seconds)+' 秒｜格式：'+extension(b).toUpperCase()+'｜檔案：'+tracks.toFixed(1)+' MB。請播放確認聲音與畫面。';
 }
 
-const maskCanvas=document.createElement('canvas'),maskCtx=maskCanvas.getContext('2d',{willReadFrequently:true});let segmenter=null,segmentBusy=false,segmentReady=false,segmentTimer=null,cutoutFrame=null,cutoutCanvas=document.createElement('canvas'),cutoutCtx=cutoutCanvas.getContext('2d');cutoutCanvas.width=640;cutoutCanvas.height=360;const liveCutout=document.createElement('canvas');liveCutout.id='ktvLiveCutout';liveCutout.width=640;liveCutout.height=360;float.appendChild(liveCutout);const liveCtx=liveCutout.getContext('2d');let cutoutFailures=0;
+const maskCanvas=document.createElement('canvas'),maskCtx=maskCanvas.getContext('2d',{willReadFrequently:true});let segmenter=null,segmentBusy=false,segmentReady=false,segmentTimer=null,cutoutFrame=null,cutoutCanvas=document.createElement('canvas'),cutoutCtx=cutoutCanvas.getContext('2d');cutoutCanvas.width=640;cutoutCanvas.height=360;const liveCutout=document.createElement('canvas');liveCutout.id='ktvLiveCutout';liveCutout.width=640;liveCutout.height=360;float.appendChild(liveCutout);const liveCtx=liveCutout.getContext('2d');let cutoutFailures=0,cutoutGoodFrames=0,cutoutLastSuccess=0;
 function updateMirror(){float.classList.toggle('ktv-no-mirror',!$('ktvMirrorCamera').checked)}
 function updateCutoutUI(){float.classList.toggle('ktv-cutout-on',!!($('ktvRemoveBackground').checked&&cutoutFrame));float.setAttribute('data-cutout-status',$('ktvRemoveBackground').checked?(cutoutFrame?'ready':'loading'):'off');}
 function pauseKtvOnStop(){
@@ -41,7 +41,7 @@ cam.addEventListener('loadedmetadata',syncCameraRatio);
 window.addEventListener('orientationchange',()=>setTimeout(syncCameraRatio,200));
 $('ktvMirrorCamera').addEventListener('change',updateMirror);updateMirror();
 function drawCamera(x,y,w,h,cutout){
- const source=cutout&&cutoutFrame?cutoutCanvas:cam;
+ const source=cutout&&cutoutFrame?liveCutout:cam;
  if(!source || (!cutoutFrame&&cam.readyState<2))return;
  ctx.save();const sw=source.videoWidth||source.width||640,sh=source.videoHeight||source.height||480;const scale=Math.min(w/sw,h/sh),dw=sw*scale,dh=sh*scale,dx=x+(w-dw)/2,dy=y+(h-dh)/2;if($('ktvMirrorCamera').checked){ctx.translate(x+w,0);ctx.scale(-1,1);ctx.drawImage(source,x+w-(dx+dw),dy,dw,dh)}else ctx.drawImage(source,dx,dy,dw,dh);ctx.restore();
 }
@@ -60,9 +60,18 @@ async function initCutout(){
  for(let i=0;i<px.length;i+=4){const m=px[i]/255;const t=Math.max(0,Math.min(1,(m-.22)/.66));const a=t*t*(3-2*t);px[i]=px[i+1]=px[i+2]=255;px[i+3]=Math.round(a*255)}
  maskCtx.putImageData(mask,0,0);
  cutoutCtx.clearRect(0,0,w,h);cutoutCtx.globalCompositeOperation='source-over';cutoutCtx.drawImage(r.image,0,0,w,h);cutoutCtx.globalCompositeOperation='destination-in';cutoutCtx.drawImage(maskCanvas,0,0,w,h);cutoutCtx.globalCompositeOperation='source-over';
- liveCtx.clearRect(0,0,w,h);liveCtx.drawImage(cutoutCanvas,0,0,w,h);const sample=cutoutCtx.getImageData(Math.floor(w/2),Math.floor(h/2),1,1).data;cutoutFrame=sample[3]>2;cutoutFailures=0;updateCutoutUI();$('ktvCutoutHint').textContent=cutoutFrame?'✅ 人像去背已啟用。':'⏳ 尚未偵測到人物，暫時顯示原始鏡頭。';
- }catch(e){cutoutFrame=false;updateCutoutUI();$('ktvCutoutHint').textContent='⚠️ 去背處理失敗：'+e.message}});
- segmentReady=true;segmentTimer=setInterval(async()=>{if(!camStream||cam.readyState<2||!cam.videoWidth||segmentBusy||!$('ktvRemoveBackground').checked)return;segmentBusy=true;try{await segmenter.send({image:cam})}catch(e){if(++cutoutFailures>=3){cutoutFrame=false;updateCutoutUI();$('ktvCutoutHint').textContent='⚠️ 去背模型暫停：'+e.message}}finally{segmentBusy=false}},mobileCapture?240:160);return true;
+ // Keep the last accepted transparent person frame when tracking momentarily fails.
+// Do not use a single centre pixel: it becomes transparent whenever the person moves.
+let opacitySum=0, opaqueCount=0;
+const alpha=cutoutCtx.getImageData(0,0,w,h).data;
+for(let yy=8;yy<h;yy+=16)for(let xx=8;xx<w;xx+=16){const a=alpha[(yy*w+xx)*4+3];opacitySum+=a;if(a>100)opaqueCount++;}
+const enoughPerson=opaqueCount>=Math.max(8,Math.floor(w*h/5000));
+if(enoughPerson){liveCtx.clearRect(0,0,w,h);liveCtx.drawImage(cutoutCanvas,0,0,w,h);cutoutFrame=true;cutoutGoodFrames++;cutoutLastSuccess=performance.now();}
+// A lost segmentation frame does not switch to raw video during recording.
+cutoutFailures=0;updateCutoutUI();
+$('ktvCutoutHint').textContent=enoughPerson?'✅ 去背持續運作中':cutoutFrame?'⏳ 暫時未辨識到人物，保持上一張去背畫面':'⏳ 正在尋找人物，不會閃回原始背景';
+ }catch(e){updateCutoutUI();$('ktvCutoutHint').textContent='⚠️ 去背暫時未更新，保留最後人物影像：'+e.message}});
+ segmentReady=true;segmentTimer=setInterval(async()=>{if(!camStream||cam.readyState<2||!cam.videoWidth||segmentBusy||!$('ktvRemoveBackground').checked)return;segmentBusy=true;try{await segmenter.send({image:cam})}catch(e){if(++cutoutFailures>=3){updateCutoutUI();$('ktvCutoutHint').textContent='⚠️ 去背模型暫停，保留最後人物畫面：'+e.message}}finally{segmentBusy=false}},mobileCapture?240:160);return true;
 }
 $('ktvRemoveBackground').addEventListener('change',async e=>{
  if(e.target.checked){try{if(!camStream){$('ktvCutoutHint').textContent='✅ 已選擇人像去背。請另外點「開啟鏡頭」，不會自動開始錄影。';return;} $('ktvCutoutHint').textContent='⏳ 人物去背模型載入中…';await initCutout();$('studioOverlay').checked=true;if(!cutoutFrame)$('ktvCutoutHint').textContent='⏳ 模型已載入，正在辨識人物…';}catch(err){e.target.checked=false;cutoutFrame=false;updateCutoutUI();$('ktvQuickCutout').checked=false;$('ktvCutoutHint').textContent='⚠️ '+err.message;status('去背無法啟動：'+err.message)}}
@@ -74,8 +83,18 @@ function updateMixer(){if(musicGain)musicGain.gain.value=Number($('ktvMusicVolum
 [['ktvLiveMusic','ktvMusicVolume'],['ktvLiveMic','ktvMicVolume']].forEach(([live,setting])=>{$(live).addEventListener('input',()=>{$(setting).value=$(live).value;updateMixer()});$(setting).addEventListener('input',()=>{$(live).value=$(setting).value})});
 const mime=()=>{for(const t of ['video/mp4;codecs=avc1.42E01E,mp4a.40.2','video/mp4;codecs=h264,aac','video/mp4','video/webm;codecs=vp8,opus','video/webm;codecs=vp9,opus','video/webm'])if(MediaRecorder.isTypeSupported(t))return t;return '';};
 function explainFormat(b){const mp4=b?.type?.includes('mp4');$('studioFormatNote').textContent=mp4?'✅ 目前成品為 MP4，通常可直接在 iPhone／Android 相簿播放。':'⚠️ 此瀏覽器未提供 MP4 錄製，成品為 WebM；部分手機相簿不能直接播放。建議使用支援 MP4 錄製的 Safari 或其他裝置，或另行轉檔。更改副檔名無法轉成 MP4。';$('studioShare').style.display=(navigator.canShare&&navigator.share)?'':'none';}
+function drawScreenContained(src){
+ // Screen capture includes the full browser tab (KTV + adjacent tools).
+ // Fit inside the recorded frame with no cropping, even on ultrawide monitors.
+ const sw=src.videoWidth||src.width||0,sh=src.videoHeight||src.height||0;
+ if(!sw||!sh)return;
+ const scale=Math.min(canvas.width/sw,canvas.height/sh);
+ const dw=sw*scale,dh=sh*scale;
+ ctx.fillStyle='#060a12';ctx.fillRect(0,0,canvas.width,canvas.height);
+ ctx.drawImage(src,(canvas.width-dw)/2,(canvas.height-dh)/2,dw,dh);
+}
 function drawCover(src){const sw=src.videoWidth||src.naturalWidth,sh=src.videoHeight||src.naturalHeight;if(!sw||!sh)return;const k=Math.max(canvas.width/sw,canvas.height/sh);ctx.drawImage(src,(canvas.width-sw*k)/2,(canvas.height-sh*k)/2,sw*k,sh*k)}
-function frame(now=0){raf=requestAnimationFrame(frame);if(mobileCapture&&recording&&now-lastDrawTime<50)return;lastDrawTime=now;const bg=$('studioBackground').value;ctx.fillStyle='#132039';ctx.fillRect(0,0,1280,720);if(bg==='gradient'){const g=ctx.createLinearGradient(0,0,1280,720);g.addColorStop(0,'#151641');g.addColorStop(.5,'#7d2e69');g.addColorStop(1,'#14112e');ctx.fillStyle=g;ctx.fillRect(0,0,1280,720)}else if(bg==='stage'){const g=ctx.createRadialGradient(640,170,20,640,400,850);g.addColorStop(0,'#a35e9d');g.addColorStop(.4,'#39275b');g.addColorStop(1,'#080b1e');ctx.fillStyle=g;ctx.fillRect(0,0,1280,720);for(let i=0;i<7;i++){ctx.strokeStyle='rgba(255,210,255,.13)';ctx.lineWidth=24;ctx.beginPath();ctx.moveTo((i*220)-200,0);ctx.lineTo(640+(i-3)*70,720);ctx.stroke()}}else if(bg==='photo'&&bgImg)drawCover(bgImg);else if(bg==='video'&&video.readyState>=2)drawCover(video);else if(bg==='screen'&&video.readyState>=2)drawCover(video);
+function frame(now=0){raf=requestAnimationFrame(frame);if(mobileCapture&&recording&&now-lastDrawTime<50)return;lastDrawTime=now;const bg=$('studioBackground').value;ctx.fillStyle='#132039';ctx.fillRect(0,0,1280,720);if(bg==='gradient'){const g=ctx.createLinearGradient(0,0,1280,720);g.addColorStop(0,'#151641');g.addColorStop(.5,'#7d2e69');g.addColorStop(1,'#14112e');ctx.fillStyle=g;ctx.fillRect(0,0,1280,720)}else if(bg==='stage'){const g=ctx.createRadialGradient(640,170,20,640,400,850);g.addColorStop(0,'#a35e9d');g.addColorStop(.4,'#39275b');g.addColorStop(1,'#080b1e');ctx.fillStyle=g;ctx.fillRect(0,0,1280,720);for(let i=0;i<7;i++){ctx.strokeStyle='rgba(255,210,255,.13)';ctx.lineWidth=24;ctx.beginPath();ctx.moveTo((i*220)-200,0);ctx.lineTo(640+(i-3)*70,720);ctx.stroke()}}else if(bg==='photo'&&bgImg)drawCover(bgImg);else if(bg==='video'&&video.readyState>=2)drawCover(video);else if(bg==='screen'&&video.readyState>=2)drawScreenContained(video);
 if(bg==='camera'&&cam.readyState>=2)drawCover(cam);
 if(window.ktvLyricsEngine)window.ktvLyricsEngine.draw(ctx,canvas.width,canvas.height);
 if(float&&!float.classList.contains('hidden')&&cam.readyState>=2) {const r=stage.getBoundingClientRect(); if(r.width){float.style.width=(overlay.w*100)+'%';float.style.left=(Math.min(overlay.x,1-overlay.w)*100)+'%';float.style.top=(Math.min(overlay.y,Math.max(0,1-(overlay.w*(cam.videoHeight||720)/(cam.videoWidth||1280))*r.width/r.height))*100)+'%';}}
@@ -94,8 +113,8 @@ ctx.textAlign='left';ctx.shadowColor='rgba(0,0,0,.75)';ctx.shadowBlur=8;ctx.font
 if(recording){ctx.fillStyle='#f04468';ctx.beginPath();ctx.arc(1195,42,12,0,Math.PI*2);ctx.fill();ctx.font='24px sans-serif';ctx.fillStyle='white';ctx.fillText(Math.floor((Date.now()-startTime)/1000)+'s',1100,85)}}
 function stopStream(s){if(s)s.getTracks().forEach(t=>t.stop())}
 function setMedia(file,type){if(!file)return;const u=URL.createObjectURL(file);if(type==='image'){const im=new Image();im.onload=()=>{bgImg=im};im.src=u}else{if(bgVideoUrl)URL.revokeObjectURL(bgVideoUrl);bgVideoUrl=u;video.src=u;video.play().catch(()=>status('影片已載入；請點擊預覽或播放以啟用影片。'))}}
-try{const saved=localStorage.getItem('ktv-custom-photo-v15703');if(saved){const im=new Image();im.onload=()=>{bgImg=im;if(mobileCapture&&$('studioBackground').value==='screen')$('studioBackground').value='photo';};im.src=saved;}}catch(err){}
-$('studioPhoto').onchange=e=>{setMedia(e.target.files[0],'image');$('studioBackground').value='photo';try{const file=e.target.files[0];if(file&&file.size<3500000){const reader=new FileReader();reader.onload=()=>{try{localStorage.setItem('ktv-custom-photo-v15703',reader.result);$('ktvPhotoNotice').textContent='✅ 已記住背景圖片';}catch(err){$('ktvPhotoNotice').textContent='圖片已載入，但本機空間不足，無法記住';}};reader.readAsDataURL(file);}else $('ktvPhotoNotice').textContent='已套用圖片。大於 3.5MB 的圖片不會持久儲存。'}catch(err){}};
+try{const saved=localStorage.getItem('ktv-custom-photo-v15704');if(saved){const im=new Image();im.onload=()=>{bgImg=im;if(mobileCapture&&$('studioBackground').value==='screen')$('studioBackground').value='photo';};im.src=saved;}}catch(err){}
+$('studioPhoto').onchange=e=>{setMedia(e.target.files[0],'image');$('studioBackground').value='photo';try{const file=e.target.files[0];if(file&&file.size<3500000){const reader=new FileReader();reader.onload=()=>{try{localStorage.setItem('ktv-custom-photo-v15704',reader.result);$('ktvPhotoNotice').textContent='✅ 已記住背景圖片';}catch(err){$('ktvPhotoNotice').textContent='圖片已載入，但本機空間不足，無法記住';}};reader.readAsDataURL(file);}else $('ktvPhotoNotice').textContent='已套用圖片。大於 3.5MB 的圖片不會持久儲存。'}catch(err){}};
 $('studioVideo').onchange=e=>{setMedia(e.target.files[0],'video');$('studioBackground').value='video'};
 $('studioCamera').onclick=async()=>{try{
  if(!navigator.mediaDevices?.getUserMedia)throw Error('此瀏覽器無法使用攝影機，或網頁不是 HTTPS');
@@ -106,7 +125,7 @@ $('studioCamera').onclick=async()=>{try{
  if(!cam.videoWidth||!cam.videoHeight){await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('攝影機未提供有效影像')),4500);const ready=()=>{if(cam.videoWidth&&cam.videoHeight){clearTimeout(timer);cam.removeEventListener('loadeddata',ready);resolve()}};cam.addEventListener('loadeddata',ready);ready()})}
  float.classList.remove('hidden','ktv-hide-from-capture');syncCameraRatio();if($('ktvRemoveBackground').checked){$('ktvCutoutHint').textContent='⏳ 人像去背載入中…';try{await initCutout()}catch(err){$('ktvCutoutHint').textContent='⚠️ 人像去背不可用：'+err.message}}$('ktvCamToggle').textContent='📷 關閉鏡頭';$('ktvQuickCamera').textContent='📷 關閉鏡頭';$('studioOverlay').checked=true;status('鏡頭已開啟；可以在畫面中拖動人物框，使用大小滑桿調整比例。')}catch(e){status('無法使用鏡頭：'+e.message)}};
 $('studioScreen').onclick=async()=>{try{await requestTabCapture()}catch(e){status('畫面分享無法啟動：'+e.message)}};
-async function requestTabCapture(){if(!navigator.mediaDevices?.getDisplayMedia)throw Error('此瀏覽器沒有分頁擷取功能；請用電腦版 Chrome／Edge。');stopStream(screenStream);screenStream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:24},audio:{echoCancellation:false,noiseSuppression:false},preferCurrentTab:true,selfBrowserSurface:'include',surfaceSwitching:'exclude',systemAudio:'include'});const track=screenStream.getVideoTracks()[0],info=track?.getSettings?.()||{};video.srcObject=screenStream;await video.play();$('studioBackground').value='screen';track.onended=()=>{if(recording)stopRecording();status('KTV 分頁分享已結束。')};if(screenStream.getAudioTracks().length===0)status('⚠️ 已取得影像，但沒有分頁音訊！請重新分享「目前分頁」並勾選「分享分頁音訊」。');else status('已取得分頁畫面與音訊；擷取來源：'+(info.displaySurface||'瀏覽器分頁')+'。');return screenStream}
+async function requestTabCapture(){if(!navigator.mediaDevices?.getDisplayMedia)throw Error('此瀏覽器沒有分頁擷取功能；請用電腦版 Chrome／Edge。');stopStream(screenStream);screenStream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:24},audio:{echoCancellation:false,noiseSuppression:false},preferCurrentTab:true,selfBrowserSurface:'include',surfaceSwitching:'exclude',systemAudio:'include'});const track=screenStream.getVideoTracks()[0],info=track?.getSettings?.()||{};video.srcObject=screenStream;await video.play();$('studioBackground').value='screen';track.onended=()=>{if(recording)stopRecording();status('KTV 分頁分享已結束。')};if(screenStream.getAudioTracks().length===0)status('⚠️ 已取得影像，但沒有分頁音訊！請重新分享「目前分頁」並勾選「分享分頁音訊」。');else status('已擷取完整分享畫面（不裁切）；請選「目前分頁」並保留 KTV 與工具列可見。來源：'+(info.displaySurface||'瀏覽器分頁')+'。');return screenStream}
 $('studioScale').oninput=e=>overlay.w=Number(e.target.value)/100;
 
 $('ktvCamToggle').onclick=async()=>{if(camStream){stopStream(camStream);camStream=null;cam.pause();cam.srcObject=null;cutoutFrame=false;updateCutoutUI();float.classList.add('hidden');$('ktvCamToggle').textContent='📷 開啟鏡頭';$('ktvQuickCamera').textContent='📷 開啟鏡頭';return}await $('studioCamera').onclick()};
