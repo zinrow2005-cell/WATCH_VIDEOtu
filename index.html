@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#0b1220">
-<title>WATCH_VIDEOtu V1.5.6.87</title>
+<title>WATCH_VIDEOtu V1.5.6.88</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="styles.css?v=15687">
   <link rel="stylesheet" href="responsive-v63.css?v=15687">
@@ -29,7 +29,7 @@
       <circle cx="50" cy="14" r="6" fill="#fff"/><path d="M50 10.7v6.6M46.7 14h6.6" stroke="#ff174d" stroke-width="2.4" stroke-linecap="round"/>
     </svg>
   </span>
-  <span class="brand-copy"><strong>WATCH_VIDEO<span class="brand-tu">tu</span></strong><span class="brand-version" title="手機 TV 簡化版 V1.5.6.87">V1.5.6.87</span><small>Kids Video Hub</small></span>
+  <span class="brand-copy"><strong>WATCH_VIDEO<span class="brand-tu">tu</span></strong><span class="brand-version" title="手機 TV 簡化版 V1.5.6.88">V1.5.6.88</span><small>Kids Video Hub</small></span>
 </button>
 <div class="mode-switch" id="modeSwitch">
   <button id="videoModeBtn" class="mode-btn active" type="button">🎬 影片模式</button>
@@ -351,9 +351,10 @@
         </div>
         <div id="ktvPlayerStage" class="ktv-player-stage">
           <iframe id="ktvPlayerFrame" title="KTV 播放器" allow="autoplay; encrypted-media; picture-in-picture; web-share" allowfullscreen referrerpolicy="strict-origin-when-cross-origin"></iframe>
-          <div id="ktvCamFloat" class="ktv-cam-float hidden" aria-label="可拖曳的自拍鏡頭"><video id="ktvCamPreview" autoplay muted playsinline></video><span class="ktv-cam-label">📷 我的鏡頭 · 拖曳移動</span><span class="ktv-cam-grip" aria-hidden="true">⤡</span></div>
+          <div id="ktvCamFloat" class="ktv-cam-float hidden" aria-label="可拖曳的自拍鏡頭"><video id="ktvCamPreview" autoplay muted playsinline></video></div>
         </div>
-        <div class="ktv-player-tools">
+        <div class="ktv-player-fullbar"><button id="ktvFullscreenBtn" type="button">⛶ 全螢幕</button><button id="ktvFullscreenMenu" type="button" aria-expanded="false" aria-controls="ktvFullscreenToolbox" aria-label="開啟工具清單">⚙ 工具</button></div>
+        <div id="ktvFullscreenToolbox" class="ktv-player-tools">
           <button id="ktvCamToggle" type="button">📷 開啟鏡頭</button>
           <button id="ktvRecordStart" type="button">🔴 錄製 KTV 畫面＋伴奏</button>
           <button id="ktvRecordStop" type="button" disabled>■ 結束錄影</button>
@@ -490,7 +491,7 @@
 <script defer src="ktv-studio.js?v=15687"></script>
 
 <div id="ktvToast" class="ktv-toast hidden" role="status" aria-live="polite"></div>
-<script>document.addEventListener("DOMContentLoaded",()=>{document.querySelectorAll(".brand-version").forEach(e=>{e.textContent="V1.5.6.87";e.title="目前版本 V1.5.6.87"})});</script>
-<script>window.addEventListener('pageshow',()=>{document.querySelectorAll('.brand-version').forEach(e=>{e.textContent='V1.5.6.87';e.title='目前版本 V1.5.6.87'})});</script>
+<script>document.addEventListener("DOMContentLoaded",()=>{document.querySelectorAll(".brand-version").forEach(e=>{e.textContent="V1.5.6.88";e.title="目前版本 V1.5.6.88"})});</script>
+<script>window.addEventListener('pageshow',()=>{document.querySelectorAll('.brand-version').forEach(e=>{e.textContent='V1.5.6.88';e.title='目前版本 V1.5.6.88'})});</script>
 </body>
 </html>

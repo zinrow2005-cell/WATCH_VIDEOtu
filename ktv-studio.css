@@ -25,3 +25,23 @@
 #ktvCamFloat.ktv-cutout-on #ktvLiveCutout{display:block;transform:scaleX(-1)}
 #ktvCamFloat.ktv-cutout-on.ktv-no-mirror #ktvLiveCutout{transform:none}
 #ktvCamFloat.ktv-cutout-on video{visibility:hidden}
+
+/* V1.5.6.88 — compact full-screen KTV controls */
+#ktvCamFloat .ktv-cam-label,#ktvCamFloat .ktv-cam-grip{display:none!important}
+#ktvCamFloat.ktv-cutout-on{outline:0!important;border:0!important}
+.ktv-player-fullbar{display:flex;align-items:center;gap:10px;margin:10px 0 0}
+.ktv-player-fullbar button{padding:10px 15px;border:1px solid #8798b5;border-radius:10px;background:#2a426c;color:#fff;font:inherit;cursor:pointer}
+#ktvFullscreenMenu{display:none}
+#ktvPlayerPanel:fullscreen,#ktvPlayerPanel.ktv-ios-fullscreen{background:#060c1a;width:100vw;height:100dvh;max-width:none;margin:0;padding:8px;overflow:hidden;display:flex;flex-direction:column;box-sizing:border-box}
+#ktvPlayerPanel.ktv-ios-fullscreen{position:fixed;inset:0;z-index:2147483000}
+#ktvPlayerPanel.ktv-fs-active .ktv-player-head{display:none}
+#ktvPlayerPanel.ktv-fs-active #ktvPlayerStage{flex:1;min-height:0;width:100%;height:auto;aspect-ratio:auto!important;overflow:hidden}
+#ktvPlayerPanel.ktv-fs-active #ktvPlayerFrame{width:100%;height:100%;position:absolute;inset:0}
+#ktvPlayerPanel.ktv-fs-active .ktv-player-fullbar{position:absolute;top:12px;right:12px;margin:0;z-index:2147483001;gap:8px}
+#ktvPlayerPanel.ktv-fs-active .ktv-player-fullbar button{font-size:14px;background:rgba(14,25,48,.65);backdrop-filter:blur(9px);border-color:#ffffff80}
+#ktvPlayerPanel.ktv-fs-active #ktvFullscreenMenu{display:block}
+#ktvPlayerPanel.ktv-fs-active #ktvFullscreenToolbox{display:none!important}
+#ktvPlayerPanel.ktv-fs-active.ktv-tools-open #ktvFullscreenToolbox{display:flex!important;position:absolute;top:61px;right:12px;z-index:2147483001;width:min(360px,calc(100vw - 24px));max-height:calc(100dvh - 80px);overflow:auto;padding:14px;box-sizing:border-box;flex-direction:column;gap:10px;background:rgba(15,26,49,.70);backdrop-filter:blur(18px);-webkit-backdrop-filter:blur(18px);border:1px solid #ffffff60;border-radius:16px;box-shadow:0 15px 45px #0009}
+#ktvPlayerPanel.ktv-fs-active.ktv-tools-open #ktvFullscreenToolbox button{width:100%;min-height:38px}
+#ktvPlayerPanel.ktv-fs-active.ktv-tools-open .ktv-live-mix{width:100%;box-sizing:border-box}
+@media(max-width:600px){#ktvPlayerPanel.ktv-fs-active.ktv-tools-open #ktvFullscreenToolbox{display:flex!important}}
