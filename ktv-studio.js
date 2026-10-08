@@ -55,9 +55,38 @@ async function initCutout(){
  const w=Math.min(cam.videoWidth||640,640),h=Math.round(w*(cam.videoHeight||480)/(cam.videoWidth||640));
  if(cutoutCanvas.width!==w||cutoutCanvas.height!==h){cutoutCanvas.width=liveCutout.width=maskCanvas.width=w;cutoutCanvas.height=liveCutout.height=maskCanvas.height=h}
  // Smooth minor background artifacts and contract soft borders so stray outlines disappear.
- maskCtx.clearRect(0,0,w,h);maskCtx.save();maskCtx.filter='blur(2px)';maskCtx.drawImage(r.segmentationMask,0,0,w,h);maskCtx.restore();
+ maskCtx.clearRect(0,0,w,h);maskCtx.save();maskCtx.filter='blur(1.35px)';maskCtx.drawImage(r.segmentationMask,0,0,w,h);maskCtx.restore();
  const mask=maskCtx.getImageData(0,0,w,h),px=mask.data;
- for(let i=0;i<px.length;i+=4){const m=px[i]/255;const t=Math.max(0,Math.min(1,(m-.22)/.66));const a=t*t*(3-2*t);px[i]=px[i+1]=px[i+2]=255;px[i+3]=Math.round(a*255)}
+ for(let i=0;i<px.length;i+=4){const m=px[i]/255;const t=Math.max(0,Math.min(1,(m-.28)/.58));const a=t*t*(3-2*t);px[i]=px[i+1]=px[i+2]=255;px[i+3]=Math.round(a*255)}
+ // Remove disconnected segmentation islands (background furniture, tiny ghost figures).
+ // Analyze a reduced mask so the camera loop stays responsive on desktop/mobile.
+ const cell=4, gw=Math.ceil(w/cell), gh=Math.ceil(h/cell), occupancy=new Uint8Array(gw*gh);
+ for(let gy=0;gy<gh;gy++)for(let gx=0;gx<gw;gx++){
+   const xx=Math.min(w-1,gx*cell+2),yy=Math.min(h-1,gy*cell+2);
+   occupancy[gy*gw+gx]=px[(yy*w+xx)*4+3]>125?1:0;
+ }
+ const visited=new Uint8Array(gw*gh),queue=new Int32Array(gw*gh);
+ let best=[],bestSize=0;
+ for(let start=0;start<occupancy.length;start++){
+   if(!occupancy[start]||visited[start])continue;
+   let front=0,end=1;queue[0]=start;visited[start]=1;
+   while(front<end){const v=queue[front++],x=v%gw,y=(v/gw)|0;
+     const neighbors=[x>0?v-1:-1,x<gw-1?v+1:-1,y>0?v-gw:-1,y<gh-1?v+gw:-1];
+     for(const n of neighbors)if(n>=0&&occupancy[n]&&!visited[n]){visited[n]=1;queue[end++]=n;}
+   }
+   if(end>bestSize){bestSize=end;best=Array.from(queue.subarray(0,end));}
+ }
+ // Skip destructive filtering if confidence is too low; retain previous valid frame instead.
+ if(bestSize>Math.max(40,gw*gh*.009)){
+   const kept=new Uint8Array(gw*gh);for(const v of best)kept[v]=1;
+   for(let y=0;y<h;y++)for(let x=0;x<w;x++){
+     const gx=(x/cell)|0,gy=(y/cell)|0,i=(y*w+x)*4;
+     let isNear=false;
+     for(let yy=Math.max(0,gy-1);yy<=Math.min(gh-1,gy+1)&&!isNear;yy++)
+       for(let xx=Math.max(0,gx-1);xx<=Math.min(gw-1,gx+1);xx++)if(kept[yy*gw+xx]){isNear=true;break}
+     if(!isNear)px[i+3]=0;
+   }
+ }
  maskCtx.putImageData(mask,0,0);
  cutoutCtx.clearRect(0,0,w,h);cutoutCtx.globalCompositeOperation='source-over';cutoutCtx.drawImage(r.image,0,0,w,h);cutoutCtx.globalCompositeOperation='destination-in';cutoutCtx.drawImage(maskCanvas,0,0,w,h);cutoutCtx.globalCompositeOperation='source-over';
  // Keep the last accepted transparent person frame when tracking momentarily fails.

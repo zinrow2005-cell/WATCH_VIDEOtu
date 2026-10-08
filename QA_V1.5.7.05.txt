@@ -1,0 +1,1 @@
+V1.5.7.05: mask connected-component cleanup; edge feathering; collapsible lyrics/history; fixed red settings close. Static verification only, physical camera not tested.

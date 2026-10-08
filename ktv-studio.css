@@ -214,3 +214,21 @@ body > #studioPreviewTheatre.ktv-preview-theatre #studioPlaybackBack{display:non
  #ktvPlayerPanel #ktvStudio.ktv-settings-open{max-height:calc(100dvh - 12px)!important}
  #ktvRecordingLibrary .ktv-library-card{max-height:calc(100dvh - 16px)}
 }
+
+/* V1.5.7.05: uncluttered settings sheet */
+#ktvPlayerPanel #ktvStudio.ktv-settings-open{width:min(520px,calc(100vw - 20px))!important;max-height:min(88dvh,780px)!important;padding:18px!important;background:linear-gradient(165deg,rgba(18,31,56,.99),rgba(20,34,59,.98))!important;border:1px solid rgba(164,192,234,.35)!important;box-shadow:0 25px 95px #000b!important}
+#ktvStudio .studio-top{position:sticky;top:-18px;z-index:20;padding:10px 4px 15px;background:#14233c;border-bottom:1px solid #40516e;flex-wrap:nowrap}
+#ktvStudio .studio-top strong{font-size:18px}
+#ktvStudio #ktvSettingsClose{margin-left:auto;position:sticky;top:0;background:#bc2045!important;border:1px solid #ff92aa!important;color:#fff!important;font-weight:900!important;font-size:22px!important;width:45px;min-width:45px;height:44px;padding:3px!important;line-height:1;border-radius:13px!important;box-shadow:0 5px 14px #0005}
+#ktvStudio .ktv-setting-section-title{margin-top:18px;margin-bottom:10px;font-size:15px;font-weight:850;color:#bcd8ff}
+#ktvStudio .studio-settings{display:grid!important;grid-template-columns:minmax(0,1fr)!important;align-items:stretch!important}
+#ktvStudio .studio-settings label{width:100%}
+#ktvStudio input[type=range]{min-width:0;width:100%}
+#ktvStudio .ktv-settings-accordion{margin:12px 0;border:1px solid #425575;border-radius:12px;padding:4px 12px;background:#1a2d4a}
+#ktvStudio .ktv-settings-accordion>summary{cursor:pointer;list-style:none;padding:13px 0;font-size:15px;font-weight:800}
+#ktvStudio .ktv-settings-accordion>summary::after{content:'＋';float:right;font-size:19px}
+#ktvStudio .ktv-settings-accordion[open]>summary::after{content:'－'}
+#ktvStudio .ktv-settings-accordion .ktv-lyrics-settings{border:0;padding:4px 0}
+#ktvStudio .studio-advanced{display:none!important}
+#ktvStudio #studioDeviceNote,#ktvStudio #studioStatus{font-size:13px}
+@media(max-width:600px){#ktvPlayerPanel #ktvStudio.ktv-settings-open{padding:13px!important;max-height:calc(100dvh - 16px)!important}#ktvStudio .studio-top{top:-13px}#ktvStudio #ktvSettingsClose{min-width:46px}}
