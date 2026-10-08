@@ -1,0 +1,1 @@
+V1.5.7.14: per-line LRC correction keyed by video and lyric fingerprint; playback alignment guarded by verified YouTube timing; reset per line and per song. Browser and device recording not validated.
