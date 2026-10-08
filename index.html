@@ -5,18 +5,18 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#0b1220">
-<title>WATCH_VIDEOtu V1.5.6.79</title>
+<title>WATCH_VIDEOtu V1.5.6.83</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=15681">
-  <link rel="stylesheet" href="responsive-v63.css?v=15681">
-  <link rel="stylesheet" href="ui-v65.css?v=15681">
+<link rel="stylesheet" href="styles.css?v=15683">
+  <link rel="stylesheet" href="responsive-v63.css?v=15683">
+  <link rel="stylesheet" href="ui-v65.css?v=15683">
 
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=15652">
 <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png?v=15652">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-180.png?v=15652">
 <meta name="apple-mobile-web-app-title" content="WATCH_VIDEOtu">
 
-<link rel="stylesheet" href="ktv-studio.css?v=15681">
+<link rel="stylesheet" href="ktv-studio.css?v=15683">
 </head>
 <body>
 <header class="topbar">
@@ -29,7 +29,7 @@
       <circle cx="50" cy="14" r="6" fill="#fff"/><path d="M50 10.7v6.6M46.7 14h6.6" stroke="#ff174d" stroke-width="2.4" stroke-linecap="round"/>
     </svg>
   </span>
-  <span class="brand-copy"><strong>WATCH_VIDEO<span class="brand-tu">tu</span></strong><span class="brand-version" title="手機 TV 簡化版 V1.5.6.79">V1.5.6.79</span><small>Kids Video Hub</small></span>
+  <span class="brand-copy"><strong>WATCH_VIDEO<span class="brand-tu">tu</span></strong><span class="brand-version" title="手機 TV 簡化版 V1.5.6.83">V1.5.6.83</span><small>Kids Video Hub</small></span>
 </button>
 <div class="mode-switch" id="modeSwitch">
   <button id="videoModeBtn" class="mode-btn active" type="button">🎬 影片模式</button>
@@ -333,7 +333,7 @@
  <div class="studio-canvas-wrap" style="display:none"><canvas id="studioCanvas" width="1280" height="720"></canvas></div>
  <p id="studioStatus" class="studio-status" role="status" aria-live="polite">請先播放 KTV 歌曲，再點歌曲影片上方的「開啟鏡頭」。鏡頭可直接拖曳及調整大小。</p>
  <p class="studio-hint">⚠️ 必須授權分享「目前分頁」及「分享分頁音訊」，否則無法保證 KTV 音樂進入成品。部分手機、iPad 或受保護影片無法擷取影音；系統會明確提示。</p>
- <div id="studioResult" class="studio-result studio-hidden"><h3>🎞️ 錄製完成 · 預覽作品</h3><video class="studio-playback" id="studioPlayback" controls playsinline></video><div class="studio-controls"><button type="button" id="studioRetry">↻ 重唱（捨棄這次）</button><button type="button" id="studioSave">💾 儲存／下載</button><button type="button" id="studioDiscard">✕ 不儲存退出</button></div></div>
+ <div id="studioResult" class="studio-result studio-hidden"><h3>🎞️ 錄製完成 · 預覽作品</h3><video class="studio-playback" id="studioPlayback" controls playsinline></video><p id="studioFormatNote" role="status" style="font-size:14px;line-height:1.6;color:#ffdf9d"></p><div class="studio-controls"><button type="button" id="studioRetry">↻ 重唱（捨棄這次）</button><button type="button" id="studioSave">💾 儲存／下載</button><button type="button" id="studioShare" style="display:none">📱 分享至手機／相簿</button><button type="button" id="studioDiscard">✕ 不儲存退出</button></div></div>
  <h3>📁 我的錄製紀錄</h3><p class="studio-hint">作品備份存在目前裝置的瀏覽器 IndexedDB，不會自動同步到手機相簿或其他裝置。按儲存後也會下載檔案；請自行從下載項目儲存到相簿。清除瀏覽器資料可能失去備份。</p><div class="studio-history" id="studioHistory">點「更新我的作品」查看。</div>
  </details>
 </section>
@@ -481,10 +481,10 @@
 <div id="modal" class="modal hidden">
   <div class="modal-card"><h3>輸入家長 PIN</h3><input id="modalInput" inputmode="numeric" maxlength="6"><div class="modal-actions"><button id="modalCancel">取消</button><button id="modalOk">確定</button></div></div>
 </div>
-<script defer src="ktv_singers.js?v=15681"></script>
-<script defer src="ktv_songs.js?v=15681"></script>
-<script defer src="app.js?v=15681"></script>
-<script defer src="ktv-studio.js?v=15681"></script>
+<script defer src="ktv_singers.js?v=15683"></script>
+<script defer src="ktv_songs.js?v=15683"></script>
+<script defer src="app.js?v=15683"></script>
+<script defer src="ktv-studio.js?v=15683"></script>
 
 <div id="ktvToast" class="ktv-toast hidden" role="status" aria-live="polite"></div>
 </body>
