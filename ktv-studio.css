@@ -159,7 +159,7 @@ body > #studioPreviewTheatre.ktv-preview-theatre #studioPlayback{display:block!i
 body > #studioPreviewTheatre.ktv-preview-theatre #studioPlaybackBack{display:none!important;}
 @media (orientation:landscape){body > #studioPreviewTheatre.ktv-preview-theatre{padding-top:calc(8px + env(safe-area-inset-top))!important;}body > #studioPreviewTheatre.ktv-preview-theatre .ktv-preview-fs-actions{left:auto!important;right:8px!important;justify-content:flex-end!important;background:rgba(0,0,0,.7);padding:5px;border-radius:12px;}}
 
-/* V1.5.7.01: readable, single-column recording settings; no horizontal scrolling */
+/* V1.5.7.02: readable, single-column recording settings; no horizontal scrolling */
 #ktvPlayerPanel #ktvStudio.ktv-settings-open{width:min(440px,calc(100vw - 20px))!important;max-height:min(88dvh,720px)!important;overflow-x:hidden!important;overflow-y:auto!important;padding:16px!important;overscroll-behavior:contain}
 #ktvPlayerPanel #ktvStudio.ktv-settings-open *,#ktvPlayerPanel #ktvStudio.ktv-settings-open *::before{box-sizing:border-box;min-width:0;max-width:100%}
 #ktvPlayerPanel #ktvStudio .studio-top{display:flex!important;gap:10px!important;flex-wrap:nowrap!important;align-items:center!important;justify-content:space-between!important;margin-bottom:14px!important}
@@ -195,7 +195,7 @@ body > #studioPreviewTheatre.ktv-preview-theatre #studioPlaybackBack{display:non
 #ktvRecordingLibrary footer{display:flex;justify-content:flex-end;margin-top:14px}
 @media(max-width:600px){#ktvPlayerPanel #ktvStudio.ktv-settings-open{max-height:92dvh!important;top:50%!important;width:calc(100vw - 18px)!important;padding:12px!important}#ktvMyRecordings{font-size:13px;padding:7px 9px!important}#ktvRecordingLibrary .ktv-library-card{padding:12px}#ktvRecordingLibrary h2{font-size:17px}}
 
-/* V1.5.7.01 device-layout safety fixes */
+/* V1.5.7.02 device-layout safety fixes */
 #ktvPlayerPanel #ktvStudio.ktv-settings-open{overscroll-behavior:contain;touch-action:pan-y}
 #ktvPlayerPanel #ktvStudio .ktv-mixer label,#ktvPlayerPanel #ktvStudio .studio-settings label{overflow-wrap:anywhere}
 #ktvPlayerPanel #ktvStudio .studio-settings select,#ktvPlayerPanel #ktvStudio .ktv-mixer select{width:100%;min-width:0;white-space:normal}
