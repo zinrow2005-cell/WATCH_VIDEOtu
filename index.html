@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#0b1220">
-<title>WATCH_VIDEOtu V1.5.6.96</title>
+<title>WATCH_VIDEOtu V1.5.6.98</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="styles.css?v=15694">
   <link rel="stylesheet" href="responsive-v63.css?v=15694">
@@ -29,7 +29,7 @@
       <circle cx="50" cy="14" r="6" fill="#fff"/><path d="M50 10.7v6.6M46.7 14h6.6" stroke="#ff174d" stroke-width="2.4" stroke-linecap="round"/>
     </svg>
   </span>
-  <span class="brand-copy"><strong>WATCH_VIDEO<span class="brand-tu">tu</span></strong><span class="brand-version" title="手機 TV 簡化版 V1.5.6.96">V1.5.6.96</span><small>Kids Video Hub</small></span>
+  <span class="brand-copy"><strong>WATCH_VIDEO<span class="brand-tu">tu</span></strong><span class="brand-version" title="手機 TV 簡化版 V1.5.6.98">V1.5.6.98</span><small>Kids Video Hub</small></span>
 </button>
 <div class="mode-switch" id="modeSwitch">
   <button id="videoModeBtn" class="mode-btn active" type="button">🎬 影片模式</button>
@@ -328,7 +328,7 @@
  <label>🎵 KTV 伴奏 <input id="ktvMusicVolume" type="range" min="0" max="200" value="100"><output id="ktvMusicRead">100%</output></label>
  <label>🎤 麥克風 <input id="ktvMicVolume" type="range" min="0" max="200" value="100"><output id="ktvMicRead">100%</output></label>
  <label>🎙️ 人聲效果 <select id="ktvVoiceEffect"><option value="natural">原聲</option><option value="warm">溫暖厚實</option><option value="bright">清晰明亮</option><option value="echo">輕微回音</option></select></label>
- <label><input id="ktvNoiseControl" type="checkbox" checked> 麥克風降噪／回音抑制（裝置支援時）</label>
+ <label>📱 手機喇叭錄音模式 <select id="ktvSpeakerMode"><option value="balanced" selected>平衡模式（建議：喇叭播放＋唱歌）</option><option value="voice">人聲優先（減少伴奏串音）</option><option value="raw">原音保留（較少切音；可能有回音）</option></select></label><p class="studio-hint" id="ktvAudioModeHint">平衡模式：回音消除開啟、強力降噪關閉、固定音量；若人聲斷續可試「原音保留」。</p><label class="studio-advanced"><input id="ktvNoiseControl" type="checkbox">舊版降噪設定（已由錄音模式取代）</label><p class="studio-hint" id="ktvMicDeviceStatus" role="status">錄影開始後顯示實際麥克風處理能力。</p>
  <p class="studio-hint studio-advanced">桌面 Chrome／Edge：開始錄影後選擇「目前分頁」，並開啟「同時分享分頁音訊」，才可能收錄 KTV 影片與伴奏。請勿選擇其他視窗或整個螢幕。戴耳機可避免伴奏被麥克風重複收音。音量滑桿控制的是<strong>錄製成品混音</strong>，不是 YouTube 播放器自身音量。</p></div>
  <label style="display:flex;flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="ktvRemoveBackground"> 🧍 人像去背（只保留人物輪廓；需要網路載入模型）</label>
 <label style="display:flex;flex-direction:row;align-items:center;gap:8px"><input type="checkbox" id="ktvMirrorCamera" checked> 🪞 自拍鏡像（預覽與輸出同方向）</label>
