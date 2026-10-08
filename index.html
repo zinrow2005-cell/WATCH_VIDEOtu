@@ -7,15 +7,16 @@
 <meta name="theme-color" content="#0b1220">
 <title>WATCH_VIDEOtu V1.5.6.79</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=15679">
-  <link rel="stylesheet" href="responsive-v63.css?v=15679">
-  <link rel="stylesheet" href="ui-v65.css?v=15679">
+<link rel="stylesheet" href="styles.css?v=15680">
+  <link rel="stylesheet" href="responsive-v63.css?v=15680">
+  <link rel="stylesheet" href="ui-v65.css?v=15680">
 
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=15652">
 <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png?v=15652">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-180.png?v=15652">
 <meta name="apple-mobile-web-app-title" content="WATCH_VIDEOtu">
 
+<link rel="stylesheet" href="ktv-studio.css?v=15680">
 </head>
 <body>
 <header class="topbar">
@@ -311,7 +312,26 @@
       </div>
 
       
-      <div id="ktvPlayerPanel" class="ktv-player-panel hidden">
+      <section id="ktvStudio" aria-label="KTV錄音錄影工作室">
+ <details id="ktvStudioDetails"><summary style="cursor:pointer;font-size:22px;font-weight:800;padding:9px 0">🎙️ 個人錄音錄影工作室　｜　開啟／收合</summary>
+ <div class="studio-top"><div><h2>🎬 我的 KTV 錄製工作室</h2><p class="studio-hint">錄下你的歌聲與專屬畫面 · 鏡頭可拖移與縮放 · 錄完自行決定保留</p></div><button type="button" id="studioHistoryRefresh">📁 更新我的作品</button></div>
+ <div class="studio-settings">
+ <label>作品名稱<input id="studioTitle" type="text" value="我的 KTV 作品" maxlength="45"></label>
+ <label>背景模式<select id="studioBackground"><option value="stage">演唱會舞台</option><option value="gradient">霓虹漸層</option><option value="camera">全螢幕鏡頭</option><option value="photo">我的照片</option><option value="video">我的影片</option><option value="screen">分享螢幕 / KTV畫面（視裝置支援）</option></select></label>
+ <label>上傳照片<input type="file" id="studioPhoto" accept="image/*"></label>
+ <label>上傳影片<input type="file" id="studioVideo" accept="video/*"></label>
+ <label>人物大小<input id="studioScale" type="range" min="12" max="75" value="26"></label>
+ <label style="display:flex;flex-direction:row;align-items:center"><input id="studioOverlay" type="checkbox">鏡頭疊加在背景上</label>
+ </div>
+ <div class="studio-controls"><button type="button" id="studioCamera">📷 開啟鏡頭</button><button type="button" id="studioScreen">🖥️ 分享 KTV 畫面（支援時）</button><button type="button" id="studioRec" class="studio-record">🔴 開始錄製</button><button type="button" id="studioStop" class="studio-stop" disabled>■ 結束錄製</button></div>
+ <div class="studio-canvas-wrap"><canvas id="studioCanvas" width="1280" height="720"></canvas></div>
+ <p id="studioStatus" class="studio-status" role="status" aria-live="polite">可選背景、上傳自己的照片或影片，開啟鏡頭後拖動人物位置。錄製需要允許麥克風。</p>
+ <p class="studio-hint">⚠️ YouTube 嵌入影片不可由網頁直接擷取；分享畫面須瀏覽器允許，伴奏音軌可能無法收錄。錄製時建議由外接喇叭播放伴奏並先測錄，避免人聲與音樂不同步或沒有伴奏。手機和 iPad 的錄製格式因瀏覽器而異。</p>
+ <div id="studioResult" class="studio-result studio-hidden"><h3>🎞️ 錄製完成 · 預覽作品</h3><video class="studio-playback" id="studioPlayback" controls playsinline></video><div class="studio-controls"><button type="button" id="studioRetry">↻ 重唱（捨棄這次）</button><button type="button" id="studioSave">💾 儲存／下載</button><button type="button" id="studioDiscard">✕ 不儲存退出</button></div></div>
+ <h3>📁 我的錄製紀錄</h3><p class="studio-hint">作品備份存在目前裝置的瀏覽器 IndexedDB，不會自動同步到手機相簿或其他裝置。按儲存後也會下載檔案；請自行從下載項目儲存到相簿。清除瀏覽器資料可能失去備份。</p><div class="studio-history" id="studioHistory">點「更新我的作品」查看。</div>
+ </details>
+</section>
+<div id="ktvPlayerPanel" class="ktv-player-panel hidden">
         <div class="ktv-player-head">
           <div>
             <span class="eyebrow">NOW SINGING</span>
@@ -449,9 +469,10 @@
 <div id="modal" class="modal hidden">
   <div class="modal-card"><h3>輸入家長 PIN</h3><input id="modalInput" inputmode="numeric" maxlength="6"><div class="modal-actions"><button id="modalCancel">取消</button><button id="modalOk">確定</button></div></div>
 </div>
-<script defer src="ktv_singers.js?v=15679"></script>
-<script defer src="ktv_songs.js?v=15679"></script>
-<script defer src="app.js?v=15679"></script>
+<script defer src="ktv_singers.js?v=15680"></script>
+<script defer src="ktv_songs.js?v=15680"></script>
+<script defer src="app.js?v=15680"></script>
+<script defer src="ktv-studio.js?v=15680"></script>
 
 <div id="ktvToast" class="ktv-toast hidden" role="status" aria-live="polite"></div>
 </body>
