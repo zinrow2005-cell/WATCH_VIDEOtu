@@ -1,0 +1,1 @@
+V1.5.6.82: KTV current-tab capture with audio permission; mic/music separate recording gains; voice EQ and light echo. Chrome/Edge desktop tab sharing required for YouTube playback capture. Not guaranteed on iOS or DRM video. Browser does not automatically save gallery.

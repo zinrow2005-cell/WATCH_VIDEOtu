@@ -317,16 +317,22 @@
  <div class="studio-top"><div><h2>⚙️ KTV 錄製設定</h2><p class="studio-hint">先選背景、作品名稱與鏡頭大小；播放歌曲時從影片上方開啟鏡頭及開始錄製。</p></div><button type="button" id="studioHistoryRefresh">📁 更新我的作品</button></div>
  <div class="studio-settings">
  <label>作品名稱<input id="studioTitle" type="text" value="我的 KTV 作品" maxlength="45"></label>
- <label>背景模式<select id="studioBackground"><option value="stage">演唱會舞台</option><option value="gradient">霓虹漸層</option><option value="camera">全螢幕鏡頭</option><option value="photo">我的照片</option><option value="video">我的影片</option><option value="screen">分享螢幕 / KTV畫面（視裝置支援）</option></select></label>
+ <label>背景模式<select id="studioBackground"><option value="screen">KTV 歌曲畫面（分享目前分頁＋音訊）</option><option value="stage">演唱會舞台</option><option value="gradient">霓虹漸層</option><option value="camera">全螢幕鏡頭</option><option value="photo">我的照片</option><option value="video">我的影片</option></select></label>
  <label>上傳照片<input type="file" id="studioPhoto" accept="image/*"></label>
  <label>上傳影片<input type="file" id="studioVideo" accept="video/*"></label>
  <label>人物大小<input id="studioScale" type="range" min="12" max="75" value="26"></label>
  <label style="display:flex;flex-direction:row;align-items:center"><input id="studioOverlay" type="checkbox">鏡頭疊加在背景上</label>
  </div>
+ <div class="ktv-mixer" aria-label="錄製混音器"><strong>🎚️ 錄音混音設定（錄影途中也能調整）</strong>
+ <label>🎵 KTV 伴奏 <input id="ktvMusicVolume" type="range" min="0" max="200" value="100"><output id="ktvMusicRead">100%</output></label>
+ <label>🎤 麥克風 <input id="ktvMicVolume" type="range" min="0" max="200" value="100"><output id="ktvMicRead">100%</output></label>
+ <label>🎙️ 人聲效果 <select id="ktvVoiceEffect"><option value="natural">原聲</option><option value="warm">溫暖厚實</option><option value="bright">清晰明亮</option><option value="echo">輕微回音</option></select></label>
+ <label><input id="ktvNoiseControl" type="checkbox" checked> 麥克風降噪／回音抑制（裝置支援時）</label>
+ <p class="studio-hint">桌面 Chrome／Edge：開始錄影後選擇「目前分頁」，並開啟「同時分享分頁音訊」，才可能收錄 KTV 影片與伴奏。請勿選擇其他視窗或整個螢幕。戴耳機可避免伴奏被麥克風重複收音。音量滑桿控制的是<strong>錄製成品混音</strong>，不是 YouTube 播放器自身音量。</p></div>
  <div class="studio-controls" style="display:none"><button type="button" id="studioCamera">📷 開啟鏡頭</button><button type="button" id="studioScreen">🖥️ 分享 KTV 畫面（支援時）</button><button type="button" id="studioRec" class="studio-record">🔴 開始錄製</button><button type="button" id="studioStop" class="studio-stop" disabled>■ 結束錄製</button></div>
  <div class="studio-canvas-wrap" style="display:none"><canvas id="studioCanvas" width="1280" height="720"></canvas></div>
  <p id="studioStatus" class="studio-status" role="status" aria-live="polite">請先播放 KTV 歌曲，再點歌曲影片上方的「開啟鏡頭」。鏡頭可直接拖曳及調整大小。</p>
- <p class="studio-hint">⚠️ YouTube 嵌入影片不可由網頁直接擷取；分享畫面須瀏覽器允許，伴奏音軌可能無法收錄。錄製時建議由外接喇叭播放伴奏並先測錄，避免人聲與音樂不同步或沒有伴奏。手機和 iPad 的錄製格式因瀏覽器而異。</p>
+ <p class="studio-hint">⚠️ 必須授權分享「目前分頁」及「分享分頁音訊」，否則無法保證 KTV 音樂進入成品。部分手機、iPad 或受保護影片無法擷取影音；系統會明確提示。</p>
  <div id="studioResult" class="studio-result studio-hidden"><h3>🎞️ 錄製完成 · 預覽作品</h3><video class="studio-playback" id="studioPlayback" controls playsinline></video><div class="studio-controls"><button type="button" id="studioRetry">↻ 重唱（捨棄這次）</button><button type="button" id="studioSave">💾 儲存／下載</button><button type="button" id="studioDiscard">✕ 不儲存退出</button></div></div>
  <h3>📁 我的錄製紀錄</h3><p class="studio-hint">作品備份存在目前裝置的瀏覽器 IndexedDB，不會自動同步到手機相簿或其他裝置。按儲存後也會下載檔案；請自行從下載項目儲存到相簿。清除瀏覽器資料可能失去備份。</p><div class="studio-history" id="studioHistory">點「更新我的作品」查看。</div>
  </details>
@@ -346,9 +352,10 @@
         </div>
         <div class="ktv-player-tools">
           <button id="ktvCamToggle" type="button">📷 開啟鏡頭</button>
-          <button id="ktvRecordStart" type="button">🔴 開始錄影</button>
+          <button id="ktvRecordStart" type="button">🔴 錄製 KTV 畫面＋伴奏</button>
           <button id="ktvRecordStop" type="button" disabled>■ 結束錄影</button>
-          <button id="ktvRecordingOptions" type="button">⚙️ 錄製設定</button>
+          <button id="ktvRecordingOptions" type="button">🎚️ 音量／音效</button>
+          <span class="ktv-live-mix">🎵 <input id="ktvLiveMusic" type="range" min="0" max="200" value="100" aria-label="錄影伴奏音量" title="錄影伴奏音量"> 🎤 <input id="ktvLiveMic" type="range" min="0" max="200" value="100" aria-label="錄影麥克風音量" title="錄影麥克風音量"></span>
           <button id="ktvReplayBtn" type="button">↻ 重唱</button>
           <button id="ktvPlayerCutBtn" type="button">⏭ 切下一首</button>
           <button id="ktvPlayerQueueBtn" type="button">📋 查看已點歌曲</button>
