@@ -1,4 +1,4 @@
-var APP_VERSION='1.5.6.92';
+var APP_VERSION='1.5.6.93';
 var APP_BUILD='15691';
 var watchFullscreenScrollY=0;
 var miniPlayerSuppressUntil=0;

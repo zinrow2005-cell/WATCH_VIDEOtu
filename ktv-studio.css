@@ -101,3 +101,22 @@ body.ktv-preview-open{overflow:hidden!important}
 #studioPreviewTheatre.ktv-preview-theatre #studioPreviewExit{display:inline-flex!important;background:#bd2b48!important;border:2px solid #fff!important}
 #studioPreviewTheatre.ktv-preview-theatre #studioPlayback{width:100%!important;max-height:calc(100dvh - 90px)!important;height:auto!important;object-fit:contain!important}
 #studioPreviewTheatre.ktv-preview-theatre #studioPlaybackBack{display:none!important}
+
+/* V1.5.6.93 compact player controls and orientation-safe preview */
+#ktvStudio{max-width:100%;margin-block:8px;padding:10px 12px}
+#ktvStudioDetails:not([open]){display:none}
+#ktvStudio .studio-settings{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin:8px 0}
+#ktvStudio .studio-advanced{display:none}
+#ktvStudio .studio-top{margin-bottom:4px}
+#ktvStudio .studio-hint{font-size:12px;line-height:1.4}
+#ktvCamFloat{max-height:95%;box-sizing:border-box}
+#ktvCamFloat video{object-fit:contain;background:transparent}
+.ktv-quick-controls{display:flex;align-items:center;justify-content:center;flex-wrap:wrap;gap:8px;padding:6px 8px;position:relative;z-index:2147483002}
+.ktv-quick-controls button,.ktv-quick-cut{display:inline-flex;align-items:center;justify-content:center;border-radius:13px;border:1px solid rgba(255,255,255,.55);padding:9px 12px;min-height:44px;color:white;background:rgba(16,28,50,.84);font-weight:750;font-size:15px;white-space:nowrap}
+#ktvQuickStart{background:#b42349}.ktv-quick-controls button:disabled{opacity:.42}
+.ktv-quick-cut{gap:4px}.ktv-quick-cut input{accent-color:#50dfab;width:20px;height:20px}
+#ktvPlayerPanel.ktv-fs-active .ktv-quick-controls{position:absolute;bottom:calc(8px + env(safe-area-inset-bottom));left:50%;transform:translateX(-50%);width:max-content;max-width:calc(100vw - 20px);background:rgba(10,24,45,.5);backdrop-filter:blur(12px);border-radius:16px;z-index:2147483600}
+#ktvPlayerPanel.ktv-fs-active .ktv-quick-controls button,#ktvPlayerPanel.ktv-fs-active .ktv-quick-cut{pointer-events:auto;min-height:42px}
+#ktvPlayerPanel.ktv-fs-active #ktvRecordLiveStatus{position:absolute;top:calc(58px + env(safe-area-inset-top));left:8px;z-index:2147483002;max-width:min(60vw,300px);padding:4px 8px;background:rgba(12,23,42,.65);border-radius:10px}
+@media(max-width:680px){#ktvStudio{padding:7px}#ktvStudio .studio-settings{grid-template-columns:1fr 1fr}.ktv-quick-controls button,.ktv-quick-cut{font-size:13px;padding:7px 9px}#ktvPlayerPanel.ktv-fs-active .ktv-quick-controls{bottom:calc(3px + env(safe-area-inset-bottom))}}
+@media(orientation:landscape) and (max-height:500px){#ktvPlayerPanel.ktv-fs-active .ktv-quick-controls{right:6px;left:auto;transform:none;bottom:calc(3px + env(safe-area-inset-bottom));gap:3px;padding:3px}#ktvPlayerPanel.ktv-fs-active .ktv-quick-controls button,#ktvPlayerPanel.ktv-fs-active .ktv-quick-cut{min-height:35px;font-size:12px;padding:4px 7px}}
