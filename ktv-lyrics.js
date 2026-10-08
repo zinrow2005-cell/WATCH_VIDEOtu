@@ -1,6 +1,16 @@
 /* KTV lyrics auto lookup: LRCLIB public CORS API; no site scraping. */
 (()=>{'use strict';const $=id=>document.getElementById(id);if(!$('ktvLyricsFind'))return;
 let lines=[],start=0,candidates=[],currentTitle='',currentArtist='',lastKey='',ytSeconds=null,ytUpdated=0,approvedKey='',searchToken=0,sourceSynchronized=false;
+let currentVideoId='';
+const offsetStoreKey='ktv-lyrics-video-offset-v1';
+function perVideoKey(){return currentVideoId ? 'youtube:'+currentVideoId : 'song:'+norm(currentTitle+' '+currentArtist)}
+function loadOffset(){let value=0;try{const store=JSON.parse(localStorage.getItem(offsetStoreKey)||'{}');value=Number(store[perVideoKey()]||0)}catch(e){}$('ktvLyricsOffset').value=String(Math.max(-90,Math.min(90,value)));displayOffset()}
+function displayOffset(){let value=Number($('ktvLyricsOffset').value||0);if(!Number.isFinite(value))value=0;const label=(value>0?'+':'')+value.toFixed(1)+'s';if($('ktvLyricOffsetLabel'))$('ktvLyricOffsetLabel').textContent='偏移 '+label;if($('ktvLyricLiveOffset'))$('ktvLyricLiveOffset').textContent='字幕 '+label}
+function saveOffset(){let value=Number($('ktvLyricsOffset').value||0);if(!Number.isFinite(value))value=0;value=Math.max(-90,Math.min(90,Math.round(value*10)/10));$('ktvLyricsOffset').value=String(value);displayOffset();try{let store=JSON.parse(localStorage.getItem(offsetStoreKey)||'{}');store[perVideoKey()]=value;let keys=Object.keys(store);if(keys.length>200)delete store[keys[0]];localStorage.setItem(offsetStoreKey,JSON.stringify(store))}catch(e){status('字幕偏移已套用，但瀏覽器無法儲存設定。')}}
+function shiftOffset(d){$('ktvLyricsOffset').value=String(Number($('ktvLyricsOffset').value||0)+d);saveOffset()}
+document.querySelectorAll('[data-lyric-shift]').forEach(b=>b.addEventListener('click',()=>shiftOffset(Number(b.dataset.lyricShift))));
+$('ktvLyricReset')?.addEventListener('click',()=>{$('ktvLyricsOffset').value='0';saveOffset()});
+$('ktvLyricsOffset').addEventListener('change',saveOffset);displayOffset();
 const status=t=>$('ktvLyricsStatus').textContent=t;
 const norm=s=>(s||'').toLowerCase().normalize('NFKC').replace(/(?:\(|（|\[|【)[^()（）\[\]【】]*(?:ktv|karaoke|伴奏|官方|mv|lyrics|中字|純音樂)[^()（）\[\]【】]*(?:\)|）|\]|】)/gi,'').replace(/(?:official|music video|karaoke|lyrics|伴奏|官方|高清|完整版)/gi,'').replace(/[^\p{L}\p{N}]+/gu,'').trim();
 function parse(t){return (t||'').split(/\r?\n/).flatMap(s=>{let marks=[...s.matchAll(/\[(\d+):(\d+(?:\.\d+)?)\]/g)],txt=s.replace(/\[(\d+):(\d+(?:\.\d+)?)\]/g,'').trim();return marks.length?marks.map(m=>({time:Number(m[1])*60+Number(m[2]),text:txt})):txt&&!/^\[/.test(txt)?[{time:null,text:txt}]:[]}).filter(a=>a.text).sort((a,b)=>(a.time??Infinity)-(b.time??Infinity)).slice(0,500)}
@@ -18,7 +28,7 @@ $('ktvLyricsResults').addEventListener('change',()=>status('請確認歌手、�
 $('ktvLyricsText').addEventListener('input',e=>{lines=parse(e.target.value);sourceSynchronized=lines.some(v=>v.time!==null);start=performance.now()/1000;});
 $('ktvLyricsImport').addEventListener('change',async e=>{const f=e.target.files?.[0];if(f)updateText(await f.text(),'manual')});
 $('ktvLyricsQuick').addEventListener('click',()=>{document.getElementById('ktvStudioDetails').open=true;document.getElementById('ktvStudio').classList.add('ktv-settings-open');$('ktvLyricsSettings').scrollIntoView({behavior:'smooth',block:'nearest'})});
-window.addEventListener('ktv-song-changed',e=>{const t=e.detail.title||'',a=e.detail.artist||'';currentTitle=t;currentArtist=a;searchToken++;clearForSong();ytSeconds=null;ytUpdated=0;$('ktvLyricsTitle').value=t;$('ktvLyricsArtist').value=a;const key=norm(t+' '+a);if(key&&lastKey!==key){lastKey=key;start=performance.now()/1000;lookup()}});
+window.addEventListener('ktv-song-changed',e=>{const t=e.detail.title||'',a=e.detail.artist||'';currentTitle=t;currentArtist=a;currentVideoId=String(e.detail.videoId||e.detail.id||e.detail.youtubeId||'').trim();loadOffset();searchToken++;clearForSong();ytSeconds=null;ytUpdated=0;$('ktvLyricsTitle').value=t;$('ktvLyricsArtist').value=a;const key=norm(t+' '+a);if(key&&lastKey!==key){lastKey=key;start=performance.now()/1000;lookup()}});
 window.addEventListener('message',ev=>{if(ev.origin!=='https://www.youtube.com'||!ev.data)return;try{const obj=typeof ev.data==='string'?JSON.parse(ev.data):ev.data;if(obj?.event==='infoDelivery'&&Number.isFinite(obj.info?.currentTime)){ytSeconds=obj.info.currentTime;ytUpdated=performance.now();}}catch(e){}});
 window.ktvLyricsEngine={draw,resetClock:()=>start=performance.now()/1000};
 })();
