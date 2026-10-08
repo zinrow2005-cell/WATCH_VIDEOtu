@@ -1,0 +1,1 @@
+V1.5.6.81: settings in collapsible studio; camera picture-in-picture overlays KTV iframe, draggable and size adjustable; recording controls in player. YouTube iframe audio/video not inherently captured. Browser constraints apply.
