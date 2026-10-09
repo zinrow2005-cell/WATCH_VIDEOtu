@@ -340,3 +340,9 @@ body > #studioPreviewTheatre.ktv-preview-theatre #studioPlaybackBack{display:non
  #ktvPlayerPanel .ktv-player-fullbar button{min-height:46px;}
  #ktvStudio .studio-settings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));}
 }
+
+/* v1.5.7.36: camera / recording touch controls stay accessible. */
+#ktvPlayerPanel #ktvQuickControls{position:relative;z-index:90;pointer-events:auto}
+#ktvPlayerPanel #ktvQuickControls>button{pointer-events:auto;cursor:pointer;touch-action:manipulation}
+#ktvPlayerPanel #ktvQuickControls>button:disabled{opacity:.65;cursor:wait}
+#ktvPlayerPanel.ktv-fs-active #ktvQuickControls{z-index:2147483641!important}

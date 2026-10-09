@@ -216,7 +216,18 @@ async function requestTabCapture(){if(!navigator.mediaDevices?.getDisplayMedia)t
 $('studioScale').oninput=e=>{overlay.w=Number(e.target.value)/100;positionCameraOverlay()};
 
 $('ktvCamToggle').onclick=async()=>{if(camStream){endCameraFrameWatch();stopStream(camStream);camStream=null;cam.pause();cam.srcObject=null;float.classList.add('hidden');$('ktvCamToggle').textContent='📷 開啟鏡頭';$('ktvQuickCamera').textContent='📷 開啟鏡頭';return}await $('studioCamera').onclick()};
-$('ktvQuickCamera').addEventListener('click',()=> $('ktvCamToggle').click());
+// Direct action: visible camera button no longer relies on a hidden button's click state.
+$('ktvQuickCamera').addEventListener('click',async()=>{
+ const button=$('ktvQuickCamera'); if(cameraOpening)return;
+ if(camStream?.getVideoTracks().some(t=>t.readyState==='live')){
+   endCameraFrameWatch();stopStream(camStream);camStream=null;cam.pause();cam.srcObject=null;
+   float.classList.add('hidden');$('ktvCamToggle').textContent='📷 開啟鏡頭';button.textContent='📷 開啟鏡頭';
+   status('鏡頭已關閉');return;
+ }
+ button.disabled=true;button.textContent='⏳ 開啟中…';status('正在請求攝影機權限，請允許瀏覽器使用攝影機。');
+ try{await $('studioCamera').onclick()}catch(err){status('開啟攝影機失敗：'+err.message)}
+ finally{button.disabled=false;button.textContent=camStream?.getVideoTracks().some(t=>t.readyState==='live')?'📷 關閉鏡頭':'📷 開啟鏡頭'}
+});
 // Standalone comparison avoids KTV/YouTube/segmentation to isolate webcam or browser driver lag.
 const diagLink=document.createElement('a');diagLink.href='./camera-diagnostic.html';diagLink.target='_blank';diagLink.rel='noopener';diagLink.textContent='🧪 鏡頭診斷';diagLink.title='單獨測試攝影機影格率，不載入 KTV 或錄影';diagLink.style.cssText='display:inline-flex;align-items:center;padding:8px 10px;border-radius:10px;background:#334b67;color:white;text-decoration:none;font-size:14px;margin:4px;';$('ktvCamToggle').insertAdjacentElement('afterend',diagLink);
 // V1.5.6.91: recording preflight distinguishes media recording from KTV tab capture.
@@ -293,7 +304,7 @@ function showPreflight(){
  const blockers=!caps.secure||!caps.media||!caps.rec||!sourceOk;
  $('ktvPreflightWarning').textContent=!caps.secure?'此頁不是安全連線（HTTPS），無法錄影。':!sourceOk?'目前背景尚不可用，請返回選擇有效的照片／影片或預設背景。':bg==='screen'&&!caps.display?'手機無法直接擷取 YouTube。請先返回選擇自訂背景。':lyricEnabled&&(!lyricState?.items?.length||!lyricState?.reliable)?'字幕尚未完全確認或同步。可以繼續，但成品字幕可能缺少或不準確。':'按開始後瀏覽器可能要求裝置授權。錄影完請先確認影片與聲音。';
  $('ktvPreflightProceed').disabled=blockers;
- preflightSheet.classList.remove('ktv-preflight-hidden');preflightSheet.querySelector('.ktv-preflight-card').focus();
+ preflightSheet.classList.remove('ktv-preflight-hidden');preflightSheet.querySelector('.ktv-preflight-card').focus({preventScroll:true});
 }
 async function startRecording(){if(preflightBusy || recording || !preflightSheet.classList.contains('ktv-preflight-hidden'))return;showPreflight()}
 $('ktvPreflightClose').onclick=hidePreflight;
@@ -392,10 +403,14 @@ recordingLibrary.querySelector('.ktv-library-backdrop').addEventListener('click'
 $('ktvLibraryRefresh').addEventListener('click',renderHistory);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!recordingLibrary.classList.contains('ktv-library-hidden'))closeMyRecordings()});
 
-function syncQuickButtons(){const a=$('ktvQuickStart'),b=$('ktvQuickStop');a.disabled=preflightBusy||recording||$('ktvRecordStart').disabled;b.disabled=!recording;}
+function syncQuickButtons(){const a=$('ktvQuickStart'),b=$('ktvQuickStop');a.disabled=preflightBusy||recording;b.disabled=!recording;}
 function openCompactSettings(force){const d=$('ktvStudioDetails');const next=typeof force==='boolean'?force:!d.open;d.open=next;$('ktvStudio').classList.toggle('ktv-settings-open',next);$('ktvCompactSettings').setAttribute('aria-expanded',String(next));if(next){$('ktvStudio').scrollTop=0;$('ktvSettingsClose').focus({preventScroll:true})}}
 $('ktvCompactSettings').addEventListener('click',()=>openCompactSettings());$('ktvSettingsClose').addEventListener('click',()=>openCompactSettings(false));
-$('ktvQuickStart').addEventListener('click',()=>startRecording());
+$('ktvQuickStart').addEventListener('click',()=>{
+ if(preflightBusy||recording)return;
+ status('正在檢查錄影環境；請在彈出視窗確認後開始錄製。');
+ try{startRecording()}catch(err){status('無法開啟錄影檢查：'+err.message);console.error(err)}
+});
 $('ktvQuickStop').addEventListener('click',()=>stopRecording());
 $('ktvStudioDetails').addEventListener('toggle',()=>{if(!$('ktvStudioDetails').open)$('ktvStudio').classList.remove('ktv-settings-open')});
 syncQuickButtons();
