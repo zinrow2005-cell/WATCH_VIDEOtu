@@ -53,9 +53,15 @@ async function start(){if(starting||recording)return;starting=true;buttonState()
  status('瀏覽器將要求擷取 KTV 畫面：請選「目前 KTV 分頁」並開啟「分享分頁音訊」。這不會上傳到 GitHub。');tabStream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:true});
  const v=document.createElement('video');v.id='simpleTabVideo';v.muted=true;v.playsInline=true;v.srcObject=tabStream;v.style.display='none';document.body.appendChild(v);await v.play();tabStream.getVideoTracks()[0].addEventListener('ended',()=>{if(recording)stop()}, {once:true});
  }
- const useTab=mode==='tab'&&tabStream,srcV=tabStream?.getVideoTracks()[0].getSettings();
- canvas=document.createElement('canvas');canvas.width=useTab?Math.min(srcV?.width||1280,1920):960;canvas.height=useTab?Math.min(srcV?.height||720,1080):540;
- const canvasStream=audioOnly?null:canvas.captureStream(20),out=new MediaStream(canvasStream?canvasStream.getVideoTracks():[]);
+ const useTab=mode==='tab'&&!!tabStream;
+ // Desktop screen capture already contains the KTV video and visible webcam.
+ // Record its ORIGINAL video track, not a 20 fps canvas redraw of that track.
+ // This avoids a second compositor/canvas pass that can make the webcam flicker.
+ canvas=null;
+ if(!audioOnly&&!useTab){canvas=document.createElement('canvas');canvas.width=960;canvas.height=540;}
+ const canvasStream=canvas?canvas.captureStream(30):null;
+ const captureVideoTrack=!audioOnly&&useTab?tabStream.getVideoTracks()[0]:null;
+ const out=new MediaStream(captureVideoTrack?[captureVideoTrack]:canvasStream?canvasStream.getVideoTracks():[]);
  audioCtx=new (window.AudioContext||window.webkitAudioContext)();await audioCtx.resume();const dest=audioCtx.createMediaStreamDestination();
  const micSource=audioCtx.createMediaStreamSource(micStream),gain=audioCtx.createGain();gain.gain.value=Number($('simpleMicVolume').value)/100;micSource.connect(gain).connect(dest);
  if(tabStream?.getAudioTracks().length){audioCtx.createMediaStreamSource(tabStream).connect(dest)}
@@ -63,10 +69,10 @@ async function start(){if(starting||recording)return;starting=true;buttonState()
  const types=audioOnly?['audio/mp4;codecs=mp4a.40.2','audio/webm;codecs=opus','audio/webm']:['video/mp4;codecs="avc1.42E01E,mp4a.40.2"','video/webm;codecs=vp8,opus','video/webm'];mime=types.find(t=>MediaRecorder.isTypeSupported(t))||'';
  recorder=new MediaRecorder(out,mime?{mimeType:mime,videoBitsPerSecond:1800000,audioBitsPerSecond:128000}:undefined);recorded=[];
  recorder.ondataavailable=e=>{if(e.data?.size)recorded.push(e.data)};
- recorder.onstop=async()=>{cancelAnimationFrame(raf);stopTracks(canvasStream);stopTracks(tabStream);tabStream=null;stopTracks(micStream);micStream=null;document.getElementById('simpleTabVideo')?.remove();if(audioCtx){await audioCtx.close().catch(()=>{});audioCtx=null}const t=recorder.mimeType||mime||'video/webm';recordBlob=new Blob(recorded,{type:t});if(recordURL)URL.revokeObjectURL(recordURL);recordURL=URL.createObjectURL(recordBlob);$('simplePlayback').src=recordURL;recording=false;starting=false;buttonState();status('錄製完成，可預覽及儲存');$('simpleReview').hidden=false;};
+ recorder.onstop=async()=>{document.documentElement.classList.remove('ktv-direct-capture');cancelAnimationFrame(raf);stopTracks(canvasStream);stopTracks(tabStream);tabStream=null;stopTracks(micStream);micStream=null;document.getElementById('simpleTabVideo')?.remove();if(audioCtx){await audioCtx.close().catch(()=>{});audioCtx=null}const t=recorder.mimeType||mime||'video/webm';recordBlob=new Blob(recorded,{type:t});if(recordURL)URL.revokeObjectURL(recordURL);recordURL=URL.createObjectURL(recordBlob);$('simplePlayback').src=recordURL;recording=false;starting=false;buttonState();status('錄製完成，可預覽及儲存');$('simpleReview').hidden=false;};
  recorder.onerror=e=>status('錄影發生錯誤：'+(e.error?.message||'未知錯誤'));
- recording=true;starting=false;buttonState();recorder.start(1000);if(!audioOnly)paint();status('🔴 正在錄影；點「停止」可結束並預覽');
- }catch(e){recording=false;starting=false;stopTracks(tabStream);tabStream=null;document.getElementById('simpleTabVideo')?.remove();stopTracks(micStream);micStream=null;if(audioCtx){audioCtx.close().catch(()=>{});audioCtx=null}status('無法開始錄影：'+e.message);buttonState()}}
+ recording=true;starting=false;if(useTab)document.documentElement.classList.add('ktv-direct-capture');buttonState();recorder.start(1000);if(canvas)paint();status(useTab?'🔴 正直接錄製 KTV 分頁與鏡頭，無二次合成；點「停止」可預覽':'🔴 正在錄影；點「停止」可結束並預覽');
+ }catch(e){document.documentElement.classList.remove('ktv-direct-capture');recording=false;starting=false;stopTracks(tabStream);tabStream=null;document.getElementById('simpleTabVideo')?.remove();stopTracks(micStream);micStream=null;if(audioCtx){audioCtx.close().catch(()=>{});audioCtx=null}status('無法開始錄影：'+e.message);buttonState()}}
 function pauseSong(){try{const f=$('ktvPlayerFrame');if(f?.contentWindow)f.contentWindow.postMessage(JSON.stringify({event:'command',func:'pauseVideo',args:[]}), '*')}catch{}}
 function stop(){if(!recording)return;pauseSong();recording=false;buttonState();status('正在完成錄影檔…');if(recorder?.state==='recording')recorder.stop();else{stopTracks(tabStream);stopTracks(micStream)}}
 $('simpleRecord').onclick=start;$('simpleStop').onclick=stop;

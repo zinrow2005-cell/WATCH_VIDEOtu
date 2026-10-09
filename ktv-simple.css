@@ -13,3 +13,12 @@
 .simple-photo-actions img{width:100px;height:72px;object-fit:contain;background:#0b182a;border-radius:10px;border:1px solid #527093}
 .simple-photo-actions button{display:block;margin-top:8px;min-height:36px;border-radius:9px;background:#334e70;color:#fff;border:1px solid #607fa5;padding:6px 12px}
 .simple-panel input[type=file]{min-width:0;overflow:hidden}
+
+/* V1.5.7.42: steady camera preview while Chrome captures this KTV tab.
+   Disable effects that can make a hardware-composited video flicker. */
+html.ktv-direct-capture #ktvCamFloat,
+html.ktv-direct-capture #ktvCamPreview {
+  animation:none!important;transition:none!important;filter:none!important;backdrop-filter:none!important;
+  opacity:1!important;
+}
+html.ktv-direct-capture #ktvCamFloat { box-shadow:none!important; }
