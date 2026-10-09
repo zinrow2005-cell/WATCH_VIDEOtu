@@ -5,18 +5,18 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#0b1220">
-<title>WATCH_VIDEOtu V1.5.7.47</title>
+<title>WATCH_VIDEOtu V1.5.7.48</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=15747">
-  <link rel="stylesheet" href="responsive-v63.css?v=15747">
-  <link rel="stylesheet" href="ui-v65.css?v=15747">
+<link rel="stylesheet" href="styles.css?v=15748">
+  <link rel="stylesheet" href="responsive-v63.css?v=15748">
+  <link rel="stylesheet" href="ui-v65.css?v=15748">
 
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=15652">
 <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png?v=15652">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-180.png?v=15652">
 <meta name="apple-mobile-web-app-title" content="WATCH_VIDEOtu">
 
-<link rel="stylesheet" href="ktv-simple.css?v=15747">
+<link rel="stylesheet" href="ktv-simple.css?v=15748">
 </head>
 <body>
 <header class="topbar">
@@ -29,7 +29,7 @@
       <circle cx="50" cy="14" r="6" fill="#fff"/><path d="M50 10.7v6.6M46.7 14h6.6" stroke="#ff174d" stroke-width="2.4" stroke-linecap="round"/>
     </svg>
   </span>
-  <span class="brand-copy"><strong>WATCH_VIDEO<span class="brand-tu">tu</span></strong><span class="brand-version" title="手機 TV 簡化版 V1.5.7.47">V1.5.7.47</span><small>Kids Video Hub</small></span>
+  <span class="brand-copy"><strong>WATCH_VIDEO<span class="brand-tu">tu</span></strong><span class="brand-version" title="手機 TV 簡化版 V1.5.7.48">V1.5.7.48</span><small>Kids Video Hub</small></span>
 </button>
 <div class="mode-switch" id="modeSwitch">
   <button id="videoModeBtn" class="mode-btn active" type="button">🎬 影片模式</button>
@@ -342,7 +342,8 @@
         </div>
         <p class="simple-status" id="simpleStatus" role="status" aria-live="polite">先選歌，再按「開啟鏡頭」或直接「開始錄影」。</p>
         <div id="simpleOptions" class="simple-panel" hidden>
-          <div class="simple-panel-head"><strong>⚙ 簡易錄影設定</strong><button type="button" id="simpleOptionsClose" aria-label="關閉設定">✕</button></div>
+          <div class="simple-panel-head"><strong>⚙ 簡易錄影設定</strong><label class="simple-camera-size-control">📷 鏡頭大小 <input id="simpleCameraSize" type="range" min="16" max="58" value="28" step="1" aria-label="調整自拍鏡頭大小"></label>
+<button type="button" id="simpleOptionsClose" aria-label="關閉設定">✕</button></div>
           <label>錄製方式<select id="simpleRecordingType"><option value="video">影片＋人聲</option><option value="audio">純錄音（人聲）</option></select></label>
           <div id="simpleDeviceTip" class="simple-device-tip" role="status"></div>
           <label>錄製畫面<select id="simpleBackground"><option value="tab">KTV 歌曲畫面＋自拍鏡頭（電腦）</option><option value="camera">自拍鏡頭全畫面</option><option value="gradient">預設舞台背景＋自拍鏡頭</option><option value="photo">相簿照片＋自拍鏡頭</option></select></label>
@@ -474,16 +475,16 @@
 <div id="simpleReview" class="simple-modal" hidden role="dialog" aria-modal="true" aria-label="錄製完成">
  <div class="simple-modal-inner"><header><strong>🎞️ 錄製完成</strong><button type="button" id="simpleReviewClose">✕ 關閉</button></header>
  <video id="simplePlayback" controls playsinline></video><button type="button" id="simpleLyricsOpen" class="simple-lyrics-open" hidden>📖 查看歌詞</button><div id="simpleLyricsPanel" class="simple-lyrics-panel" hidden><div class="simple-lyrics-head"><strong>📖 歌詞對照</strong><button type="button" id="simpleLyricsClose">✕ 關閉</button></div><p class="simple-lyrics-note">歌詞僅供觀看，手指上下滑動；不會加入錄製影片。</p><div class="simple-lyrics-lookup"><button type="button" id="simpleLyricsSearch">🔎 搜尋這首歌的歌詞</button><button type="button" id="simpleLyricsEdit">✎ 貼上歌詞</button></div><div id="simpleLyricsText" class="simple-lyrics-scroll" tabindex="0" aria-label="上下捲動完整歌詞">尚未取得歌詞，請按「搜尋這首歌的歌詞」。</div><textarea id="simpleLyricsInput" rows="8" placeholder="貼上自行提供的歌詞，一行一句" hidden></textarea><button type="button" id="simpleLyricsApply" hidden>套用歌詞</button><p id="simpleLyricsStatus" role="status"></p></div><div class="simple-review-actions"><button id="simpleRetry">↻ 重唱</button><button id="simpleSave">💾 儲存作品</button><button id="simpleShare">📱 儲存至相簿／檔案</button></div><p id="simpleReviewHint"></p></div></div>
-<div id="simpleLibrary" class="simple-modal" hidden role="dialog" aria-modal="true" aria-label="我的作品"><div class="simple-modal-inner"><header><strong>📁 我的作品</strong><button id="simpleLibraryClose">✕ 關閉</button></header><div id="simpleLibraryList"></div></div></div>
+<div id="simpleLibrary" class="simple-modal" hidden role="dialog" aria-modal="true" aria-label="我的作品"><div class="simple-modal-inner"><header><strong>📁 我的作品</strong><button id="simpleLibraryClose">✕ 關閉</button></header><video id="simpleLibraryPlayer" controls playsinline hidden></video><div id="simpleLibraryList"></div></div></div>
 <div id="modal" class="modal hidden">
   <div class="modal-card"><h3>輸入家長 PIN</h3><input id="modalInput" inputmode="numeric" maxlength="6"><div class="modal-actions"><button id="modalCancel">取消</button><button id="modalOk">確定</button></div></div>
 </div>
-<script defer src="ktv_singers.js?v=15747"></script>
-<script defer src="ktv_songs.js?v=15747"></script>
-<script defer src="app.js?v=15747"></script>
+<script defer src="ktv_singers.js?v=15748"></script>
+<script defer src="ktv_songs.js?v=15748"></script>
+<script defer src="app.js?v=15748"></script>
 
-<script defer src="ktv-simple.js?v=15747"></script>
-<script defer src="ktv-review-lyrics.js?v=15747"></script>
+<script defer src="ktv-simple.js?v=15748"></script>
+<script defer src="ktv-review-lyrics.js?v=15748"></script>
 
 <div id="ktvToast" class="ktv-toast hidden" role="status" aria-live="polite"></div>
 </body>
