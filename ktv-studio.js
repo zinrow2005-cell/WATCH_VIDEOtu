@@ -145,7 +145,28 @@ if(perfChoice)perfChoice.addEventListener('change',()=>{
 try{let savedPerf=localStorage.getItem('ktvCutoutPerfMode');if(['performance','balanced','detail'].includes(savedPerf)){cutoutPerfMode=savedPerf;if(perfChoice)perfChoice.value=savedPerf}}catch(e){}
 let qualityTask=null,qualityModeActive='standard',cutoutInitPromise=null;const qualityMaskCanvas=document.createElement('canvas');const qualityMaskCtx=qualityMaskCanvas.getContext('2d');
 function updateMirror(){float.classList.toggle('ktv-no-mirror',!$('ktvMirrorCamera').checked)}
-function updateCutoutUI(){const enabled=!!$('ktvRemoveBackground').checked;const ready=enabled&&!!cutoutFrame&&!!camStream;float.classList.toggle('ktv-cutout-on',enabled);float.classList.toggle('ktv-cutout-ready',ready);float.setAttribute('data-cutout-status',enabled?(ready?'ready':'loading'):'off');}
+function updateCutoutUI(){const enabled=!!$('ktvRemoveBackground').checked;const ready=enabled&&!!cutoutFrame&&!!camStream;float.classList.toggle('ktv-cutout-on',ready);float.classList.toggle('ktv-cutout-ready',ready);float.setAttribute('data-cutout-status',enabled?(ready?'ready':'loading'):'off');}
+// Never report successful background removal unless a real segmented frame was produced.
+let cutoutAttempt=0;
+async function verifyCutoutStarted(){
+ const attempt=++cutoutAttempt,started=performance.now();
+ while(attempt===cutoutAttempt && $('ktvRemoveBackground').checked && camStream && !cutoutFrame && performance.now()-started<7000){
+  await new Promise(resolve=>setTimeout(resolve,250));
+ }
+ if(attempt!==cutoutAttempt||!$('ktvRemoveBackground').checked||!camStream)return;
+ if(!cutoutFrame){
+  const why='AI 未產生有效人物遮罩（可能是模型載入、瀏覽器或影像辨識問題）';
+  $('ktvRemoveBackground').checked=false;
+  if($('ktvQuickCutout'))$('ktvQuickCutout').checked=false;
+  clearInterval(segmentTimer);segmentTimer=null;
+  maskWorkerPending=null;updateCutoutUI();
+  $('ktvCutoutHint').textContent='⚠️ '+why+'，已恢復一般鏡頭；沒有完成去背。';
+  status('去背啟動失敗，已恢復一般鏡頭');
+ }else{
+  $('ktvCutoutHint').textContent='✅ 已取得真正透明人物影像；去背運作中';
+ }
+}
+
 function pauseKtvOnStop(){
  // This is the KTV-specific YouTube iframe, not the general video player.
  try{if(typeof pauseActiveKtvSong==='function')pauseActiveKtvSong();else{
@@ -277,6 +298,7 @@ function processCutoutResults(r){try{
  const mask=maskCtx.getImageData(0,0,w,h),px=mask.data;
  // Move per-pixel matting and connected-component cleanup into a Worker where available.
  // Snapshot camera pixels before dispatch so mask and camera image stay in step.
+ if(maskWorkerPending && performance.now()-maskWorkerPending.started>2500)disableMaskWorker('遮罩處理逾時');
  if(maskWorker && !maskWorkerPending){
    const frameCanvas=document.createElement('canvas');frameCanvas.width=w;frameCanvas.height=h;
    frameCanvas.getContext('2d').drawImage(r.image,0,0,w,h);
@@ -346,8 +368,8 @@ $('ktvCutoutQuality').addEventListener('change',async e=>{
  try{await initCutout()}catch(err){$('ktvCutoutHint').textContent='⚠️ 去背引擎切換失敗：'+err.message}
 });
 $('ktvRemoveBackground').addEventListener('change',async e=>{
- if(e.target.checked){updateCutoutUI();try{if(!camStream){$('ktvCutoutHint').textContent='✅ 已選擇人像去背。請另外點「開啟鏡頭」，不會自動開始錄影。';return;} $('ktvCutoutHint').textContent='⏳ 人物去背模型載入中…';await initCutout();$('studioOverlay').checked=true;if(!cutoutFrame)$('ktvCutoutHint').textContent='⏳ 模型已載入，正在辨識人物…';}catch(err){e.target.checked=false;cutoutFrame=false;updateCutoutUI();$('ktvQuickCutout').checked=false;$('ktvCutoutHint').textContent='⚠️ '+err.message;status('去背無法啟動：'+err.message)}}
- else{maskWorkerPending=null;cutoutFrame=false;updateCutoutUI();$('ktvCutoutHint').textContent='去背已關閉，使用一般自拍小視窗。'}
+ if(e.target.checked){updateCutoutUI();try{if(!camStream){$('ktvCutoutHint').textContent='✅ 已選擇人像去背。請另外點「開啟鏡頭」，不會自動開始錄影。';return;} $('ktvCutoutHint').textContent='⏳ 人物去背模型載入中…';await initCutout();void verifyCutoutStarted();$('studioOverlay').checked=true;if(!cutoutFrame)$('ktvCutoutHint').textContent='⏳ 模型已載入，正在辨識人物…';}catch(err){e.target.checked=false;cutoutFrame=false;updateCutoutUI();$('ktvQuickCutout').checked=false;$('ktvCutoutHint').textContent='⚠️ '+err.message;status('去背無法啟動：'+err.message)}}
+ else{cutoutAttempt++;maskWorkerPending=null;cutoutFrame=false;updateCutoutUI();$('ktvCutoutHint').textContent='去背已關閉，使用一般自拍小視窗。'}
 });
 const status=s=>$('studioStatus').textContent=s;
 function updateMixer(){if(musicGain)musicGain.gain.value=Number($('ktvMusicVolume').value)/100;if(micGain)micGain.gain.value=Number($('ktvMicVolume').value)/100;$('ktvMusicRead').textContent=$('ktvMusicVolume').value+'%';$('ktvMicRead').textContent=$('ktvMicVolume').value+'%';if(voiceFilter){const v=$('ktvVoiceEffect').value;voiceFilter.type=v==='warm'?'lowshelf':v==='bright'?'highshelf':'peaking';voiceFilter.frequency.value=v==='warm'?250:v==='bright'?3000:1000;voiceFilter.gain.value=v==='warm'?4:v==='bright'?5:0;if(echoGain)echoGain.gain.value=v==='echo'?.23:0}}
@@ -438,7 +460,7 @@ $('studioCamera').onclick=async()=>{if(cameraOpening)return;cameraOpening=true;t
  try{newStream.getVideoTracks()[0].contentHint='motion'}catch(e){}
  await cam.play();beginCameraFrameWatch();const settingsNow=newStream.getVideoTracks()[0]?.getSettings?.()||{};$('ktvCameraActual').textContent='實際：'+(settingsNow.width||'?')+'×'+(settingsNow.height||'?')+' / '+(settingsNow.frameRate||'?')+' fps（瀏覽器回報）';
  if(!cam.videoWidth||!cam.videoHeight){await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('攝影機未提供有效影像')),4500);const ready=()=>{if(cam.videoWidth&&cam.videoHeight){clearTimeout(timer);cam.removeEventListener('loadeddata',ready);resolve()}};cam.addEventListener('loadeddata',ready);ready()})}
- float.classList.remove('hidden','ktv-hide-from-capture');try{const cs=newStream.getVideoTracks()[0]?.getSettings?.()||{};status('鏡頭已啟動 '+(cs.width||'?')+'×'+(cs.height||'?')+' / '+(cs.frameRate||'?')+' fps；若仍卡頓，請使用「鏡頭診斷」比較。')}catch(e){}syncCameraRatio();positionCameraOverlay();if($('ktvRemoveBackground').checked){$('ktvCutoutHint').textContent='⏳ 人像去背載入中…';try{await initCutout()}catch(err){$('ktvCutoutHint').textContent='⚠️ 人像去背不可用：'+err.message}}$('ktvCamToggle').textContent='📷 關閉鏡頭';$('ktvQuickCamera').textContent='📷 關閉鏡頭';$('studioOverlay').checked=true;status('鏡頭已開啟；可以在畫面中拖動人物框，使用大小滑桿調整比例。')}catch(e){status('無法使用鏡頭：'+e.message);$('ktvCameraActual').textContent='⚠️ '+e.message}finally{cameraOpening=false;updateCameraChoices()}};
+ float.classList.remove('hidden','ktv-hide-from-capture');try{const cs=newStream.getVideoTracks()[0]?.getSettings?.()||{};status('鏡頭已啟動 '+(cs.width||'?')+'×'+(cs.height||'?')+' / '+(cs.frameRate||'?')+' fps；若仍卡頓，請使用「鏡頭診斷」比較。')}catch(e){}syncCameraRatio();positionCameraOverlay();if($('ktvRemoveBackground').checked){$('ktvCutoutHint').textContent='⏳ 人像去背載入中…';try{await initCutout();void verifyCutoutStarted()}catch(err){$('ktvCutoutHint').textContent='⚠️ 人像去背不可用：'+err.message}}$('ktvCamToggle').textContent='📷 關閉鏡頭';$('ktvQuickCamera').textContent='📷 關閉鏡頭';$('studioOverlay').checked=true;status('鏡頭已開啟；可以在畫面中拖動人物框，使用大小滑桿調整比例。')}catch(e){status('無法使用鏡頭：'+e.message);$('ktvCameraActual').textContent='⚠️ '+e.message}finally{cameraOpening=false;updateCameraChoices()}};
 $('studioScreen').onclick=async()=>{try{await requestTabCapture()}catch(e){status('畫面分享無法啟動：'+e.message)}};
 async function requestTabCapture(){if(!navigator.mediaDevices?.getDisplayMedia)throw Error('此瀏覽器沒有分頁擷取功能；請用電腦版 Chrome／Edge。');releaseTabCapture();screenStream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:24},audio:{echoCancellation:false,noiseSuppression:false},preferCurrentTab:true,selfBrowserSurface:'include',surfaceSwitching:'exclude',systemAudio:'include'});const track=screenStream.getVideoTracks()[0],info=track?.getSettings?.()||{};video.srcObject=screenStream;await video.play();$('studioBackground').value='screen';track.onended=()=>{if(endingTabCapture)return;if(recording)stopRecording();else releaseTabCapture();status('KTV 分頁分享已結束。')};if(screenStream.getAudioTracks().length===0)status('⚠️ 已取得影像，但沒有分頁音訊！請重新分享「目前分頁」並勾選「分享分頁音訊」。');else status('已擷取完整分享畫面（不裁切）；請選「目前分頁」並保留 KTV 與工具列可見。來源：'+(info.displaySurface||'瀏覽器分頁')+'。');return screenStream}
 $('studioScale').oninput=e=>{overlay.w=Number(e.target.value)/100;positionCameraOverlay()};

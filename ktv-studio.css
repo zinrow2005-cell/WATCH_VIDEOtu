@@ -312,3 +312,8 @@ body > #studioPreviewTheatre.ktv-preview-theatre #studioPlaybackBack{display:non
 #ktvCameraCaptureSettings{width:100%;max-width:100%;box-sizing:border-box;scroll-margin-top:76px;}
 #ktvCameraCaptureSettings summary{list-style:auto;min-height:34px;outline-offset:4px;}
 #ktvCameraCaptureSettings .ktv-camera-options button:disabled{opacity:.65;cursor:wait;}
+
+/* v1.5.7.33: never remove the camera border before actual AI segmentation succeeds. */
+#ktvCamFloat[data-cutout-status="loading"]{border:2px solid #9ab0d1!important;background:rgba(16,25,40,.42)!important}
+#ktvCamFloat[data-cutout-status="loading"] video{visibility:visible!important}
+#ktvCamFloat[data-cutout-status="loading"] #ktvLiveCutout{display:none!important}
