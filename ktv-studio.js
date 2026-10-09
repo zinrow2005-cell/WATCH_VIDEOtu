@@ -156,7 +156,18 @@ function pauseKtvOnStop(){
 function syncCameraRatio(){
  const w=cam.videoWidth||0,h=cam.videoHeight||0;
  if(w&&h){float.style.aspectRatio=w+' / '+h;float.style.height='auto';float.dataset.cameraRatio=(w/h).toFixed(4);}
+ positionCameraOverlay();
 }
+function positionCameraOverlay(){
+ if(!camStream||float.classList.contains('hidden'))return;
+ const r=stage.getBoundingClientRect();if(!r.width||!r.height)return;
+ const width=overlay.w;
+ const height=width*r.width/r.height*(cam.videoHeight||480)/(cam.videoWidth||640);
+ float.style.width=(width*100)+'%';
+ float.style.left=(Math.max(0,Math.min(1-width,overlay.x))*100)+'%';
+ float.style.top=(Math.max(0,Math.min(1-height,overlay.y))*100)+'%';
+}
+window.addEventListener('resize',positionCameraOverlay,{passive:true});
 cam.addEventListener('loadedmetadata',syncCameraRatio);
 window.addEventListener('orientationchange',()=>setTimeout(syncCameraRatio,200));
 $('ktvMirrorCamera').addEventListener('change',updateMirror);updateMirror();
@@ -337,6 +348,8 @@ function drawCover(src){const sw=src.videoWidth||src.naturalWidth,sh=src.videoHe
 // The camera preview is the native <video> element and does not need a 720p canvas redraw at 60fps.
 function frame(now=0){
  raf=requestAnimationFrame(frame);
+ // Canvas is display:none outside recording; native video renders camera without canvas work.
+ if(!recording)return;
  if(document.hidden&&!recording)return;
  // No recording: idle canvas is invisible; only refresh occasionally for standby.
  const interval=recording?(mobileCapture?67:42):(camStream?125:500);
@@ -344,7 +357,7 @@ function frame(now=0){
  lastDrawTime=now;diagnosticFrame();const bg=$('studioBackground').value;ctx.fillStyle='#132039';ctx.fillRect(0,0,1280,720);if(bg==='gradient'){const g=ctx.createLinearGradient(0,0,1280,720);g.addColorStop(0,'#151641');g.addColorStop(.5,'#7d2e69');g.addColorStop(1,'#14112e');ctx.fillStyle=g;ctx.fillRect(0,0,1280,720)}else if(bg==='stage'){const g=ctx.createRadialGradient(640,170,20,640,400,850);g.addColorStop(0,'#a35e9d');g.addColorStop(.4,'#39275b');g.addColorStop(1,'#080b1e');ctx.fillStyle=g;ctx.fillRect(0,0,1280,720);for(let i=0;i<7;i++){ctx.strokeStyle='rgba(255,210,255,.13)';ctx.lineWidth=24;ctx.beginPath();ctx.moveTo((i*220)-200,0);ctx.lineTo(640+(i-3)*70,720);ctx.stroke()}}else if(bg==='photo'&&bgImg)drawCover(bgImg);else if(bg==='video'&&video.readyState>=2)drawCover(video);else if(bg==='screen'&&video.readyState>=2)drawScreenContained(video);
 if(bg==='camera'&&cam.readyState>=2)drawCover(cam);
 if(window.ktvLyricsEngine)window.ktvLyricsEngine.draw(ctx,canvas.width,canvas.height);
-if(float&&!float.classList.contains('hidden')&&cam.readyState>=2) {const r=stage.getBoundingClientRect(); if(r.width){float.style.width=(overlay.w*100)+'%';float.style.left=(Math.min(overlay.x,1-overlay.w)*100)+'%';float.style.top=(Math.min(overlay.y,Math.max(0,1-(overlay.w*(cam.videoHeight||720)/(cam.videoWidth||1280))*r.width/r.height))*100)+'%';}}
+
 if($('studioOverlay').checked&&cam.readyState>=2&&bg!=='camera') {
  const cutout=$('ktvRemoveBackground').checked;
  // Sharing this same browser tab already captures the ordinary floating camera.
@@ -366,14 +379,14 @@ $('studioVideo').onchange=e=>{setMedia(e.target.files[0],'video');$('studioBackg
 $('studioCamera').onclick=async()=>{try{
  if(!navigator.mediaDevices?.getUserMedia)throw Error('此瀏覽器無法使用攝影機，或網頁不是 HTTPS');
  stopStream(camStream);camStream=null;cam.pause();cam.srcObject=null;cutoutFrame=false;updateCutoutUI();
- const newStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480},frameRate:{ideal:24,max:30}},audio:false});
+ const newStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640,max:960},height:{ideal:480,max:720},frameRate:{ideal:20,max:24}},audio:false});
  camStream=newStream;cam.srcObject=newStream;cam.muted=true;cam.autoplay=true;cam.playsInline=true;
  await cam.play();
  if(!cam.videoWidth||!cam.videoHeight){await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('攝影機未提供有效影像')),4500);const ready=()=>{if(cam.videoWidth&&cam.videoHeight){clearTimeout(timer);cam.removeEventListener('loadeddata',ready);resolve()}};cam.addEventListener('loadeddata',ready);ready()})}
- float.classList.remove('hidden','ktv-hide-from-capture');syncCameraRatio();if($('ktvRemoveBackground').checked){$('ktvCutoutHint').textContent='⏳ 人像去背載入中…';try{await initCutout()}catch(err){$('ktvCutoutHint').textContent='⚠️ 人像去背不可用：'+err.message}}$('ktvCamToggle').textContent='📷 關閉鏡頭';$('ktvQuickCamera').textContent='📷 關閉鏡頭';$('studioOverlay').checked=true;status('鏡頭已開啟；可以在畫面中拖動人物框，使用大小滑桿調整比例。')}catch(e){status('無法使用鏡頭：'+e.message)}};
+ float.classList.remove('hidden','ktv-hide-from-capture');syncCameraRatio();positionCameraOverlay();if($('ktvRemoveBackground').checked){$('ktvCutoutHint').textContent='⏳ 人像去背載入中…';try{await initCutout()}catch(err){$('ktvCutoutHint').textContent='⚠️ 人像去背不可用：'+err.message}}$('ktvCamToggle').textContent='📷 關閉鏡頭';$('ktvQuickCamera').textContent='📷 關閉鏡頭';$('studioOverlay').checked=true;status('鏡頭已開啟；可以在畫面中拖動人物框，使用大小滑桿調整比例。')}catch(e){status('無法使用鏡頭：'+e.message)}};
 $('studioScreen').onclick=async()=>{try{await requestTabCapture()}catch(e){status('畫面分享無法啟動：'+e.message)}};
 async function requestTabCapture(){if(!navigator.mediaDevices?.getDisplayMedia)throw Error('此瀏覽器沒有分頁擷取功能；請用電腦版 Chrome／Edge。');releaseTabCapture();screenStream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:24},audio:{echoCancellation:false,noiseSuppression:false},preferCurrentTab:true,selfBrowserSurface:'include',surfaceSwitching:'exclude',systemAudio:'include'});const track=screenStream.getVideoTracks()[0],info=track?.getSettings?.()||{};video.srcObject=screenStream;await video.play();$('studioBackground').value='screen';track.onended=()=>{if(endingTabCapture)return;if(recording)stopRecording();else releaseTabCapture();status('KTV 分頁分享已結束。')};if(screenStream.getAudioTracks().length===0)status('⚠️ 已取得影像，但沒有分頁音訊！請重新分享「目前分頁」並勾選「分享分頁音訊」。');else status('已擷取完整分享畫面（不裁切）；請選「目前分頁」並保留 KTV 與工具列可見。來源：'+(info.displaySurface||'瀏覽器分頁')+'。');return screenStream}
-$('studioScale').oninput=e=>overlay.w=Number(e.target.value)/100;
+$('studioScale').oninput=e=>{overlay.w=Number(e.target.value)/100;positionCameraOverlay()};
 
 $('ktvCamToggle').onclick=async()=>{if(camStream){stopStream(camStream);camStream=null;cam.pause();cam.srcObject=null;cutoutFrame=false;updateCutoutUI();float.classList.add('hidden');$('ktvCamToggle').textContent='📷 開啟鏡頭';$('ktvQuickCamera').textContent='📷 開啟鏡頭';return}await $('studioCamera').onclick()};
 $('ktvQuickCamera').addEventListener('click',()=> $('ktvCamToggle').click());
@@ -473,7 +486,7 @@ if(mobileCapture && !camStream){
   const profile=selectedAudioProfile();
   combinedStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480},frameRate:{ideal:20,max:24}},audio:{echoCancellation:profile.echoCancellation,noiseSuppression:profile.noiseSuppression,autoGainControl:false,channelCount:{ideal:1}}});
   camStream=new MediaStream(combinedStream.getVideoTracks());cam.srcObject=camStream;cam.muted=true;cam.playsInline=true;await cam.play();
-  float.classList.remove('hidden');$('studioOverlay').checked=true;syncCameraRatio();
+  float.classList.remove('hidden');$('studioOverlay').checked=true;syncCameraRatio();positionCameraOverlay();
   $('ktvCamToggle').textContent='📷 關閉鏡頭';$('ktvQuickCamera').textContent='📷 關閉鏡頭';
   micStream=new MediaStream(combinedStream.getAudioTracks());
 }else micStream=await getStableMicrophone();
