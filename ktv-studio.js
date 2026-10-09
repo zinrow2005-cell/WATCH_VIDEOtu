@@ -145,7 +145,7 @@ if(perfChoice)perfChoice.addEventListener('change',()=>{
 try{let savedPerf=localStorage.getItem('ktvCutoutPerfMode');if(['performance','balanced','detail'].includes(savedPerf)){cutoutPerfMode=savedPerf;if(perfChoice)perfChoice.value=savedPerf}}catch(e){}
 let qualityTask=null,qualityModeActive='standard',cutoutInitPromise=null;const qualityMaskCanvas=document.createElement('canvas');const qualityMaskCtx=qualityMaskCanvas.getContext('2d');
 function updateMirror(){float.classList.toggle('ktv-no-mirror',!$('ktvMirrorCamera').checked)}
-function updateCutoutUI(){float.classList.toggle('ktv-cutout-on',!!$('ktvRemoveBackground').checked);float.setAttribute('data-cutout-status',$('ktvRemoveBackground').checked?(cutoutFrame?'ready':'loading'):'off');}
+function updateCutoutUI(){const enabled=!!$('ktvRemoveBackground').checked;const ready=enabled&&!!cutoutFrame&&!!camStream;float.classList.toggle('ktv-cutout-on',enabled);float.classList.toggle('ktv-cutout-ready',ready);float.setAttribute('data-cutout-status',enabled?(ready?'ready':'loading'):'off');}
 function pauseKtvOnStop(){
  // This is the KTV-specific YouTube iframe, not the general video player.
  try{if(typeof pauseActiveKtvSong==='function')pauseActiveKtvSong();else{
@@ -194,7 +194,7 @@ cam.addEventListener('loadedmetadata',syncCameraRatio);
 window.addEventListener('orientationchange',()=>setTimeout(syncCameraRatio,200));
 $('ktvMirrorCamera').addEventListener('change',updateMirror);updateMirror();
 function drawCamera(x,y,w,h,cutout){
- const source=cutout?(cutoutFrame?liveCutout:null):cam;
+ const source=cutout&&cutoutFrame?liveCutout:cam;
  if(!source || (!cutout&&cam.readyState<2))return;
  ctx.save();const sw=source.videoWidth||source.width||640,sh=source.videoHeight||source.height||480;const scale=Math.min(w/sw,h/sh),dw=sw*scale,dh=sh*scale,dx=x+(w-dw)/2,dy=y+(h-dh)/2;if($('ktvMirrorCamera').checked){ctx.translate(x+w,0);ctx.scale(-1,1);ctx.drawImage(source,x+w-(dx+dw),dy,dw,dh)}else ctx.drawImage(source,dx,dy,dw,dh);ctx.restore();
 }
@@ -346,7 +346,7 @@ $('ktvCutoutQuality').addEventListener('change',async e=>{
  try{await initCutout()}catch(err){$('ktvCutoutHint').textContent='⚠️ 去背引擎切換失敗：'+err.message}
 });
 $('ktvRemoveBackground').addEventListener('change',async e=>{
- if(e.target.checked){try{if(!camStream){$('ktvCutoutHint').textContent='✅ 已選擇人像去背。請另外點「開啟鏡頭」，不會自動開始錄影。';return;} $('ktvCutoutHint').textContent='⏳ 人物去背模型載入中…';await initCutout();$('studioOverlay').checked=true;if(!cutoutFrame)$('ktvCutoutHint').textContent='⏳ 模型已載入，正在辨識人物…';}catch(err){e.target.checked=false;cutoutFrame=false;updateCutoutUI();$('ktvQuickCutout').checked=false;$('ktvCutoutHint').textContent='⚠️ '+err.message;status('去背無法啟動：'+err.message)}}
+ if(e.target.checked){updateCutoutUI();try{if(!camStream){$('ktvCutoutHint').textContent='✅ 已選擇人像去背。請另外點「開啟鏡頭」，不會自動開始錄影。';return;} $('ktvCutoutHint').textContent='⏳ 人物去背模型載入中…';await initCutout();$('studioOverlay').checked=true;if(!cutoutFrame)$('ktvCutoutHint').textContent='⏳ 模型已載入，正在辨識人物…';}catch(err){e.target.checked=false;cutoutFrame=false;updateCutoutUI();$('ktvQuickCutout').checked=false;$('ktvCutoutHint').textContent='⚠️ '+err.message;status('去背無法啟動：'+err.message)}}
  else{maskWorkerPending=null;cutoutFrame=false;updateCutoutUI();$('ktvCutoutHint').textContent='去背已關閉，使用一般自拍小視窗。'}
 });
 const status=s=>$('studioStatus').textContent=s;

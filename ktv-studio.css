@@ -22,9 +22,9 @@
 /* V1.5.6.87: consistent transparent cutout inside player (also captured once by tab sharing) */
 #ktvCamFloat.ktv-cutout-on{background:transparent;border-color:transparent;box-shadow:none;overflow:visible}
 #ktvCamFloat #ktvLiveCutout{position:absolute;inset:0;width:100%;height:100%;display:none;pointer-events:none}
-#ktvCamFloat.ktv-cutout-on #ktvLiveCutout{display:block;transform:scaleX(-1)}
-#ktvCamFloat.ktv-cutout-on.ktv-no-mirror #ktvLiveCutout{transform:none}
-#ktvCamFloat.ktv-cutout-on video{visibility:hidden}
+#ktvCamFloat.ktv-cutout-ready #ktvLiveCutout{display:block;transform:scaleX(-1)}
+#ktvCamFloat.ktv-cutout-ready.ktv-no-mirror #ktvLiveCutout{transform:none}
+#ktvCamFloat.ktv-cutout-ready video{visibility:hidden}
 
 /* V1.5.6.89 — compact full-screen KTV controls */
 #ktvCamFloat .ktv-cam-label,#ktvCamFloat .ktv-cam-grip{display:none!important}
@@ -140,7 +140,7 @@ body.ktv-preview-open{overflow:hidden!important}
 
 /* V1.5.6.95: prevent black camera preview caused by conflicting video layers */
 #ktvCamFloat video{display:block!important;opacity:1!important;visibility:visible;object-fit:contain!important;background:#141824}
-#ktvCamFloat.ktv-cutout-on video{visibility:hidden!important}
+#ktvCamFloat.ktv-cutout-ready video{visibility:hidden!important}
 #ktvCamFloat:not(.ktv-cutout-on) #ktvLiveCutout{display:none!important}
 
 /* V1.5.6.98: immersive recording review fills the display, not a scaled small card. */
