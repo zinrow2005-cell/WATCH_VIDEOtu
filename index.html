@@ -5,19 +5,19 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#0b1220">
-<title>WATCH_VIDEOtu V1.5.7.38</title>
+<title>WATCH_VIDEOtu V1.5.7.39</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=15694">
-  <link rel="stylesheet" href="responsive-v63.css?v=15694">
-  <link rel="stylesheet" href="ui-v65.css?v=15694">
+<link rel="stylesheet" href="styles.css?v=15739">
+  <link rel="stylesheet" href="responsive-v63.css?v=15739">
+  <link rel="stylesheet" href="ui-v65.css?v=15739">
 
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=15652">
 <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png?v=15652">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-180.png?v=15652">
 <meta name="apple-mobile-web-app-title" content="WATCH_VIDEOtu">
 
-<link rel="stylesheet" href="ktv-studio.css?v=15738">
-<link rel="stylesheet" href="ktv-lyrics.css?v=15731">
+<link rel="stylesheet" href="ktv-simple.css?v=15739">
+<link rel="stylesheet" href="ktv-lyrics.css?v=15739">
 <link rel="stylesheet" href="ktv-lyric-workspace.css?v=15720">
 </head>
 <body>
@@ -31,7 +31,7 @@
       <circle cx="50" cy="14" r="6" fill="#fff"/><path d="M50 10.7v6.6M46.7 14h6.6" stroke="#ff174d" stroke-width="2.4" stroke-linecap="round"/>
     </svg>
   </span>
-  <span class="brand-copy"><strong>WATCH_VIDEO<span class="brand-tu">tu</span></strong><span class="brand-version" title="手機 TV 簡化版 V1.5.7.38">V1.5.7.38</span><small>Kids Video Hub</small></span>
+  <span class="brand-copy"><strong>WATCH_VIDEO<span class="brand-tu">tu</span></strong><span class="brand-version" title="手機 TV 簡化版 V1.5.7.39">V1.5.7.39</span><small>Kids Video Hub</small></span>
 </button>
 <div class="mode-switch" id="modeSwitch">
   <button id="videoModeBtn" class="mode-btn active" type="button">🎬 影片模式</button>
@@ -314,34 +314,7 @@
       </div>
 
       
-      <section id="ktvStudio" aria-label="KTV錄音錄影設定">
- <details id="ktvStudioDetails"><summary style="cursor:pointer;font-size:22px;font-weight:800;padding:9px 0">⚙ 錄製設定</summary>
- <div class="studio-top"><strong>⚙ 錄唱設定</strong><button type="button" id="ktvSettingsClose" aria-label="關閉錄影設定">✕</button></div><div class="ktv-setting-mode" role="group" aria-label="設定顯示模式"><button type="button" id="ktvModeBasic" aria-pressed="true">一般設定</button><button type="button" id="ktvModeAdvanced" aria-pressed="false">進階設定</button></div><p class="ktv-basic-note" id="ktvBasicNote">平常只需要調整背景、音量與鏡頭；其餘可到進階設定。</p><div class="ktv-setting-section-title">🎬 作品與背景</div>
- <div class="studio-settings">
- <label>作品名稱<input id="studioTitle" type="text" value="我的 KTV 作品" maxlength="45"></label>
- <p style="font-size:13px;line-height:1.5;margin:6px 0;color:inherit">📱 手機無法直接錄製 YouTube KTV 影片及伴奏。要保留背景畫面與音樂，請使用有權使用的本機影片作為背景；使用耳機可降低麥克風回授。</p>
- <label>背景模式<select id="studioBackground"><option value="screen">KTV 歌曲畫面（電腦分享分頁）</option><option value="stage">演唱會舞台</option><option value="gradient">霓虹漸層</option><option value="camera">全螢幕鏡頭</option><option value="photo">我的照片</option><option value="video">我的影片</option></select></label>
- <label>🖼 選擇手機背景圖片<input type="file" id="studioPhoto" accept="image/*"></label><small id="ktvPhotoNotice">可預先選擇，將記住本機圖片設定（同一瀏覽器）。</small>
- <label class="studio-advanced">上傳影片<input type="file" id="studioVideo" accept="video/*"></label>
- <label>人物大小<input id="studioScale" type="range" min="12" max="75" value="26"></label>
- <label style="display:flex;flex-direction:row;align-items:center"><input id="studioOverlay" type="checkbox">鏡頭疊加在背景上</label>
- </div>
- <details class="ktv-settings-accordion"><summary>📝 歌詞與字幕設定</summary><section class="ktv-lyrics-settings" id="ktvLyricsSettings"><div class="ktv-setting-section-title">📝 自動歌詞字幕</div><label>歌曲名稱<input id="ktvLyricsTitle" placeholder="目前播放歌曲會自動帶入"></label><label>演唱者<input id="ktvLyricsArtist" placeholder="演唱者"></label><div class="ktv-lyrics-actions"><button type="button" id="ktvLyricsFind">🔎 自動搜尋歌詞</button><label class="ktv-import-label">匯入 LRC / TXT<input id="ktvLyricsImport" type="file" accept=".lrc,.txt,text/plain"></label></div><label>搜尋結果<select id="ktvLyricsResults"><option value="">請先搜尋</option></select></label><label>字幕偏移（秒）<input id="ktvLyricsOffset" type="number" value="0" step="0.5"></label><div class="ktv-lyric-adjust" aria-label="字幕時間校正"><button type="button" data-lyric-shift="-0.5">字幕太慢 -0.5秒</button><button type="button" data-lyric-shift="0.5">字幕太快 +0.5秒</button><button type="button" id="ktvLyricReset">重設校正</button><span id="ktvLyricOffsetLabel" aria-live="polite">偏移 0.0 秒</span></div><p class="studio-hint">字幕太快＝延後顯示（+），字幕太慢＝提前顯示（-）；只記住目前這支 KTV 影片。</p><button type="button" id="ktvOpenLyricStudioSettings" class="ktv-open-lyric-studio">🎛️ 開啟全畫面字幕編輯工作室</button><div class="ktv-timeline-editor" id="ktvTimelineEditor"><div class="ktv-timeline-header"><strong>📊 歌詞時間軸編輯器</strong><span id="ktvTimelineHint">載入 LRC 後可拖曳時間點</span></div><p class="studio-hint">拖曳歌詞節點可直接調整播放時間；點選節點同步選中歌詞行。手機可橫向捲動時間軸，錄影時建議先完成校正。</p><div class="ktv-timeline-controls"><label>每格秒數<select id="ktvTimelineScale"><option value="3">3 秒（精細）</option><option value="6" selected>6 秒（一般）</option><option value="12">12 秒（總覽）</option></select></label><button type="button" id="ktvTimelineNow">定位目前播放</button><button type="button" id="ktvTimelineSave">儲存校正</button></div><div id="ktvTimelineScroll" class="ktv-timeline-scroll" tabindex="0" aria-label="歌詞時間軸，左右捲動"><div id="ktvTimelineTrack" class="ktv-timeline-track"><div class="ktv-timeline-empty">請載入含時間標記的 LRC 歌詞</div></div></div><div class="ktv-timeline-footer"><span id="ktvTimelineSelected">尚未選取歌詞</span><span id="ktvTimelineCount">0 行</span></div></div><div class="ktv-line-editor" id="ktvLineEditor"><strong>🎼 逐行歌詞時間校正</strong><p class="studio-hint">選擇需要校正的一句歌詞；可提前／延後，或直接對齊目前歌曲播放時間。調整只套用目前影片及這份歌詞。</p><label>選擇歌詞行<select id="ktvLineSelect"><option value="">請先載入同步 LRC 歌詞</option></select></label><div id="ktvLineTimeStatus" role="status">尚未選擇歌詞</div><div class="ktv-line-buttons"><button type="button" id="ktvLineEarlier">◀ 提前 0.5 秒</button><button type="button" id="ktvLineLater">延後 0.5 秒 ▶</button><button type="button" id="ktvLineAlign">🎯 對齊目前播放</button><button type="button" id="ktvLineUndo">↶ 還原本行</button></div><button class="ktv-line-reset" type="button" id="ktvLineResetAll">清除本影片的逐行校正</button></div><label class="ktv-setting-check"><input id="ktvLyricsEnabled" type="checkbox" checked> 在錄影畫面加入字幕</label><div id="ktvLyricsStatus" role="status">依歌曲名稱自動搜尋 LRCLIB；部分歌曲沒有同步字幕，需自行確認是否符合版本。</div><textarea id="ktvLyricsText" rows="4" placeholder="搜尋不到時，可貼入 LRC 時間字幕或自行提供的歌詞"></textarea><p class="studio-hint">歌詞由第三方 LRCLIB 提供，覆蓋率與時間軸不保證；公開散布含歌詞的錄影請確認授權。</p></section></details><div class="ktv-setting-section-title">🎚️ 聲音與混音</div><div class="ktv-mixer" aria-label="錄製混音器">
- <label><span>🎵 伴奏</span> <input id="ktvMusicVolume" type="range" min="0" max="200" value="100"><output id="ktvMusicRead">100%</output></label>
- <label><span>🎤 麥克風</span> <input id="ktvMicVolume" type="range" min="0" max="200" value="100"><output id="ktvMicRead">100%</output></label>
- <label><span>🎙️ 人聲效果</span> <select id="ktvVoiceEffect"><option value="natural">原聲</option><option value="warm">溫暖厚實</option><option value="bright">清晰明亮</option><option value="echo">輕微回音</option></select></label>
- <label><span>📱 喇叭錄音模式</span> <select id="ktvSpeakerMode"><option value="balanced" selected>平衡模式（建議：喇叭播放＋唱歌）</option><option value="voice">人聲優先（減少伴奏串音）</option><option value="raw">原音保留（較少切音；可能有回音）</option></select></label><p class="studio-hint" id="ktvAudioModeHint">平衡模式：回音消除開啟、強力降噪關閉、固定音量；若人聲斷續可試「原音保留」。</p><label class="studio-advanced"><input id="ktvNoiseControl" type="checkbox">舊版降噪設定（已由錄音模式取代）</label><p class="studio-hint" id="ktvMicDeviceStatus" role="status">錄影開始後顯示實際麥克風處理能力。</p>
- <p class="studio-hint studio-advanced">桌面 Chrome／Edge：開始錄影後選擇「目前分頁」，並開啟「同時分享分頁音訊」，才可能收錄 KTV 影片與伴奏。請勿選擇其他視窗或整個螢幕。戴耳機可避免伴奏被麥克風重複收音。音量滑桿控制的是<strong>錄製成品混音</strong>，不是 YouTube 播放器自身音量。</p></div>
- <div class="ktv-setting-section-title">📷 人像與鏡頭</div><label class="ktv-setting-check"><input type="checkbox" id="ktvMirrorCamera" checked> 🪞 自拍鏡像（預覽與錄影同步）</label>
-<div class="studio-controls" style="display:none"><button type="button" id="studioCamera">📷 開啟鏡頭</button><button type="button" id="studioScreen">🖥️ 分享 KTV 畫面（支援時）</button><button type="button" id="studioRec" class="studio-record">🔴 開始錄製</button><button type="button" id="studioStop" class="studio-stop" disabled>■ 結束錄製</button></div>
- <div class="studio-canvas-wrap" style="display:none"><canvas id="studioCanvas" width="1280" height="720"></canvas></div>
- <p id="studioDeviceNote" class="studio-hint" role="status"></p>
- <p id="studioStatus" class="studio-status" role="status" aria-live="polite">請先播放 KTV 歌曲，再點歌曲影片上方的「開啟鏡頭」。鏡頭可直接拖曳及調整大小。</p>
- <p class="studio-hint">⚠️ 必須授權分享「目前分頁」及「分享分頁音訊」，否則無法保證 KTV 音樂進入成品。部分手機、iPad 或受保護影片無法擷取影音；系統會明確提示。</p>
- <div id="studioResult" class="studio-result studio-hidden"><div class="studio-result-head"><h3>🎞️ 錄製完成 · 預覽作品</h3><button type="button" id="studioClosePreview" aria-label="關閉錄影預覽">✕ 關閉預覽</button></div><div id="studioPreviewTheatre" class="ktv-preview-wrapper"><div class="ktv-preview-fs-actions"><button type="button" id="studioPreviewFullscreen">⛶ 全螢幕預覽</button><button type="button" id="studioPreviewExit">✕ 離開全螢幕</button></div><button type="button" id="studioPlaybackBack" class="studio-hidden" aria-label="返回 KTV 播放器">← 返回 KTV（關閉播放）</button><video class="studio-playback" id="studioPlayback" controls playsinline webkit-playsinline></video></div><p id="ktvRecordedSummary" class="ktv-record-summary" role="status"></p><p id="studioFormatNote" role="status" style="font-size:14px;line-height:1.6;color:#ffdf9d"></p><div class="studio-controls"><button type="button" id="studioRetry">↻ 重唱（捨棄這次）</button><button type="button" id="studioSave">💾 儲存／下載</button><button type="button" id="studioShare" style="display:none">📱 分享至手機／相簿</button><button type="button" id="studioDiscard">✕ 不儲存退出</button></div></div>
- <details class="ktv-settings-accordion"><summary>📁 我的錄製紀錄（進階）</summary><h3 class="studio-history-title">📁 我的錄製紀錄</h3><p class="studio-hint">作品備份存在目前裝置的瀏覽器 IndexedDB，不會自動同步到手機相簿或其他裝置。按儲存後也會下載檔案；請自行從下載項目儲存到相簿。清除瀏覽器資料可能失去備份。</p><div class="studio-history" id="studioHistory">點「更新我的作品」查看。</div></details>
- </details>
-</section>
+<section id="ktvLyricOptionsStandalone" class="ktv-lyrics-options"><details class="ktv-settings-accordion"><summary>📝 歌詞與字幕設定</summary><section class="ktv-lyrics-settings" id="ktvLyricsSettings"><div class="ktv-setting-section-title">📝 自動歌詞字幕</div><label>歌曲名稱<input id="ktvLyricsTitle" placeholder="目前播放歌曲會自動帶入"></label><label>演唱者<input id="ktvLyricsArtist" placeholder="演唱者"></label><div class="ktv-lyrics-actions"><button type="button" id="ktvLyricsFind">🔎 自動搜尋歌詞</button><label class="ktv-import-label">匯入 LRC / TXT<input id="ktvLyricsImport" type="file" accept=".lrc,.txt,text/plain"></label></div><label>搜尋結果<select id="ktvLyricsResults"><option value="">請先搜尋</option></select></label><button type="button" id="ktvLyricsApprove">✓ 確認使用這份歌詞</button><label>字幕偏移（秒）<input id="ktvLyricsOffset" type="number" value="0" step="0.5"></label><div class="ktv-lyric-adjust" aria-label="字幕時間校正"><button type="button" data-lyric-shift="-0.5">字幕太慢 -0.5秒</button><button type="button" data-lyric-shift="0.5">字幕太快 +0.5秒</button><button type="button" id="ktvLyricReset">重設校正</button><span id="ktvLyricOffsetLabel" aria-live="polite">偏移 0.0 秒</span></div><p class="studio-hint">字幕太快＝延後顯示（+），字幕太慢＝提前顯示（-）；只記住目前這支 KTV 影片。</p><button type="button" id="ktvOpenLyricStudioSettings" class="ktv-open-lyric-studio">🎛️ 開啟全畫面字幕編輯工作室</button><div class="ktv-timeline-editor" id="ktvTimelineEditor"><div class="ktv-timeline-header"><strong>📊 歌詞時間軸編輯器</strong><span id="ktvTimelineHint">載入 LRC 後可拖曳時間點</span></div><p class="studio-hint">拖曳歌詞節點可直接調整播放時間；點選節點同步選中歌詞行。手機可橫向捲動時間軸，錄影時建議先完成校正。</p><div class="ktv-timeline-controls"><label>每格秒數<select id="ktvTimelineScale"><option value="3">3 秒（精細）</option><option value="6" selected>6 秒（一般）</option><option value="12">12 秒（總覽）</option></select></label><button type="button" id="ktvTimelineNow">定位目前播放</button><button type="button" id="ktvTimelineSave">儲存校正</button></div><div id="ktvTimelineScroll" class="ktv-timeline-scroll" tabindex="0" aria-label="歌詞時間軸，左右捲動"><div id="ktvTimelineTrack" class="ktv-timeline-track"><div class="ktv-timeline-empty">請載入含時間標記的 LRC 歌詞</div></div></div><div class="ktv-timeline-footer"><span id="ktvTimelineSelected">尚未選取歌詞</span><span id="ktvTimelineCount">0 行</span></div></div><div class="ktv-line-editor" id="ktvLineEditor"><strong>🎼 逐行歌詞時間校正</strong><p class="studio-hint">選擇需要校正的一句歌詞；可提前／延後，或直接對齊目前歌曲播放時間。調整只套用目前影片及這份歌詞。</p><label>選擇歌詞行<select id="ktvLineSelect"><option value="">請先載入同步 LRC 歌詞</option></select></label><div id="ktvLineTimeStatus" role="status">尚未選擇歌詞</div><div class="ktv-line-buttons"><button type="button" id="ktvLineEarlier">◀ 提前 0.5 秒</button><button type="button" id="ktvLineLater">延後 0.5 秒 ▶</button><button type="button" id="ktvLineAlign">🎯 對齊目前播放</button><button type="button" id="ktvLineUndo">↶ 還原本行</button></div><button class="ktv-line-reset" type="button" id="ktvLineResetAll">清除本影片的逐行校正</button></div><label class="ktv-setting-check"><input id="ktvLyricsEnabled" type="checkbox" checked> 在錄影畫面加入字幕</label><div id="ktvLyricsStatus" role="status">依歌曲名稱自動搜尋 LRCLIB；部分歌曲沒有同步字幕，需自行確認是否符合版本。</div><textarea id="ktvLyricsText" rows="4" placeholder="搜尋不到時，可貼入 LRC 時間字幕或自行提供的歌詞"></textarea><p class="studio-hint">歌詞由第三方 LRCLIB 提供，覆蓋率與時間軸不保證；公開散布含歌詞的錄影請確認授權。</p></section></details></section>
 <div id="ktvPlayerPanel" class="ktv-player-panel hidden">
         <div class="ktv-player-head">
           <div>
@@ -356,15 +329,28 @@
           <div id="ktvLyricsLive" class="ktv-lyrics-live" aria-live="off"></div><div id="ktvLyricsSyncBar" class="ktv-lyrics-syncbar" aria-label="播放中歌詞校正"><div id="ktvLyricsSyncDrag" class="ktv-lyrics-drag" role="button" tabindex="0" aria-label="拖曳移動字幕時間工具" title="按住此處拖曳工具位置">⠿ <span>移動</span></div><button type="button" data-lyric-shift="-0.5" title="字幕提前半秒">◀ 提前 0.5s</button><span id="ktvLyricLiveOffset">字幕 ±0.0s</span><button type="button" data-lyric-shift="0.5" title="字幕延後半秒">延後 0.5s ▶</button></div>
           <div id="ktvCamFloat" class="ktv-cam-float hidden" aria-label="可拖曳的自拍鏡頭"><video id="ktvCamPreview" autoplay muted playsinline></video></div>
         </div>
-        <div class="ktv-player-fullbar" aria-label="KTV 播放輔助操作"><button id="ktvFullscreenBtn" type="button">⛶ 全螢幕</button><button type="button" id="ktvLyricsQuick" class="ktv-extra-action">📝 歌詞</button><button type="button" id="ktvOpenLyricStudio" class="ktv-extra-action">🎛️ 字幕編輯</button><button id="ktvCompactSettings" type="button" aria-label="開啟錄影設定">⚙ 設定</button><button id="ktvMyRecordings" type="button">📁 我的作品</button><button id="ktvFullscreenMenu" type="button" aria-expanded="false" aria-controls="ktvFullscreenToolbox" aria-label="開啟工具清單">⋯ 更多工具</button></div>
-        <div class="ktv-user-guide" id="ktvUserGuide" role="status" aria-live="polite"><span class="ktv-guide-label">第一次錄唱</span><span id="ktvGuideMessage">① 選歌播放　② 開啟鏡頭　③ 按錄影</span><button type="button" id="ktvGuideDismiss" aria-label="收合操作提示">✕</button></div><div id="ktvQuickControls" class="ktv-quick-controls" aria-label="KTV錄製快捷操作"><button type="button" id="ktvQuickCamera">📷 開啟鏡頭</button><button type="button" id="ktvQuickStart">🔴 開始錄影</button><button type="button" id="ktvQuickStop" disabled>■ 結束錄影</button></div><div id="ktvRecordLiveStatus" class="ktv-record-live" role="status" aria-live="polite"><span id="ktvRecordLiveDot" class="ktv-record-dot"></span><span id="ktvRecordLiveText">尚未開始錄影</span><span id="ktvRecordLiveClock">00:00</span></div>
-        <div hidden id="ktvCompatibilityControls"><button type="button" id="ktvCamToggle">開啟鏡頭</button><button type="button" id="ktvRecordStart">錄影</button><button type="button" id="ktvRecordStop" disabled>停止</button><button type="button" id="ktvRecordingOptions">設定</button></div><div id="ktvFullscreenToolbox" class="ktv-player-tools">
-          <button hidden id="ktvMyRecordingsTools" type="button">📁 我的錄影作品</button><button id="ktvPreflight" type="button">✓ 裝置檢測</button>
-          <span class="ktv-live-mix">🎵 <input id="ktvLiveMusic" type="range" min="0" max="200" value="100" aria-label="錄影伴奏音量" title="錄影伴奏音量"> 🎤 <input id="ktvLiveMic" type="range" min="0" max="200" value="100" aria-label="錄影麥克風音量" title="錄影麥克風音量"></span>
-          <button id="ktvReplayBtn" type="button">↻ 重唱</button>
-          <button id="ktvPlayerCutBtn" type="button">⏭ 切下一首</button>
-          <button id="ktvPlayerQueueBtn" type="button">📋 查看已點歌曲</button>
-          <p id="ktvCapabilityNote" class="ktv-capability-note" role="status" aria-live="polite"></p>
+        <div class="simple-actions" aria-label="KTV 錄製操作">
+          <button type="button" id="simpleCamera" class="simple-action">📷 開啟鏡頭</button>
+          <button type="button" id="simpleRecord" class="simple-action primary">🔴 開始錄影</button>
+          <button type="button" id="simpleStop" class="simple-action danger" disabled>■ 停止</button>
+        </div>
+        <div class="simple-extras">
+          <button type="button" id="ktvFullscreenBtn">⛶ 全螢幕</button>
+          <button type="button" id="simpleOptionsBtn">⚙ 錄製選項</button>
+          <button type="button" id="simpleLibraryBtn">📁 我的作品</button>
+          <button type="button" id="ktvLyricsQuick">📝 歌詞</button><button type="button" id="ktvOpenLyricStudio">🎛️ 字幕編輯</button>
+          <button type="button" id="ktvReplayBtn">↻ 重唱</button>
+          <button type="button" id="ktvPlayerCutBtn">⏭ 下一首</button>
+          <button type="button" id="ktvPlayerQueueBtn">📋 已點歌曲</button>
+        </div>
+        <p class="simple-status" id="simpleStatus" role="status" aria-live="polite">先選歌，再按「開啟鏡頭」或直接「開始錄影」。</p>
+        <div id="simpleOptions" class="simple-panel" hidden>
+          <div class="simple-panel-head"><strong>⚙ 簡易錄影設定</strong><button type="button" id="simpleOptionsClose" aria-label="關閉設定">✕</button></div>
+          <label>錄製方式<select id="simpleRecordingType"><option value="video">影片＋人聲</option><option value="audio">純錄音（人聲）</option></select></label>
+          <label>錄製背景<select id="simpleBackground"><option value="gradient">預設背景（手機／平板）</option><option value="photo">自選照片</option><option value="camera">只有自拍畫面</option><option value="tab">擷取 KTV 分頁（電腦適用）</option></select></label>
+          <label>背景照片<input id="simplePhoto" type="file" accept="image/*"></label>
+          <label>麥克風音量 <input id="simpleMicVolume" type="range" min="0" max="200" value="100"></label>
+          <p class="simple-note">手機無法可靠擷取 YouTube 畫面與伴奏。選擇自訂照片或預設背景時，成品會錄入自拍鏡頭與麥克風；電腦可選擇分享分頁（含音訊）。</p>
         </div>
       </div>
 <div id="ktvSingerPanel" class="ktv-singer-panel hidden">
@@ -488,18 +474,22 @@
   <header class="ktv-lyric-studio-bar"><div><strong id="ktvLyricStudioHeading">🎛️ 字幕編輯工作室</strong><small>左側播放影片，右側調整同步時間；修改會沿用原本的逐行校正紀錄</small></div><button type="button" id="ktvLyricStudioClose" class="ktv-lyric-studio-close">✕ 返回 KTV</button></header>
   <div class="ktv-lyric-studio-layout"><section class="ktv-lyric-studio-preview" aria-label="目前歌曲播放畫面"><div id="ktvLyricStudioStageSlot" class="ktv-lyric-stage-slot"><div class="ktv-lyric-studio-empty">請先選擇並播放 KTV 歌曲</div></div><p>影片播放仍由原本的 YouTube 播放器控制；此視窗不會另開第二支影片。</p></section><section class="ktv-lyric-studio-edit" aria-label="字幕時間軸校正"><div class="ktv-lyric-studio-info">先確認歌詞版本與時間標記正確，再拖曳節點或按「對齊目前播放」。</div><div class="ktv-studio-sync" aria-live="polite"><span id="ktvStudioSyncStatus">○ 未同步</span><label><input type="checkbox" id="ktvStudioFollow" checked> 跟隨播放</label></div><div class="ktv-studio-lines"><strong id="ktvStudioCurrentLine">等待歌詞…</strong><span id="ktvStudioNextLine">下一句：—</span></div><div class="ktv-studio-guide">歌詞段落與播放位置</div><div class="ktv-studio-guide-track" id="ktvTimelineRuler" data-follow="true"><div id="ktvStudioPlayhead" class="ktv-studio-playhead" hidden></div></div><div id="ktvLyricStudioTimelineSlot"></div><div id="ktvLyricStudioLineSlot"></div></section></div>
 </div>
+<div id="simpleReview" class="simple-modal" hidden role="dialog" aria-modal="true" aria-label="錄製完成">
+ <div class="simple-modal-inner"><header><strong>🎞️ 錄製完成</strong><button type="button" id="simpleReviewClose">✕ 關閉</button></header>
+ <video id="simplePlayback" controls playsinline></video><div class="simple-review-actions"><button id="simpleRetry">↻ 重唱</button><button id="simpleSave">💾 下載儲存</button><button id="simpleShare">📱 分享</button></div><p id="simpleReviewHint"></p></div></div>
+<div id="simpleLibrary" class="simple-modal" hidden role="dialog" aria-modal="true" aria-label="我的作品"><div class="simple-modal-inner"><header><strong>📁 我的作品</strong><button id="simpleLibraryClose">✕ 關閉</button></header><div id="simpleLibraryList"></div></div></div>
 <div id="modal" class="modal hidden">
   <div class="modal-card"><h3>輸入家長 PIN</h3><input id="modalInput" inputmode="numeric" maxlength="6"><div class="modal-actions"><button id="modalCancel">取消</button><button id="modalOk">確定</button></div></div>
 </div>
-<script defer src="ktv_singers.js?v=15694"></script>
-<script defer src="ktv_songs.js?v=15694"></script>
-<script defer src="app.js?v=15694"></script>
+<script defer src="ktv_singers.js?v=15739"></script>
+<script defer src="ktv_songs.js?v=15739"></script>
+<script defer src="app.js?v=15739"></script>
 
-<script defer src="ktv-studio.js?v=15738"></script>
-<script defer src="ktv-lyrics.js?v=15731"></script>
-<script defer src="ktv-lyrics-position.js?v=15731"></script>
+<script defer src="ktv-simple.js?v=15739"></script>
+<script defer src="ktv-lyrics.js?v=15739"></script>
+<script defer src="ktv-lyrics-position.js?v=15739"></script>
 
 <div id="ktvToast" class="ktv-toast hidden" role="status" aria-live="polite"></div>
-<script defer src="ktv-lyric-workspace.js?v=15731"></script>
+<script defer src="ktv-lyric-workspace.js?v=15739"></script>
 </body>
 </html>
