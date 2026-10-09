@@ -38,7 +38,10 @@ html.ktv-direct-capture #ktvCamFloat { box-shadow:none!important; }
 #ktvCamPreview{object-fit:cover!important}
 @media(max-width:800px){#ktvCamFloat{aspect-ratio:9/16;width:34%;max-height:75%;min-width:80px}#ktvCamPreview{object-fit:cover!important}.simple-modal video{max-height:48dvh}.simple-modal-inner{max-height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 20px)}}
 
-/* v1.5.7.45: keep native iOS camera video visible, avoid black overlays */
+/* v1.5.7.46: keep native iOS camera video visible, avoid black overlays */
 #ktvCamPreview{background:transparent!important;transform:translateZ(0);-webkit-transform:translateZ(0)}
 #simplePlayback[hidden]{display:none!important}
 @media(max-width:800px){#ktvCamFloat{background:#101827!important}#simpleLyricsOpen{min-height:50px}}
+
+/* V1.5.7.46: mobile immersive recorder and reliable review access */
+@media(max-width:1100px){#ktvPlayerPanel.simple-fullview{height:100dvh!important;overflow-y:auto!important;padding:env(safe-area-inset-top, 8px) 12px env(safe-area-inset-bottom, 14px)!important}#ktvPlayerPanel.simple-fullview #ktvPlayerStage{max-height:58dvh!important}#ktvCamPreview{object-fit:cover!important}#ktvPlayerPanel.simple-fullview .simple-actions{position:sticky;bottom:0;z-index:60;background:#0a1020;padding:10px 0} .simple-modal{z-index:2147483000!important}.simple-modal-inner{max-height:calc(100dvh - 24px)}}
