@@ -306,29 +306,37 @@ body > #studioPreviewTheatre.ktv-preview-theatre #studioPlaybackBack{display:non
 
 /* v1.5.7.33: never remove the camera border before actual AI segmentation succeeds. */
 
-/* v1.5.7.34: raw camera only, no segmentation visuals */
+/* v1.5.7.35: raw camera only, no segmentation visuals */
 #ktvCamFloat video{visibility:visible!important;display:block!important;filter:none!important;animation:none!important}
 #ktvCamFloat{filter:none!important;backdrop-filter:none!important;box-shadow:none!important}
 
-/* V1.5.7.35 — phone/tablet compact KTV controls; 44px tap targets */
-@media (max-width: 1024px), (pointer:coarse){
- #ktvPlayerPanel .ktv-player-fullbar{display:flex!important;flex-wrap:nowrap!important;justify-content:flex-end;align-items:center;width:100%!important;gap:6px!important;padding:4px!important;box-sizing:border-box}
- #ktvPlayerPanel .ktv-player-fullbar button{flex:0 0 44px!important;width:44px!important;min-width:44px!important;height:44px!important;min-height:44px!important;padding:0!important;white-space:nowrap!important;font-size:0!important;line-height:1!important;border-radius:12px!important}
- #ktvPlayerPanel .ktv-player-fullbar #ktvFullscreenBtn::before{content:"⛶";font-size:22px}
- #ktvPlayerPanel .ktv-player-fullbar #ktvCompactSettings::before{content:"⚙";font-size:21px}
- #ktvPlayerPanel .ktv-player-fullbar #ktvMyRecordings::before{content:"▣";font-size:22px}
- #ktvPlayerPanel .ktv-player-fullbar #ktvFullscreenMenu::before{content:"⋯";font-size:27px}
- #ktvPlayerPanel .ktv-quick-controls{display:flex!important;flex-wrap:nowrap!important;gap:7px!important;justify-content:center!important;align-items:center!important;width:auto!important;max-width:100%!important;padding:5px!important}
- #ktvPlayerPanel .ktv-quick-controls button{flex:0 0 46px!important;width:46px!important;min-width:46px!important;height:46px!important;min-height:46px!important;padding:0!important;font-size:0!important;white-space:nowrap!important;border-radius:13px!important;touch-action:manipulation}
- #ktvPlayerPanel #ktvQuickCamera::before{content:"📷";font-size:22px}
- #ktvPlayerPanel #ktvQuickStart::before{content:"⏺";font-size:25px;color:#fff}
- #ktvPlayerPanel #ktvQuickStop::before{content:"■";font-size:23px}
- #ktvPlayerPanel .ktv-user-guide{display:none!important}
- #ktvPlayerPanel.ktv-fs-active .ktv-player-fullbar{display:flex!important;width:auto!important;max-width:calc(100vw - 16px)!important;right:calc(6px + env(safe-area-inset-right))!important;top:calc(5px + env(safe-area-inset-top))!important}
- #ktvPlayerPanel.ktv-fs-active .ktv-quick-controls{display:flex!important;width:auto!important;flex-wrap:nowrap!important;bottom:calc(5px + env(safe-area-inset-bottom))!important;left:50%!important;right:auto!important;transform:translateX(-50%)!important}
- #ktvPlayerPanel .ktv-player-tools{max-width:min(330px,calc(100vw - 20px));overflow-y:auto;overscroll-behavior:contain}
+/* v1.5.7.35: mobile/tablet KTV usability and safe viewport refinements */
+#ktvPlayerPanel button,#ktvStudio button{ -webkit-tap-highlight-color:transparent; }
+#ktvPlayerPanel .ktv-player-fullbar button,#ktvPlayerPanel .ktv-quick-controls button{touch-action:manipulation;overflow-wrap:anywhere;line-height:1.3}
+#ktvStudio .studio-settings>*{min-width:0;max-width:100%;}
+#ktvStudio input,#ktvStudio select,#ktvStudio textarea{max-width:100%;box-sizing:border-box;}
+#ktvStudio .studio-top{z-index:15;}
+#ktvPlayerPanel #ktvFullscreenToolbox button{touch-action:manipulation;}
+@media(max-width:700px){
+ #ktvPlayerPanel .ktv-player-fullbar{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:8px!important;}
+ #ktvPlayerPanel .ktv-player-fullbar>button{width:100%;min-width:0;min-height:44px!important;font-size:14px!important;}
+ #ktvPlayerPanel .ktv-quick-controls{display:grid!important;grid-template-columns:repeat(3,minmax(0,1fr))!important;width:100%;gap:6px;}
+ #ktvPlayerPanel .ktv-quick-controls>button{width:100%!important;min-width:0;min-height:48px!important;padding:8px 4px!important;font-size:13px!important;}
+ #ktvStudio .studio-settings{display:grid!important;grid-template-columns:minmax(0,1fr)!important;}
+ #ktvPlayerPanel #ktvStudio.ktv-settings-open{width:calc(100vw - 16px)!important;max-width:520px!important;max-height:calc(100dvh - 16px - env(safe-area-inset-top) - env(safe-area-inset-bottom))!important;overflow-x:hidden!important;overflow-y:auto!important;overscroll-behavior:contain;}
+ #ktvStudio .ktv-mixer label{display:grid!important;grid-template-columns:minmax(0,1fr) auto;align-items:center;gap:7px;width:100%;}
+ #ktvStudio .ktv-mixer label input[type=range],#ktvStudio .ktv-mixer label select{grid-column:1/-1;width:100%;min-width:0;}
+ #ktvStudio .ktv-mixer label output{justify-self:end;}
+ #ktvStudio .studio-controls>button{min-height:44px;}
 }
-@media (orientation:landscape) and (max-height:500px){
- #ktvPlayerPanel.ktv-fs-active .ktv-quick-controls button{width:44px!important;min-width:44px!important;min-height:44px!important;height:44px!important}
- #ktvPlayerPanel.ktv-fs-active .ktv-player-fullbar button{width:44px!important;min-width:44px!important;min-height:44px!important;height:44px!important}
+@media(orientation:landscape) and (max-height:540px){
+ #ktvPlayerPanel.ktv-fs-active .ktv-quick-controls{display:flex!important;grid-template-columns:none!important;flex-wrap:nowrap!important;width:auto!important;max-width:calc(100vw - 20px)!important;gap:4px!important;bottom:calc(5px + env(safe-area-inset-bottom))!important;}
+ #ktvPlayerPanel.ktv-fs-active .ktv-quick-controls>button{width:auto!important;min-height:40px!important;min-width:74px!important;padding:5px 10px!important;}
+ #ktvPlayerPanel.ktv-fs-active .ktv-player-fullbar{display:flex!important;grid-template-columns:none!important;flex-wrap:wrap;gap:4px!important;}
+ #ktvPlayerPanel.ktv-fs-active.ktv-tools-open #ktvFullscreenToolbox{max-height:calc(100dvh - 54px - env(safe-area-inset-bottom))!important;width:min(330px,70vw)!important;}
+}
+@media(min-width:701px) and (max-width:1100px){
+ #ktvPlayerPanel .ktv-player-fullbar{display:flex;flex-wrap:wrap;gap:8px;}
+ #ktvPlayerPanel .ktv-player-fullbar button{min-height:46px;}
+ #ktvStudio .studio-settings{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));}
 }

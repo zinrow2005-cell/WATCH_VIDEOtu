@@ -67,7 +67,7 @@ function setRecordSummary(b){
  summary.textContent='錄製長度：約 '+Math.max(0,seconds)+' 秒｜格式：'+extension(b).toUpperCase()+'｜檔案：'+tracks.toFixed(1)+' MB。請播放確認聲音與畫面。';
 }
 
-// V1.5.7.34: AI segmentation and mask processing removed by request.
+// V1.5.7.35: AI segmentation and mask processing removed by request.
 function pauseKtvOnStop(){
  // This is the KTV-specific YouTube iframe, not the general video player.
  try{if(typeof pauseActiveKtvSong==='function')pauseActiveKtvSong();else{

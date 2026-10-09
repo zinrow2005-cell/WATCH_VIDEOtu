@@ -1,8 +1,13 @@
-# V1.5.7.35 KTV mobile/tablet controls
+# V1.5.7.35 KTV 手機及平板介面檢查修正
 
-- Phone and tablet playback controls use four compact icon-only buttons (full view, settings, recordings, more).
-- Camera, record, and stop remain in a separate compact row with 44–46px touch targets.
-- Tool actions keep their original JavaScript IDs and handlers; accessibility titles identify icons.
-- Detailed controls remain in the More tools overlay.
-- AI background removal stays removed.
-- Real devices/camera not available for end-to-end verification.
+## 這次修改
+- 手機非全螢幕常用按鈕改為一致雙欄；鏡頭、開始及停止錄影分成清楚的三欄快捷操作。
+- 橫式全螢幕快捷控制保持單排，考慮底部安全區；工具選單限制高度並允許捲動。
+- 設定面板的表單改為手機單欄；混音器標籤與滑桿不再互相擠壓。
+- 平板以雙欄設定及可換行的播放器操作列配置。
+- 儲存原本錄影、鏡頭來源與 1280×720 / 30fps 可選設定；不重新加入 AI 去背。
+
+## 驗證範圍與限制
+- 靜態 HTML 控制項、CSS、JavaScript 語法與 ZIP 封裝可檢查。
+- 本環境 Chromium 對本機頁面回報 ERR_BLOCKED_BY_ADMINISTRATOR，未能進行真實點擊、鏡頭權限、YouTube 或 iPad Safari 實測。
+- 手機直接擷取 YouTube 嵌入影片/音訊依然不受保證。請用真實裝置測試流程。
