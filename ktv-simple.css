@@ -53,3 +53,7 @@ html.ktv-direct-capture #ktvCamFloat { box-shadow:none!important; }
 #simpleCamSizeHandle{right:2px!important;bottom:2px!important;z-index:3!important;width:32px!important;height:32px!important}
 #ktvCamFloat:not(.hidden){visibility:visible!important;opacity:1!important}
 #ktvCamPreview{backface-visibility:visible!important;-webkit-backface-visibility:visible!important}
+
+/* V1.5.7.50: stable native camera preview; never let resize UI suppress it */
+#ktvCamFloat:not(.hidden){display:block!important;visibility:visible!important;opacity:1!important;contain:none!important;}
+#ktvCamFloat:not(.hidden) #ktvCamPreview{display:block!important;visibility:visible!important;opacity:1!important;position:relative!important;transform:none!important;}

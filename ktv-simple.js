@@ -21,23 +21,42 @@ $('simplePhotoClear').onclick=async()=>{photo=null;if(photoURL)URL.revokeObjectU
 
 function buttonState(){ $('simpleCamera').textContent=camStream?'📷 關閉鏡頭':'📷 開啟鏡頭';$('simpleRecord').disabled=starting||recording||finishing;$('simpleStop').disabled=!recording||finishing;$('simpleRecord').textContent=finishing?'⏳ 正在完成…':starting?'⏳ 準備中…':recording?'🔴 錄製中':'🔴 開始錄影'; }
 function stopTracks(stream){if(stream)stream.getTracks().forEach(t=>t.stop())}
+let cameraOpening=false;
 async function openCamera(){
- if(camStream&&camStream.getVideoTracks().some(t=>t.readyState==='live')){
-   cameraBox.classList.remove('hidden');cameraBox.style.display='block';camera.style.visibility='visible';
-   camera.muted=true;camera.playsInline=true;if(camera.paused||camera.readyState<2)await camera.play().catch(()=>{});return true;
- }
- if(!navigator.mediaDevices?.getUserMedia)throw Error('瀏覽器不支援攝影機，請使用 HTTPS 與 Safari/Chrome。');
- // iOS Safari is more reliable with a native facingMode stream and no forced 720p constraints.
- const constraints=isMobile?{video:{facingMode:'user'},audio:false}:{video:{width:{ideal:1280},height:{ideal:720},frameRate:{ideal:30}},audio:false};
- camStream=await navigator.mediaDevices.getUserMedia(constraints);
- camera.setAttribute('playsinline','');camera.setAttribute('webkit-playsinline','');camera.playsInline=true;
- camera.autoplay=true;camera.muted=true;camera.defaultMuted=true;
- camera.srcObject=camStream;cameraBox.classList.remove('hidden');cameraBox.style.display='block';camera.style.display='block';camera.style.visibility='visible';camera.style.opacity='1';
- try{await camera.play()}catch(err){stopTracks(camStream);camStream=null;camera.srcObject=null;cameraBox.classList.add('hidden');throw Error('鏡頭啟動失敗：'+err.message)}
- if(!camera.videoWidth){await Promise.race([new Promise(resolve=>camera.addEventListener('loadedmetadata',resolve,{once:true})),new Promise(resolve=>setTimeout(resolve,2000))]);}
- if(!camera.videoWidth||!camera.videoHeight){status('鏡頭已授權，但尚無影像；請檢查 Safari 網站攝影機權限或關閉其他使用鏡頭的 App。');}
- else status('📷 鏡頭已開啟（'+camera.videoWidth+'×'+camera.videoHeight+'）');
- buttonState();return true;
+ if(cameraOpening)return false;
+ cameraOpening=true;
+ try{
+  if(!navigator.mediaDevices?.getUserMedia)throw Error('此瀏覽器沒有提供攝影機權限，請使用 HTTPS 開啟並允許攝影機。');
+  let current=camStream&&camStream.getVideoTracks().some(t=>t.readyState==='live');
+  if(!current){
+   stopTracks(camStream);camStream=null;
+   const constraints=isMobile?{video:{facingMode:'user'},audio:false}:{video:{width:{ideal:1280},height:{ideal:720},frameRate:{ideal:30}},audio:false};
+   status('正在取得攝影機權限…');
+   try{camStream=await navigator.mediaDevices.getUserMedia(constraints)}
+   catch(first){
+     if(first.name==='OverconstrainedError'||first.name==='NotFoundError')camStream=await navigator.mediaDevices.getUserMedia({video:true,audio:false});
+     else throw first;
+   }
+  }
+  // Show the native video element before play(), and do not discard a live stream for an autoplay delay.
+  cameraBox.classList.remove('hidden');cameraBox.style.setProperty('display','block','important');cameraBox.style.visibility='visible';cameraBox.style.opacity='1';
+  camera.setAttribute('playsinline','');camera.setAttribute('webkit-playsinline','');
+  camera.playsInline=true;camera.autoplay=true;camera.muted=true;camera.defaultMuted=true;
+  camera.style.display='block';camera.style.visibility='visible';camera.style.opacity='1';
+  if(camera.srcObject!==camStream)camera.srcObject=camStream;
+  // Avoid video.load(): on Safari it can detach a live srcObject and blank the preview.
+  const tryPlay=async()=>{try{await camera.play();return true}catch(e){return false}};
+  let played=await tryPlay();
+  if(!played){await new Promise(resolve=>setTimeout(resolve,150));played=await tryPlay()}
+  if(camera.readyState<2){await Promise.race([new Promise(resolve=>{camera.addEventListener('loadeddata',resolve,{once:true});camera.addEventListener('loadedmetadata',resolve,{once:true})}),new Promise(resolve=>setTimeout(resolve,1200))]);}
+  if(!played&&!camera.videoWidth)status('已取得鏡頭，但影片尚未開始顯示。請再點一下鏡頭畫面以啟動播放。');
+  else status('📷 鏡頭已開啟'+(camera.videoWidth?'（'+camera.videoWidth+'×'+camera.videoHeight+'）':''));
+  buttonState();return true;
+ }catch(e){
+  status('鏡頭無法開啟：'+(e?.name||'')+' '+(e?.message||e));
+  if(!camStream?.getVideoTracks().some(t=>t.readyState==='live')){stopTracks(camStream);camStream=null;camera.srcObject=null;cameraBox.classList.add('hidden');cameraBox.style.removeProperty('display')}
+  buttonState();throw e;
+ }finally{cameraOpening=false}
 }function closeCamera(){if(recording)return;stopTracks(camStream);camStream=null;camera.srcObject=null;cameraBox.classList.add('hidden');cameraBox.style.display='none';status('已關閉鏡頭');buttonState()}
 $('simpleCamera').addEventListener('click',async()=>{if(starting)return;try{if(camStream)closeCamera();else await openCamera()}catch(e){status('無法開啟鏡頭：'+e.message);buttonState()}});
 const opts=$('simpleOptions');$('simpleOptionsBtn').onclick=()=>{opts.hidden=!opts.hidden};$('simpleOptionsClose').onclick=()=>{opts.hidden=true};
@@ -171,10 +190,10 @@ function closeLibrary(){clearLibraryPlayback();library.hidden=true;review.hidden
 $('simpleLibraryClose').onclick=closeLibrary;
 // For no-crop control, keep the actual camera inside the stage and allow pointer drag.
 let drag=null;cameraBox.style.touchAction='none';cameraBox.addEventListener('pointerdown',e=>{if(e.target.closest('#simpleCamSizeHandle'))return;if(!camStream)return;const a=stage.getBoundingClientRect(),b=cameraBox.getBoundingClientRect();drag={x:e.clientX,y:e.clientY,l:b.left-a.left,t:b.top-a.top};cameraBox.setPointerCapture(e.pointerId)});cameraBox.addEventListener('pointermove',e=>{if(!drag)return;const a=stage.getBoundingClientRect(),w=cameraBox.offsetWidth,h=cameraBox.offsetHeight;cameraBox.style.left=Math.max(0,Math.min(a.width-w,drag.l+e.clientX-drag.x))+'px';cameraBox.style.top=Math.max(0,Math.min(a.height-h,drag.t+e.clientY-drag.y))+'px';cameraBox.style.right='auto'});cameraBox.addEventListener('pointerup',()=>drag=null);cameraBox.addEventListener('pointercancel',()=>drag=null);
-const sizeHandle=document.createElement('button');sizeHandle.id='simpleCamSizeHandle';sizeHandle.type='button';sizeHandle.textContent='⤡';sizeHandle.setAttribute('aria-label','拖曳調整鏡頭大小');sizeHandle.title='拖曳調整鏡頭大小';cameraBox.appendChild(sizeHandle);
+const sizeHandle=document.createElement('button');sizeHandle.id='simpleCamSizeHandle';sizeHandle.type='button';sizeHandle.textContent='⤡';sizeHandle.setAttribute('aria-label','拖曳調整鏡頭大小');sizeHandle.title='拖曳調整鏡頭大小';cameraBox.appendChild(sizeHandle);camera.addEventListener('click',()=>{if(camStream&&camera.paused)camera.play().catch(()=>status('請允許瀏覽器播放鏡頭影像'))});
 const cameraSize=$('simpleCameraSize');const camPrefsKey='simpleKtvCamSizeV1';
 function setCameraWidth(pct){const clamped=Math.max(16,Math.min(58,Number(pct)||24));cameraBox.style.width=clamped+'%';cameraBox.style.minWidth='0';cameraBox.style.maxWidth='none';cameraBox.style.aspectRatio=isMobile?'9/16':'16/9';if(cameraSize)cameraSize.value=Math.round(clamped);try{localStorage.setItem(camPrefsKey,String(clamped))}catch{}if(camStream){const bounds=stage.getBoundingClientRect(),rect=cameraBox.getBoundingClientRect();if(rect.right>bounds.right)cameraBox.style.left=Math.max(0,bounds.width-rect.width)+'px';if(rect.bottom>bounds.bottom)cameraBox.style.top=Math.max(0,bounds.height-rect.height)+'px';cameraBox.style.right='auto'}}
-if(cameraSize)cameraSize.addEventListener('input',()=>setCameraWidth(cameraSize.value));setCameraWidth(localStorage.getItem(camPrefsKey)|| (isMobile?28:24));
+if(cameraSize)cameraSize.addEventListener('input',()=>setCameraWidth(cameraSize.value));let initialCameraWidth=isMobile?28:24;try{initialCameraWidth=localStorage.getItem(camPrefsKey)||initialCameraWidth}catch{}setCameraWidth(initialCameraWidth);
 let resizeOrigin=null;sizeHandle.addEventListener('pointerdown',e=>{e.stopPropagation();const r=cameraBox.getBoundingClientRect();resizeOrigin={x:e.clientX,y:e.clientY,width:r.width};sizeHandle.setPointerCapture(e.pointerId)});sizeHandle.addEventListener('pointermove',e=>{if(!resizeOrigin)return;e.stopPropagation();const change=e.clientX-resizeOrigin.x;setCameraWidth((resizeOrigin.width+change)/Math.max(1,stage.getBoundingClientRect().width)*100)});['pointerup','pointercancel'].forEach(evt=>sizeHandle.addEventListener(evt,()=>resizeOrigin=null));
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){opts.hidden=true;reviewClose();closeLibrary()}});
 
