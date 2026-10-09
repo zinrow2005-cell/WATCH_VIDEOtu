@@ -1,0 +1,5 @@
+V1.5.7.28 原始鏡頭效能修正
+1. 未錄影不啟動 requestAnimationFrame 錄製畫布迴圈。
+2. 攝影機原始幀率監測：支援 requestVideoFrameCallback 的瀏覽器每 4 秒顯示實際 fps。
+3. 開鏡頭後要求 640x480 / 24fps（ideal，不保證裝置一定符合）。
+4. 未在用戶實機測試；效能仍須驗證。
