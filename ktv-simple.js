@@ -1,6 +1,6 @@
 (()=>{'use strict';
 const $=id=>document.getElementById(id);const elt=id=>$(id);const stage=$('ktvPlayerStage'), cameraBox=$('ktvCamFloat'), camera=$('ktvCamPreview');if(!stage||!camera)return;
-let camStream=null,micStream=null,tabStream=null,recorder=null,canvas=null,raf=0,audioCtx=null,recorded=[],mime='',recordURL='',recordBlob=null,recording=false,starting=false,photo=null,lastFile='',ready=false;
+let reviewSong={title:'',artist:''};window.addEventListener('ktv-song-changed',e=>{if(!recording&&!starting)reviewSong={title:e.detail?.title||'',artist:e.detail?.artist||''}});let camStream=null,micStream=null,tabStream=null,recorder=null,canvas=null,raf=0,audioCtx=null,recorded=[],mime='',recordURL='',recordBlob=null,recording=false,starting=false,photo=null,lastFile='',ready=false;
 const status=t=>{const e=$('simpleStatus');if(e)e.textContent=t};
 const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.maxTouchPoints>1&&Math.min(screen.width,screen.height)<1100);
 const backgroundSelect=$('simpleBackground'), presetSelect=$('simplePreset');
@@ -43,7 +43,7 @@ if(camStream&&camera.readyState>=2&&mode!=='camera'&&mode!=='tab'){
  raf=requestAnimationFrame(paint)
 }
 function drawImageIn(ctx,v,x,y,w,h){const iw=v.videoWidth||w,ih=v.videoHeight||h,z=Math.min(w/iw,h/ih);ctx.drawImage(v,x+(w-iw*z)/2,y+(h-ih*z)/2,iw*z,ih*z)}
-async function start(){if(starting||recording)return;starting=true;buttonState();try{
+async function start(){if(starting||recording)return;reviewSong={title:$('ktvPlayerTitle')?.textContent||'',artist:$('ktvPlayerArtist')?.textContent||''};starting=true;buttonState();try{
  const audioOnly=$('simpleRecordingType').value==='audio';const mode=audioOnly?'gradient':$('simpleBackground').value;if(mode==='photo'&&!photo)throw Error('請先選擇背景照片，或改用預設背景');
  if($('simpleRecordingType').value!=='audio'&&!camStream)await openCamera();
  micStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:false,autoGainControl:false},video:false});
@@ -69,7 +69,7 @@ async function start(){if(starting||recording)return;starting=true;buttonState()
  const types=audioOnly?['audio/mp4;codecs=mp4a.40.2','audio/webm;codecs=opus','audio/webm']:['video/mp4;codecs="avc1.42E01E,mp4a.40.2"','video/webm;codecs=vp8,opus','video/webm'];mime=types.find(t=>MediaRecorder.isTypeSupported(t))||'';
  recorder=new MediaRecorder(out,mime?{mimeType:mime,videoBitsPerSecond:1800000,audioBitsPerSecond:128000}:undefined);recorded=[];
  recorder.ondataavailable=e=>{if(e.data?.size)recorded.push(e.data)};
- recorder.onstop=async()=>{document.documentElement.classList.remove('ktv-direct-capture');cancelAnimationFrame(raf);stopTracks(canvasStream);stopTracks(tabStream);tabStream=null;stopTracks(micStream);micStream=null;document.getElementById('simpleTabVideo')?.remove();if(audioCtx){await audioCtx.close().catch(()=>{});audioCtx=null}const t=recorder.mimeType||mime||'video/webm';recordBlob=new Blob(recorded,{type:t});if(recordURL)URL.revokeObjectURL(recordURL);recordURL=URL.createObjectURL(recordBlob);$('simplePlayback').src=recordURL;recording=false;starting=false;buttonState();status('錄製完成，可預覽及儲存');$('simpleReview').hidden=false;};
+ recorder.onstop=async()=>{document.documentElement.classList.remove('ktv-direct-capture');cancelAnimationFrame(raf);stopTracks(canvasStream);stopTracks(tabStream);tabStream=null;stopTracks(micStream);micStream=null;document.getElementById('simpleTabVideo')?.remove();if(audioCtx){await audioCtx.close().catch(()=>{});audioCtx=null}const t=recorder.mimeType||mime||'video/webm';recordBlob=new Blob(recorded,{type:t});if(recordURL)URL.revokeObjectURL(recordURL);recordURL=URL.createObjectURL(recordBlob);$('simplePlayback').src=recordURL;recording=false;starting=false;buttonState();status('錄製完成，可預覽及儲存');$('simpleReview').hidden=false;window.dispatchEvent(new CustomEvent('ktv-recording-review-open',{detail:{title:reviewSong.title,artist:reviewSong.artist}}));};
  recorder.onerror=e=>status('錄影發生錯誤：'+(e.error?.message||'未知錯誤'));
  recording=true;starting=false;if(useTab)document.documentElement.classList.add('ktv-direct-capture');buttonState();recorder.start(1000);if(canvas)paint();status(useTab?'🔴 正直接錄製 KTV 分頁與鏡頭，無二次合成；點「停止」可預覽':'🔴 正在錄影；點「停止」可結束並預覽');
  }catch(e){document.documentElement.classList.remove('ktv-direct-capture');recording=false;starting=false;stopTracks(tabStream);tabStream=null;document.getElementById('simpleTabVideo')?.remove();stopTracks(micStream);micStream=null;if(audioCtx){audioCtx.close().catch(()=>{});audioCtx=null}status('無法開始錄影：'+e.message);buttonState()}}
