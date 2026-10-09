@@ -405,12 +405,30 @@ cameraPanel.innerHTML=`<summary>📷 攝影機來源與流暢度</summary><div c
 <label>影像設定 <select id="ktvCameraProfile"><option value="640x480@30">640×480 / 30 fps</option><option value="640x480@15">640×480 / 15 fps</option><option value="320x240@30">320×240 / 30 fps</option><option value="1280x720@30">1280×720 / 30 fps</option></select></label>
 <button type="button" id="ktvCameraRestart">套用設定並重開鏡頭</button>
 <span id="ktvCameraActual" role="status">尚未啟動鏡頭</span></div>`;
-$('ktvCamToggle').insertAdjacentElement('afterend',cameraPanel);
+// Mount inside the VISIBLE settings section, not the hidden compatibility controls.
+const cameraAnchor=$('ktvRemoveBackground').closest('label');
+cameraAnchor.insertAdjacentElement('beforebegin',cameraPanel);
+const cameraShortcut=document.createElement('button');
+cameraShortcut.type='button';cameraShortcut.id='ktvCameraSettingsShortcut';
+cameraShortcut.textContent='📷 鏡頭設定';cameraShortcut.setAttribute('aria-controls','ktvCameraCaptureSettings');
+$('ktvQuickControls').appendChild(cameraShortcut);
+cameraShortcut.addEventListener('click',()=>{
+  const settings=$('ktvStudioDetails');
+  settings.open=true;$('ktvStudio').classList.add('ktv-settings-open');
+  cameraPanel.open=true;
+  cameraPanel.scrollIntoView({behavior:'smooth',block:'center'});
+  cameraPanel.querySelector('summary').focus({preventScroll:true});
+});
 let cameraOpening=false;
 try{const old=localStorage.getItem('ktvCameraProfile');if(old&&cameraPanel.querySelector('#ktvCameraProfile option[value="'+old+'"]'))$('ktvCameraProfile').value=old}catch(e){}
 async function updateCameraChoices(){try{const devices=await navigator.mediaDevices.enumerateDevices();const chosen=$('ktvCameraDevice').value;const select=$('ktvCameraDevice');select.replaceChildren(new Option('系統預設',''));for(const d of devices.filter(x=>x.kind==='videoinput'))select.add(new Option(d.label||'攝影機 '+(select.options.length),d.deviceId));select.value=[...select.options].some(x=>x.value===chosen)?chosen:'';}catch(e){}}
 $('ktvCameraProfile').addEventListener('change',()=>{try{localStorage.setItem('ktvCameraProfile',$('ktvCameraProfile').value)}catch(e){}});
-$('ktvCameraRestart').addEventListener('click',async()=>{if(cameraOpening)return;if(camStream){$('ktvCamToggle').click();setTimeout(()=>$('ktvCamToggle').click(),180);}else $('ktvCamToggle').click()});
+$('ktvCameraRestart').addEventListener('click',async()=>{
+ if(cameraOpening)return;
+ $('ktvCameraRestart').disabled=true;
+ try{await $('studioCamera').onclick();}
+ finally{$('ktvCameraRestart').disabled=false;}
+});
 $('studioCamera').onclick=async()=>{if(cameraOpening)return;cameraOpening=true;try{
  if(!navigator.mediaDevices?.getUserMedia)throw Error('此瀏覽器無法使用攝影機，或網頁不是 HTTPS');
  endCameraFrameWatch();stopStream(camStream);camStream=null;cam.pause();cam.srcObject=null;cutoutFrame=false;updateCutoutUI();
