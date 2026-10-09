@@ -23,8 +23,8 @@ function buttonState(){ $('simpleCamera').textContent=camStream?'📷 關閉鏡�
 function stopTracks(stream){if(stream)stream.getTracks().forEach(t=>t.stop())}
 async function openCamera(){
  if(camStream&&camStream.getVideoTracks().some(t=>t.readyState==='live')){
-   cameraBox.classList.remove('hidden');cameraBox.style.display='block';
-   if(camera.paused)await camera.play().catch(()=>{});return true;
+   cameraBox.classList.remove('hidden');cameraBox.style.display='block';camera.style.visibility='visible';
+   camera.muted=true;camera.playsInline=true;if(camera.paused||camera.readyState<2)await camera.play().catch(()=>{});return true;
  }
  if(!navigator.mediaDevices?.getUserMedia)throw Error('瀏覽器不支援攝影機，請使用 HTTPS 與 Safari/Chrome。');
  // iOS Safari is more reliable with a native facingMode stream and no forced 720p constraints.
@@ -32,8 +32,8 @@ async function openCamera(){
  camStream=await navigator.mediaDevices.getUserMedia(constraints);
  camera.setAttribute('playsinline','');camera.setAttribute('webkit-playsinline','');camera.playsInline=true;
  camera.autoplay=true;camera.muted=true;camera.defaultMuted=true;
- camera.srcObject=camStream;cameraBox.classList.remove('hidden');cameraBox.style.display='block';camera.style.display='block';
- try{await camera.play()}catch(err){throw Error('鏡頭啟動失敗：'+err.message)}
+ camera.srcObject=camStream;cameraBox.classList.remove('hidden');cameraBox.style.display='block';camera.style.display='block';camera.style.visibility='visible';camera.style.opacity='1';
+ try{await camera.play()}catch(err){stopTracks(camStream);camStream=null;camera.srcObject=null;cameraBox.classList.add('hidden');throw Error('鏡頭啟動失敗：'+err.message)}
  if(!camera.videoWidth){await Promise.race([new Promise(resolve=>camera.addEventListener('loadedmetadata',resolve,{once:true})),new Promise(resolve=>setTimeout(resolve,2000))]);}
  if(!camera.videoWidth||!camera.videoHeight){status('鏡頭已授權，但尚無影像；請檢查 Safari 網站攝影機權限或關閉其他使用鏡頭的 App。');}
  else status('📷 鏡頭已開啟（'+camera.videoWidth+'×'+camera.videoHeight+'）');
@@ -173,7 +173,7 @@ $('simpleLibraryClose').onclick=closeLibrary;
 let drag=null;cameraBox.style.touchAction='none';cameraBox.addEventListener('pointerdown',e=>{if(e.target.closest('#simpleCamSizeHandle'))return;if(!camStream)return;const a=stage.getBoundingClientRect(),b=cameraBox.getBoundingClientRect();drag={x:e.clientX,y:e.clientY,l:b.left-a.left,t:b.top-a.top};cameraBox.setPointerCapture(e.pointerId)});cameraBox.addEventListener('pointermove',e=>{if(!drag)return;const a=stage.getBoundingClientRect(),w=cameraBox.offsetWidth,h=cameraBox.offsetHeight;cameraBox.style.left=Math.max(0,Math.min(a.width-w,drag.l+e.clientX-drag.x))+'px';cameraBox.style.top=Math.max(0,Math.min(a.height-h,drag.t+e.clientY-drag.y))+'px';cameraBox.style.right='auto'});cameraBox.addEventListener('pointerup',()=>drag=null);cameraBox.addEventListener('pointercancel',()=>drag=null);
 const sizeHandle=document.createElement('button');sizeHandle.id='simpleCamSizeHandle';sizeHandle.type='button';sizeHandle.textContent='⤡';sizeHandle.setAttribute('aria-label','拖曳調整鏡頭大小');sizeHandle.title='拖曳調整鏡頭大小';cameraBox.appendChild(sizeHandle);
 const cameraSize=$('simpleCameraSize');const camPrefsKey='simpleKtvCamSizeV1';
-function setCameraWidth(pct){const clamped=Math.max(16,Math.min(58,Number(pct)||24));cameraBox.style.width=clamped+'%';cameraBox.style.minWidth='0';cameraBox.style.maxWidth='none';cameraBox.style.aspectRatio=isMobile?'9/16':'16/9';if(cameraSize)cameraSize.value=Math.round(clamped);try{localStorage.setItem(camPrefsKey,String(clamped))}catch{}requestAnimationFrame(()=>{const bounds=stage.getBoundingClientRect(),rect=cameraBox.getBoundingClientRect();if(rect.right>bounds.right)cameraBox.style.left=Math.max(0,bounds.width-rect.width)+'px';if(rect.bottom>bounds.bottom)cameraBox.style.top=Math.max(0,bounds.height-rect.height)+'px';cameraBox.style.right='auto'})}
+function setCameraWidth(pct){const clamped=Math.max(16,Math.min(58,Number(pct)||24));cameraBox.style.width=clamped+'%';cameraBox.style.minWidth='0';cameraBox.style.maxWidth='none';cameraBox.style.aspectRatio=isMobile?'9/16':'16/9';if(cameraSize)cameraSize.value=Math.round(clamped);try{localStorage.setItem(camPrefsKey,String(clamped))}catch{}if(camStream){const bounds=stage.getBoundingClientRect(),rect=cameraBox.getBoundingClientRect();if(rect.right>bounds.right)cameraBox.style.left=Math.max(0,bounds.width-rect.width)+'px';if(rect.bottom>bounds.bottom)cameraBox.style.top=Math.max(0,bounds.height-rect.height)+'px';cameraBox.style.right='auto'}}
 if(cameraSize)cameraSize.addEventListener('input',()=>setCameraWidth(cameraSize.value));setCameraWidth(localStorage.getItem(camPrefsKey)|| (isMobile?28:24));
 let resizeOrigin=null;sizeHandle.addEventListener('pointerdown',e=>{e.stopPropagation();const r=cameraBox.getBoundingClientRect();resizeOrigin={x:e.clientX,y:e.clientY,width:r.width};sizeHandle.setPointerCapture(e.pointerId)});sizeHandle.addEventListener('pointermove',e=>{if(!resizeOrigin)return;e.stopPropagation();const change=e.clientX-resizeOrigin.x;setCameraWidth((resizeOrigin.width+change)/Math.max(1,stage.getBoundingClientRect().width)*100)});['pointerup','pointercancel'].forEach(evt=>sizeHandle.addEventListener(evt,()=>resizeOrigin=null));
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){opts.hidden=true;reviewClose();closeLibrary()}});
