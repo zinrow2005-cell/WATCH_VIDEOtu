@@ -2,20 +2,37 @@
 const $=id=>document.getElementById(id);const elt=id=>$(id);const stage=$('ktvPlayerStage'), cameraBox=$('ktvCamFloat'), camera=$('ktvCamPreview');if(!stage||!camera)return;
 let camStream=null,micStream=null,tabStream=null,recorder=null,canvas=null,raf=0,audioCtx=null,recorded=[],mime='',recordURL='',recordBlob=null,recording=false,starting=false,photo=null,lastFile='',ready=false;
 const status=t=>{const e=$('simpleStatus');if(e)e.textContent=t};
+const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.maxTouchPoints>1&&Math.min(screen.width,screen.height)<1100);
+const backgroundSelect=$('simpleBackground'), presetSelect=$('simplePreset');
+const bgPrefsKey='simpleKtvBackgroundV2';
+function storePrefs(){try{localStorage.setItem(bgPrefsKey,JSON.stringify({mode:backgroundSelect.value,preset:presetSelect.value}))}catch{}}
+function updateBackgroundUI(){const mode=backgroundSelect.value;$('simplePresetWrap').hidden=mode!=='gradient';$('simplePhotoWrap').hidden=mode!=='photo';storePrefs()}
+try{const v=JSON.parse(localStorage.getItem(bgPrefsKey)||'{}');if(v.preset&&[...presetSelect.options].some(x=>x.value===v.preset))presetSelect.value=v.preset;if(v.mode&&[...backgroundSelect.options].some(x=>x.value===v.mode))backgroundSelect.value=v.mode;else backgroundSelect.value=isMobile?'gradient':'tab'}catch{backgroundSelect.value=isMobile?'gradient':'tab'}
+if(isMobile&&backgroundSelect.value==='tab')backgroundSelect.value='gradient';
+if(isMobile){backgroundSelect.querySelector('[value="tab"]').disabled=true;}
+$('simpleDeviceTip').textContent=isMobile?'📱 手機／平板：先選鏡頭、預設舞台或相簿照片，再開始錄影。':'🖥 電腦：預設擷取目前 KTV 分頁。錄製時請勾選分享分頁音訊；目前頁面的鏡頭小視窗會一併錄入。';
+backgroundSelect.addEventListener('change',updateBackgroundUI);presetSelect.addEventListener('change',storePrefs);updateBackgroundUI();
+// Store selected background locally (IndexedDB); never upload to a server.
+function photoStore(operation, blob){return new Promise((resolve,reject)=>{if(!('indexedDB'in window))return reject(Error('不支援本機照片儲存'));const request=indexedDB.open('ktvBackgroundPhotoV1',1);request.onupgradeneeded=()=>request.result.createObjectStore('photos');request.onerror=()=>reject(request.error);request.onsuccess=()=>{const db=request.result,tx=db.transaction('photos',operation==='get'?'readonly':'readwrite'),os=tx.objectStore('photos');let req=operation==='put'?os.put(blob,'background'):operation==='delete'?os.delete('background'):os.get('background');req.onsuccess=()=>resolve(req.result);req.onerror=()=>reject(req.error);tx.oncomplete=()=>db.close()}})}
+let photoURL='';
+async function applyPhotoBlob(blob){if(photoURL)URL.revokeObjectURL(photoURL);photoURL=URL.createObjectURL(blob);const img=new Image();img.src=photoURL;await img.decode();photo=img;$('simplePhotoThumb').src=photoURL;$('simplePhotoThumb').hidden=false;$('simplePhotoState').textContent='✓ 已儲存背景照片';}
+photoStore('get').then(async blob=>{if(blob)await applyPhotoBlob(blob);if(backgroundSelect.value==='photo'&&!photo)status('請選擇背景照片')}).catch(()=>{});
+$('simplePhotoClear').onclick=async()=>{photo=null;if(photoURL)URL.revokeObjectURL(photoURL);photoURL='';$('simplePhotoThumb').hidden=true;$('simplePhotoState').textContent='尚未選擇背景照片';$('simplePhoto').value='';try{await photoStore('delete')}catch{}status('已清除背景照片')};
+
 function buttonState(){ $('simpleCamera').textContent=camStream?'📷 關閉鏡頭':'📷 開啟鏡頭';$('simpleRecord').disabled=starting||recording;$('simpleStop').disabled=!recording;$('simpleRecord').textContent=starting?'⏳ 準備中…':recording?'🔴 錄製中':'🔴 開始錄影'; }
 function stopTracks(stream){if(stream)stream.getTracks().forEach(t=>t.stop())}
 async function openCamera(){if(camStream)return true;if(!navigator.mediaDevices?.getUserMedia)throw Error('瀏覽器不支援攝影機。請使用 HTTPS 頁面與新版瀏覽器。');camStream=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:1280},height:{ideal:720},frameRate:{ideal:30}},audio:false});camera.srcObject=camStream;camera.muted=true;camera.setAttribute('playsinline','');cameraBox.classList.remove('hidden');cameraBox.style.display='block';camera.style.display='block';await camera.play();if(!camera.videoWidth)await new Promise(resolve=>{const timer=setTimeout(resolve,1800);camera.addEventListener('loadedmetadata',()=>{clearTimeout(timer);resolve()}, {once:true})});status('📷 鏡頭已開啟，可調整位置或開始錄影');buttonState();return true}
 function closeCamera(){if(recording)return;stopTracks(camStream);camStream=null;camera.srcObject=null;cameraBox.classList.add('hidden');cameraBox.style.display='none';status('已關閉鏡頭');buttonState()}
 $('simpleCamera').addEventListener('click',async()=>{if(starting)return;try{if(camStream)closeCamera();else await openCamera()}catch(e){status('無法開啟鏡頭：'+e.message);buttonState()}});
 const opts=$('simpleOptions');$('simpleOptionsBtn').onclick=()=>{opts.hidden=!opts.hidden};$('simpleOptionsClose').onclick=()=>{opts.hidden=true};
-$('simplePhoto').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{const url=URL.createObjectURL(f);const img=new Image();img.src=url;await img.decode();photo=img;$('simpleBackground').value='photo';status('背景照片已選擇');}catch{status('無法載入圖片，請改選其他照片')}};
+$('simplePhoto').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{if(!f.type.startsWith('image/'))throw Error('檔案不是圖片');await applyPhotoBlob(f);backgroundSelect.value='photo';updateBackgroundUI();try{await photoStore('put',f)}catch{status('已載入照片，但瀏覽器無法永久保存。請勿清除網頁資料。');return}status('背景照片已保存，下次開啟可繼續使用');}catch(e){status('無法載入圖片：'+e.message)}};
 function drawContain(ctx,img,w,h){const iw=img.videoWidth||img.naturalWidth||w,ih=img.videoHeight||img.naturalHeight||h;if(!iw||!ih)return;const z=Math.min(w/iw,h/ih);ctx.drawImage(img,(w-iw*z)/2,(h-ih*z)/2,iw*z,ih*z)}
 function drawCover(ctx,img,w,h){const iw=img.videoWidth||img.naturalWidth||w,ih=img.videoHeight||img.naturalHeight||h;if(!iw||!ih)return;const z=Math.max(w/iw,h/ih);ctx.drawImage(img,(w-iw*z)/2,(h-ih*z)/2,iw*z,ih*z)}
 function paint(){if(!recording||!canvas)return;const ctx=canvas.getContext('2d',{alpha:false}),w=canvas.width,h=canvas.height;ctx.fillStyle='#060914';ctx.fillRect(0,0,w,h);const mode=$('simpleBackground').value;
 if(mode==='tab'&&tabStream){const tv=$('simpleTabVideo');if(tv?.readyState>=2)drawContain(ctx,tv,w,h)}
 else if(mode==='photo'&&photo)drawCover(ctx,photo,w,h);
 else if(mode==='camera'&&camera.readyState>=2)drawContain(ctx,camera,w,h);
-else{const g=ctx.createLinearGradient(0,0,w,h);g.addColorStop(0,'#102b62');g.addColorStop(.5,'#39235b');g.addColorStop(1,'#080f31');ctx.fillStyle=g;ctx.fillRect(0,0,w,h);}
+else{const colors={night:['#102b62','#39235b','#080f31'],purple:['#48166d','#b74da8','#151049'],gold:['#6b3214','#cd9b4a','#25152a'],green:['#082b32','#327a59','#091f30']}[presetSelect.value]||['#102b62','#39235b','#080f31'];const g=ctx.createLinearGradient(0,0,w,h);g.addColorStop(0,colors[0]);g.addColorStop(.5,colors[1]);g.addColorStop(1,colors[2]);ctx.fillStyle=g;ctx.fillRect(0,0,w,h);}
 if(camStream&&camera.readyState>=2&&mode!=='camera'&&mode!=='tab'){
  const box=stage.getBoundingClientRect(),p=cameraBox.getBoundingClientRect();const sx=box.width?w/box.width:1,sy=box.height?h/box.height:1;
  // Stage-relative position; never crop camera when making output
@@ -31,8 +48,9 @@ async function start(){if(starting||recording)return;starting=true;buttonState()
  if($('simpleRecordingType').value!=='audio'&&!camStream)await openCamera();
  micStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:false,autoGainControl:false},video:false});
  if(mode==='tab'){
+ if(isMobile)throw Error('手機／平板不能直接擷取 KTV 分頁。請選自拍鏡頭、預設舞台或相簿照片');
  if(!navigator.mediaDevices.getDisplayMedia)throw Error('這個瀏覽器無法分享 KTV 分頁；請選擇預設背景或自選照片');
- status('請選擇「目前分頁」，並勾選分享分頁音訊');tabStream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:true});
+ status('請選「目前 KTV 分頁」，並勾選分享分頁音訊；自拍鏡頭請保持顯示在分頁上。');tabStream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:true});
  const v=document.createElement('video');v.id='simpleTabVideo';v.muted=true;v.playsInline=true;v.srcObject=tabStream;v.style.display='none';document.body.appendChild(v);await v.play();tabStream.getVideoTracks()[0].addEventListener('ended',()=>{if(recording)stop()}, {once:true});
  }
  const useTab=mode==='tab'&&tabStream,srcV=tabStream?.getVideoTracks()[0].getSettings();
