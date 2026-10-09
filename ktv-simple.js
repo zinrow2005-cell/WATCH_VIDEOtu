@@ -190,7 +190,22 @@ function closeLibrary(){clearLibraryPlayback();library.hidden=true;review.hidden
 $('simpleLibraryClose').onclick=closeLibrary;
 // For no-crop control, keep the actual camera inside the stage and allow pointer drag.
 let drag=null;cameraBox.style.touchAction='none';cameraBox.addEventListener('pointerdown',e=>{if(e.target.closest('#simpleCamSizeHandle'))return;if(!camStream)return;const a=stage.getBoundingClientRect(),b=cameraBox.getBoundingClientRect();drag={x:e.clientX,y:e.clientY,l:b.left-a.left,t:b.top-a.top};cameraBox.setPointerCapture(e.pointerId)});cameraBox.addEventListener('pointermove',e=>{if(!drag)return;const a=stage.getBoundingClientRect(),w=cameraBox.offsetWidth,h=cameraBox.offsetHeight;cameraBox.style.left=Math.max(0,Math.min(a.width-w,drag.l+e.clientX-drag.x))+'px';cameraBox.style.top=Math.max(0,Math.min(a.height-h,drag.t+e.clientY-drag.y))+'px';cameraBox.style.right='auto'});cameraBox.addEventListener('pointerup',()=>drag=null);cameraBox.addEventListener('pointercancel',()=>drag=null);
-const sizeHandle=document.createElement('button');sizeHandle.id='simpleCamSizeHandle';sizeHandle.type='button';sizeHandle.textContent='⤡';sizeHandle.setAttribute('aria-label','拖曳調整鏡頭大小');sizeHandle.title='拖曳調整鏡頭大小';cameraBox.appendChild(sizeHandle);camera.addEventListener('click',()=>{if(camStream&&camera.paused)camera.play().catch(()=>status('請允許瀏覽器播放鏡頭影像'))});
+const sizeHandle=document.createElement('button');sizeHandle.id='simpleCamSizeHandle';sizeHandle.type='button';sizeHandle.textContent='⤡';sizeHandle.setAttribute('aria-label','拖曳調整鏡頭大小');sizeHandle.title='拖曳調整鏡頭大小';cameraBox.appendChild(sizeHandle);
+// Preview-only mirror switch: never restart the camera or change the original recording track.
+const mirrorKey='simpleKtvCameraMirrorV1';
+const mirrorButton=document.createElement('button');mirrorButton.type='button';mirrorButton.id='simpleCamMirror';
+mirrorButton.setAttribute('aria-label','切換自拍鏡頭左右鏡像');mirrorButton.title='切換鏡頭左右方向';
+let mirrorEnabled=false;
+try{mirrorEnabled=localStorage.getItem(mirrorKey)==='true'}catch{}
+function applyMirror(){
+ camera.classList.toggle('simple-mirror-preview',mirrorEnabled);
+ mirrorButton.textContent=mirrorEnabled?'⇄ 鏡像開':'⇄ 鏡像關';
+ mirrorButton.setAttribute('aria-pressed',String(mirrorEnabled));
+}
+['pointerdown','pointermove','pointerup','pointercancel'].forEach(type=>mirrorButton.addEventListener(type,e=>e.stopPropagation()));
+mirrorButton.addEventListener('click',e=>{e.stopPropagation();mirrorEnabled=!mirrorEnabled;applyMirror();try{localStorage.setItem(mirrorKey,String(mirrorEnabled))}catch{}status(mirrorEnabled?'已開啟自拍預覽左右鏡像':'已關閉自拍預覽左右鏡像')});
+cameraBox.appendChild(mirrorButton);applyMirror();
+camera.addEventListener('click',()=>{if(camStream&&camera.paused)camera.play().catch(()=>status('請允許瀏覽器播放鏡頭影像'))});
 const cameraSize=$('simpleCameraSize');const camPrefsKey='simpleKtvCamSizeV1';
 function cameraIsLandscape(){return window.matchMedia('(orientation: landscape)').matches && isMobile;}
 function cameraAspect(){return isMobile?(cameraIsLandscape()?16/9:9/16):16/9;}
