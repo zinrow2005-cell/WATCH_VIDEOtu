@@ -1,0 +1,6 @@
+V1.5.7.23 KTV UX review
+- Consolidated top-level playback actions and added three-step first-use guidance; recording/camera state updates without polling.
+- Kept existing element IDs and event wiring, preserving backwards compatibility for history, toolbox and record functions.
+- Added touch-friendly mobile two-column capture actions and landscape width constraints.
+- Collapsed AI tuning by default; removed legacy advanced settings from normal view.
+- Browser loading of local files blocked by test environment; actual device recording and click end-to-end remain UNVERIFIED.

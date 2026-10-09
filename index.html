@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#0b1220">
-<title>WATCH_VIDEOtu V1.5.7.17</title>
+<title>WATCH_VIDEOtu V1.5.7.25</title>
 <link rel="manifest" href="manifest.webmanifest">
 <link rel="stylesheet" href="styles.css?v=15694">
   <link rel="stylesheet" href="responsive-v63.css?v=15694">
@@ -16,9 +16,9 @@
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-180.png?v=15652">
 <meta name="apple-mobile-web-app-title" content="WATCH_VIDEOtu">
 
-<link rel="stylesheet" href="ktv-studio.css?v=15715">
-<link rel="stylesheet" href="ktv-lyrics.css?v=15715">
-<link rel="stylesheet" href="ktv-lyric-workspace.css?v=15717">
+<link rel="stylesheet" href="ktv-studio.css?v=15725">
+<link rel="stylesheet" href="ktv-lyrics.css?v=15725">
+<link rel="stylesheet" href="ktv-lyric-workspace.css?v=15720">
 </head>
 <body>
 <header class="topbar">
@@ -31,7 +31,7 @@
       <circle cx="50" cy="14" r="6" fill="#fff"/><path d="M50 10.7v6.6M46.7 14h6.6" stroke="#ff174d" stroke-width="2.4" stroke-linecap="round"/>
     </svg>
   </span>
-  <span class="brand-copy"><strong>WATCH_VIDEO<span class="brand-tu">tu</span></strong><span class="brand-version" title="手機 TV 簡化版 V1.5.7.17">V1.5.7.17</span><small>Kids Video Hub</small></span>
+  <span class="brand-copy"><strong>WATCH_VIDEO<span class="brand-tu">tu</span></strong><span class="brand-version" title="手機 TV 簡化版 V1.5.7.25">V1.5.7.25</span><small>Kids Video Hub</small></span>
 </button>
 <div class="mode-switch" id="modeSwitch">
   <button id="videoModeBtn" class="mode-btn active" type="button">🎬 影片模式</button>
@@ -316,7 +316,7 @@
       
       <section id="ktvStudio" aria-label="KTV錄音錄影設定">
  <details id="ktvStudioDetails"><summary style="cursor:pointer;font-size:22px;font-weight:800;padding:9px 0">⚙ 錄製設定</summary>
- <div class="studio-top"><strong>⚙ 錄音錄影設定</strong><button type="button" id="ktvSettingsClose" aria-label="關閉錄影設定">✕</button></div><div class="ktv-setting-section-title">🎬 作品與背景</div>
+ <div class="studio-top"><strong>⚙ 錄唱設定</strong><button type="button" id="ktvSettingsClose" aria-label="關閉錄影設定">✕</button></div><div class="ktv-setting-mode" role="group" aria-label="設定顯示模式"><button type="button" id="ktvModeBasic" aria-pressed="true">一般設定</button><button type="button" id="ktvModeAdvanced" aria-pressed="false">進階設定</button></div><p class="ktv-basic-note" id="ktvBasicNote">平常只需要調整背景、音量與鏡頭；其餘可到進階設定。</p><div class="ktv-setting-section-title">🎬 作品與背景</div>
  <div class="studio-settings">
  <label>作品名稱<input id="studioTitle" type="text" value="我的 KTV 作品" maxlength="45"></label>
  <p style="font-size:13px;line-height:1.5;margin:6px 0;color:inherit">📱 手機無法直接錄製 YouTube KTV 影片及伴奏。要保留背景畫面與音樂，請使用有權使用的本機影片作為背景；使用耳機可降低麥克風回授。</p>
@@ -334,7 +334,7 @@
  <p class="studio-hint studio-advanced">桌面 Chrome／Edge：開始錄影後選擇「目前分頁」，並開啟「同時分享分頁音訊」，才可能收錄 KTV 影片與伴奏。請勿選擇其他視窗或整個螢幕。戴耳機可避免伴奏被麥克風重複收音。音量滑桿控制的是<strong>錄製成品混音</strong>，不是 YouTube 播放器自身音量。</p></div>
  <div class="ktv-setting-section-title">📷 人像與鏡頭</div><label class="ktv-setting-check"><input type="checkbox" id="ktvRemoveBackground"> 🧍 人像去背（只保留人物輪廓；需要網路載入模型）</label>
 <label class="ktv-cutout-mode">人像去背品質<select id="ktvCutoutQuality"><option value="standard">標準・速度優先（手機／平板建議）</option><option value="quality">高畫質・頭髮與衣物辨識（電腦建議）</option></select></label><label class="ktv-setting-check"><input type="checkbox" id="ktvMirrorCamera" checked> 🪞 自拍鏡像（預覽與輸出同方向）</label>
-<details class="ktv-cutout-tuning" id="ktvCutoutTuning" open><summary>✨ AI 去背品質控制（點此展開／收合）</summary><div class="ktv-tune-panel"><div class="ktv-tuning-header"><strong>即時調整人物輪廓</strong><button type="button" id="ktvTuneReset" class="ktv-tune-reset">↺ 恢復預設</button></div><label for="ktvTuneResidue">背景殘影抑制 <output id="ktvTuneResidueVal">50</output></label><input type="range" id="ktvTuneResidue" min="0" max="100" step="5" value="50"><small>越高越能清除殘影，但可能切掉細髮。</small><label for="ktvTuneFeather">邊緣柔化 <output id="ktvTuneFeatherVal">35</output></label><input type="range" id="ktvTuneFeather" min="0" max="100" step="5" value="35"><small>柔化人物邊緣，太高可能產生光暈。</small><label for="ktvTuneDetail">人物細節保留 <output id="ktvTuneDetailVal">50</output></label><input type="range" id="ktvTuneDetail" min="0" max="100" step="5" value="50"><small>越高可保留細髮，也可能留下背景雜影。</small><p class="ktv-tune-note">開啟鏡頭及人像去背後，調整滑桿即可即時查看效果；錄影時亦沿用此設定。</p></div></details>
+<details class="ktv-cutout-tuning" id="ktvCutoutTuning"><summary>✨ AI 去背品質控制（點此展開／收合）</summary><div class="ktv-tune-panel"><div class="ktv-tuning-header"><strong>即時調整人物輪廓</strong><button type="button" id="ktvTuneReset" class="ktv-tune-reset">↺ 恢復預設</button></div><label for="ktvTuneResidue">背景殘影抑制 <output id="ktvTuneResidueVal">50</output></label><input type="range" id="ktvTuneResidue" min="0" max="100" step="5" value="50"><small>越高越能清除殘影，但可能切掉細髮。</small><label for="ktvTuneFeather">邊緣柔化 <output id="ktvTuneFeatherVal">35</output></label><input type="range" id="ktvTuneFeather" min="0" max="100" step="5" value="35"><small>柔化人物邊緣，太高可能產生光暈。</small><label for="ktvTuneDetail">人物細節保留 <output id="ktvTuneDetailVal">50</output></label><input type="range" id="ktvTuneDetail" min="0" max="100" step="5" value="50"><small>越高可保留細髮，也可能留下背景雜影。</small><p class="ktv-tune-note">開啟鏡頭及人像去背後，調整滑桿即可即時查看效果；錄影時亦沿用此設定。</p></div></details>
 <p class="studio-hint" id="ktvCutoutHint">去背為實驗功能。光線充足、單人正面時效果較佳；舊裝置可能不支援。</p>
 <div class="studio-controls" style="display:none"><button type="button" id="studioCamera">📷 開啟鏡頭</button><button type="button" id="studioScreen">🖥️ 分享 KTV 畫面（支援時）</button><button type="button" id="studioRec" class="studio-record">🔴 開始錄製</button><button type="button" id="studioStop" class="studio-stop" disabled>■ 結束錄製</button></div>
  <div class="studio-canvas-wrap" style="display:none"><canvas id="studioCanvas" width="1280" height="720"></canvas></div>
@@ -359,10 +359,10 @@
           <div id="ktvLyricsLive" class="ktv-lyrics-live" aria-live="off"></div><div id="ktvLyricsSyncBar" class="ktv-lyrics-syncbar" aria-label="播放中歌詞校正"><button type="button" data-lyric-shift="-0.5" title="字幕提前半秒">◀ 提前 0.5s</button><span id="ktvLyricLiveOffset">字幕 ±0.0s</span><button type="button" data-lyric-shift="0.5" title="字幕延後半秒">延後 0.5s ▶</button></div>
           <div id="ktvCamFloat" class="ktv-cam-float hidden" aria-label="可拖曳的自拍鏡頭"><video id="ktvCamPreview" autoplay muted playsinline></video></div>
         </div>
-        <div class="ktv-player-fullbar"><button id="ktvFullscreenBtn" type="button">⛶ 全螢幕</button><button type="button" id="ktvLyricsQuick">📝 歌詞</button><button type="button" id="ktvOpenLyricStudio">🎛️ 字幕編輯</button><button id="ktvCompactSettings" type="button" aria-label="開啟錄影設定">⚙ 設定</button><button id="ktvMyRecordings" type="button">📁 我的錄影作品</button><button id="ktvFullscreenMenu" type="button" aria-expanded="false" aria-controls="ktvFullscreenToolbox" aria-label="開啟工具清單">⚙ 工具</button></div>
-        <div id="ktvQuickControls" class="ktv-quick-controls" aria-label="KTV錄製快捷操作"><button type="button" id="ktvQuickCamera">📷 開啟鏡頭</button><button type="button" id="ktvQuickStart">🔴 錄影</button><button type="button" id="ktvQuickStop" disabled>■ 停止</button><label class="ktv-quick-cut"><input type="checkbox" id="ktvQuickCutout">🧍 去背</label></div><div id="ktvRecordLiveStatus" class="ktv-record-live" role="status" aria-live="polite"><span id="ktvRecordLiveDot" class="ktv-record-dot"></span><span id="ktvRecordLiveText">尚未開始錄影</span><span id="ktvRecordLiveClock">00:00</span></div>
+        <div class="ktv-player-fullbar" aria-label="KTV 播放輔助操作"><button id="ktvFullscreenBtn" type="button">⛶ 全螢幕</button><button type="button" id="ktvLyricsQuick" class="ktv-extra-action">📝 歌詞</button><button type="button" id="ktvOpenLyricStudio" class="ktv-extra-action">🎛️ 字幕編輯</button><button id="ktvCompactSettings" type="button" aria-label="開啟錄影設定">⚙ 設定</button><button id="ktvMyRecordings" type="button">📁 我的作品</button><button id="ktvFullscreenMenu" type="button" aria-expanded="false" aria-controls="ktvFullscreenToolbox" aria-label="開啟工具清單">⋯ 更多工具</button></div>
+        <div class="ktv-user-guide" id="ktvUserGuide" role="status" aria-live="polite"><span class="ktv-guide-label">第一次錄唱</span><span id="ktvGuideMessage">① 選歌播放　② 開啟鏡頭　③ 按錄影</span><button type="button" id="ktvGuideDismiss" aria-label="收合操作提示">✕</button></div><div id="ktvQuickControls" class="ktv-quick-controls" aria-label="KTV錄製快捷操作"><button type="button" id="ktvQuickCamera">📷 開啟鏡頭</button><button type="button" id="ktvQuickStart">🔴 開始錄影</button><button type="button" id="ktvQuickStop" disabled>■ 結束錄影</button><label class="ktv-quick-cut"><input type="checkbox" id="ktvQuickCutout">🧍 去背</label></div><div id="ktvRecordLiveStatus" class="ktv-record-live" role="status" aria-live="polite"><span id="ktvRecordLiveDot" class="ktv-record-dot"></span><span id="ktvRecordLiveText">尚未開始錄影</span><span id="ktvRecordLiveClock">00:00</span></div>
         <div hidden id="ktvCompatibilityControls"><button type="button" id="ktvCamToggle">開啟鏡頭</button><button type="button" id="ktvRecordStart">錄影</button><button type="button" id="ktvRecordStop" disabled>停止</button><button type="button" id="ktvRecordingOptions">設定</button></div><div id="ktvFullscreenToolbox" class="ktv-player-tools">
-          <button id="ktvMyRecordingsTools" type="button">📁 我的錄影作品</button><button id="ktvPreflight" type="button">✓ 裝置檢測</button>
+          <button hidden id="ktvMyRecordingsTools" type="button">📁 我的錄影作品</button><button id="ktvPreflight" type="button">✓ 裝置檢測</button>
           <span class="ktv-live-mix">🎵 <input id="ktvLiveMusic" type="range" min="0" max="200" value="100" aria-label="錄影伴奏音量" title="錄影伴奏音量"> 🎤 <input id="ktvLiveMic" type="range" min="0" max="200" value="100" aria-label="錄影麥克風音量" title="錄影麥克風音量"></span>
           <button id="ktvReplayBtn" type="button">↻ 重唱</button>
           <button id="ktvPlayerCutBtn" type="button">⏭ 切下一首</button>
@@ -497,10 +497,10 @@
 <script defer src="ktv_singers.js?v=15694"></script>
 <script defer src="ktv_songs.js?v=15694"></script>
 <script defer src="app.js?v=15694"></script>
-<script defer src="ktv-studio.js?v=15717"></script>
-<script defer src="ktv-lyrics.js?v=15717"></script>
+<script defer src="ktv-studio.js?v=15725"></script>
+<script defer src="ktv-lyrics.js?v=15725"></script>
 
 <div id="ktvToast" class="ktv-toast hidden" role="status" aria-live="polite"></div>
-<script defer src="ktv-lyric-workspace.js?v=15717"></script>
+<script defer src="ktv-lyric-workspace.js?v=15725"></script>
 </body>
 </html>

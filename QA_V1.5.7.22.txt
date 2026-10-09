@@ -1,0 +1,6 @@
+V1.5.7.22 Worker matting optimization
+- Transfer post-processing mask to Worker when supported; retains last valid mask while busy.
+- Standard and high-quality MediaPipe inference remains on UI thread.
+- Mobile recording load guard from 1.5.7.21 retained.
+- Worker may be unavailable under certain webviews or PWA contexts; fallback retained.
+- No physical device audio/video test performed.

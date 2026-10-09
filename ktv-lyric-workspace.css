@@ -1,4 +1,4 @@
-/* V1.5.7.17 standalone lyrics workspace */
+/* V1.5.7.18 standalone lyrics workspace */
 .ktv-open-lyric-studio{display:block;width:100%;min-height:46px;border:1px solid #78b6f2;border-radius:12px;background:#194b77;color:#fff;font-weight:750;padding:10px;margin:8px 0}
 .ktv-lyric-studio[hidden]{display:none!important}.ktv-lyric-studio{position:fixed!important;inset:0!important;z-index:2147483500!important;background:#0b1628;color:#f4f7ff;display:flex;flex-direction:column;overflow:hidden;height:100dvh;width:100vw;box-sizing:border-box}
 .ktv-lyric-studio-bar{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px max(12px,env(safe-area-inset-right)) 12px max(12px,env(safe-area-inset-left));background:#172d49;border-bottom:1px solid #476788;flex:0 0 auto}.ktv-lyric-studio-bar strong{font-size:clamp(16px,1.8vw,22px);display:block}.ktv-lyric-studio-bar small{display:block;font-size:12px;color:#cad7e9}.ktv-lyric-studio-close{background:#ba2946;color:white;border:0;border-radius:12px;min-height:46px;padding:8px 15px;white-space:nowrap;font-weight:750;cursor:pointer}
@@ -7,7 +7,7 @@
 @media(max-width:850px) and (orientation:landscape){.ktv-lyric-studio-layout{grid-template-columns:minmax(0,1fr) minmax(0,1fr);grid-template-rows:minmax(0,1fr)}.ktv-lyric-studio-preview{overflow:auto}.ktv-lyric-stage-slot .ktv-player-stage{max-height:unset}.ktv-lyric-studio-bar{padding-top:5px;padding-bottom:5px}}
 @media(max-width:400px){.ktv-lyric-studio-bar{padding:7px 8px}.ktv-lyric-studio-close{padding:6px 9px;font-size:12px}.ktv-lyric-studio-bar strong{font-size:15px}}
 
-/* V1.5.7.17 playback-guided subtitle editor */
+/* V1.5.7.18 playback-guided subtitle editor */
 .ktv-studio-sync{display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;padding:10px;border-radius:12px;background:#193954;color:#d9edff;font-size:13px}
 .ktv-studio-sync label{display:flex;gap:5px;align-items:center;white-space:nowrap}
 .ktv-studio-lines{display:flex;flex-direction:column;gap:6px;padding:14px;border:1px solid #5179a6;border-radius:12px;background:#102944;line-height:1.5;min-height:88px}

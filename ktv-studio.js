@@ -15,6 +15,53 @@ function releaseTabCapture(){
  endingTabCapture=false;
 }
 
+// V1.5.7.25: mobile recording protection and correlation diagnostics. No microphone samples are collected.
+let diagnostic=null, diagnosticTick=null, diagnosticFrames=0, diagnosticLastFrame=0;
+let recordingLoadLevel=0, recordingLowFpsStreak=0, recordingGoodFpsStreak=0;
+const diagnosticPanel=document.createElement('section');
+diagnosticPanel.id='ktvRecordingDiagnostics';
+diagnosticPanel.setAttribute('aria-live','polite');
+diagnosticPanel.style.cssText='margin:10px 0;padding:12px;border:1px solid rgba(140,172,205,.35);border-radius:12px;background:rgba(16,35,56,.94);color:#fff;font:14px/1.6 system-ui,sans-serif;max-width:100%;overflow-wrap:anywhere';
+diagnosticPanel.hidden=true;
+diagnosticPanel.innerHTML='<div style="display:flex;justify-content:space-between;gap:8px;align-items:center"><strong>📈 錄影品質監測</strong><button type="button" id="ktvDiagnosticToggle" style="background:#294968;color:white;border:0;border-radius:7px;padding:6px 10px;cursor:pointer">收合</button></div><div id="ktvDiagnosticData"></div>';
+($('ktvRecordLiveStatus')||$('ktvStudio')).insertAdjacentElement('afterend',diagnosticPanel);
+let diagnosticExpanded=true;
+diagnosticPanel.querySelector('#ktvDiagnosticToggle').onclick=()=>{diagnosticExpanded=!diagnosticExpanded;diagnosticPanel.querySelector('#ktvDiagnosticData').hidden=!diagnosticExpanded;diagnosticPanel.querySelector('#ktvDiagnosticToggle').textContent=diagnosticExpanded?'收合':'展開'};
+function diagnosticShow(message){diagnosticPanel.hidden=false;diagnosticPanel.querySelector('#ktvDiagnosticData').textContent=message}
+function diagnosticStart(stream,bg){
+ diagnosticStop(false); diagnosticFrames=0;diagnosticLastFrame=0;
+ recordingLoadLevel=0;recordingLowFpsStreak=0;recordingGoodFpsStreak=0;
+ diagnostic={start:performance.now(),samples:[],audio:stream.getAudioTracks(),video:stream.getVideoTracks(),bg,events:[],bytes:0,chunks:0,loadChanges:0};
+ const sample=()=>{if(!diagnostic)return;const now=performance.now();const fps=diagnosticFrames-diagnosticLastFrame;diagnosticLastFrame=diagnosticFrames;const audioLive=diagnostic.audio.some(t=>t.readyState==='live'&&t.enabled&&!t.muted);const videoLive=diagnostic.video.some(t=>t.readyState==='live'&&t.enabled&&!t.muted);const segment=Number.isFinite(cutoutAvgMs)&&$('ktvRemoveBackground')?.checked?Math.round(cutoutAvgMs):null;
+ // Auto-throttle only while recording, and only when sustained frame loss occurs.
+ if(mobileCapture && recording && $('ktvRemoveBackground')?.checked && camStream){
+   recordingLowFpsStreak=fps>0&&fps<12?recordingLowFpsStreak+1:0;
+   recordingGoodFpsStreak=fps>=17?recordingGoodFpsStreak+1:0;
+   if(recordingLowFpsStreak>=3 && recordingLoadLevel<2){
+     recordingLoadLevel++;diagnostic.loadChanges++;
+     recordingLowFpsStreak=0;recordingGoodFpsStreak=0;
+     restartSegmentationTimer();
+     diagnostic.events.push('手機掉格，自動降低去背辨識頻率至第'+recordingLoadLevel+'級');
+   }
+   // Avoid oscillations: recover only after ten stable seconds.
+   if(recordingGoodFpsStreak>=10 && recordingLoadLevel>0){recordingLoadLevel--;recordingGoodFpsStreak=0;restartSegmentationTimer()}
+ }
+ diagnostic.samples.push({fps,audioLive,videoLive,segment,loadLevel:recordingLoadLevel});if(diagnostic.samples.length>7200)diagnostic.samples.shift();
+ if(!audioLive&&!diagnostic.events.includes('麥克風或混音音軌中斷'))diagnostic.events.push('麥克風或混音音軌中斷');
+ if(!videoLive&&!diagnostic.events.includes('影像軌中斷'))diagnostic.events.push('影像軌中斷');
+ diagnosticShow('畫面更新：約 '+fps+' fps｜音訊軌：'+(audioLive?'連接中':'⚠️ 已中斷')+'｜去背計算：'+(segment===null?'未啟用':segment+' ms')+'｜手機去背降載：'+(recordingLoadLevel?'第'+recordingLoadLevel+'級':'未觸發')+'｜錄製資料：'+diagnostic.chunks+' 段');};
+ sample();diagnosticTick=setInterval(sample,1000);
+}
+function diagnosticChunk(data){if(diagnostic&&data?.size){diagnostic.bytes+=data.size;diagnostic.chunks++}}
+function diagnosticFrame(){if(diagnostic)diagnosticFrames++}
+function diagnosticStop(report=true){recordingLoadLevel=0;recordingLowFpsStreak=0;recordingGoodFpsStreak=0;if(segmentReady&&camStream&&$('ktvRemoveBackground')?.checked)restartSegmentationTimer();if(diagnosticTick){clearInterval(diagnosticTick);diagnosticTick=null;}if(!diagnostic)return;const d=diagnostic;diagnostic=null;if(!report)return;
+ const samples=d.samples, fps=samples.length?samples.reduce((a,x)=>a+x.fps,0)/samples.length:0,low=samples.filter(x=>x.fps<12).length, lost=samples.some(x=>!x.audioLive),maxSeg=Math.max(0,...samples.map(x=>x.segment||0));
+ const warnings=[];if(low>=3)warnings.push('畫面更新偏低（'+low+' 秒低於 12 fps）');if(lost)warnings.push('音訊軌曾中斷');if(maxSeg>180)warnings.push('AI 去背耗時偏高');if(!d.bytes)warnings.push('錄影資料尚未收到');
+ if(d.loadChanges)warnings.push('已自動調低去背頻率 '+d.loadChanges+' 次（掉格與 AI 負載可能相關，但不能據此確認音訊破碎）');
+ const result='平均畫面更新約 '+fps.toFixed(1)+' fps；錄製資料 '+d.chunks+' 段／'+(d.bytes/1048576).toFixed(1)+' MB；音訊軌'+(lost?'曾中斷':'未偵測到中斷')+'。'+(warnings.length?'注意：'+warnings.join('、')+'。':'未偵測到明顯中斷。')+'此診斷無法直接判斷實際音質與字幕正確性，仍需播放成品確認。';
+ diagnosticShow('錄影品質報告｜'+result);
+ const target=$('ktvRecordedSummary');if(target){const line=document.createElement('p');line.style.cssText='white-space:normal;margin:8px 0;font-weight:600';line.textContent='📈 '+result;target.appendChild(line)}
+}
 // V1.5.6.91: visibly report recording duration, active audio sources and output format.
 let ktvRecordTimer=null;
 let lastDrawTime=0;
@@ -43,7 +90,7 @@ $('ktvTuneReset')?.addEventListener('click',()=>{setTune('residue',50);setTune('
 // while camera preview/recording remain independent to protect audio continuity.
 let cutoutPerfMode='balanced', cutoutSamples=0, cutoutAvgMs=0, cutoutLastAt=0;
 let cutoutSlowStreak=0, cutoutFastStreak=0, currentSegmentMs=0;
-function segmentPeriod(){return cutoutPerfMode==='performance'?(mobileCapture?380:250):cutoutPerfMode==='detail'?(mobileCapture?250:130):(mobileCapture?300:190)}
+function segmentPeriod(){const base=cutoutPerfMode==='performance'?(mobileCapture?380:250):cutoutPerfMode==='detail'?(mobileCapture?250:130):(mobileCapture?300:190);return base+(mobileCapture&&recording?120+recordingLoadLevel*260:0)}
 function trackSegmentCost(start){
  const elapsed=Math.max(0,performance.now()-start);
  cutoutAvgMs=cutoutSamples?cutoutAvgMs*.85+elapsed*.15:elapsed;cutoutSamples++;
@@ -160,12 +207,53 @@ async function initStandardCutout(){
  restartSegmentationTimer();
  return true;
 }
+let maskWorker=null,maskWorkerPending=null,maskWorkerSequence=0,maskWorkerFailures=0;
+function disableMaskWorker(reason){
+ try{maskWorker?.terminate()}catch(e){} maskWorker=null;maskWorkerPending=null;
+ const hint=$('ktvCutoutHint');if(hint)hint.textContent='⚠️ 去背背景運算已改回相容模式：'+reason;
+}
+function applyWorkerMask(payload){
+ const pending=maskWorkerPending;if(!pending||pending.id!==payload.id)return;
+ maskWorkerPending=null;
+ if(payload.error){if(++maskWorkerFailures>=2)disableMaskWorker(payload.error);return;}
+ const {w,h,frameCanvas}=pending;
+ try{
+  if(!camStream||!$('ktvRemoveBackground')?.checked)return;
+  const image=new ImageData(new Uint8ClampedArray(payload.buffer),w,h);
+  maskCtx.putImageData(image,0,0);
+  cutoutCtx.clearRect(0,0,w,h);cutoutCtx.globalCompositeOperation='source-over';cutoutCtx.drawImage(frameCanvas,0,0,w,h);
+  cutoutCtx.globalCompositeOperation='destination-in';cutoutCtx.drawImage(maskCanvas,0,0,w,h);cutoutCtx.globalCompositeOperation='source-over';
+  let opaqueCount=0;const alpha=cutoutCtx.getImageData(0,0,w,h).data;
+  for(let yy=8;yy<h;yy+=16)for(let xx=8;xx<w;xx+=16){if(alpha[(yy*w+xx)*4+3]>100)opaqueCount++}
+  const enoughPerson=opaqueCount>=Math.max(8,Math.floor(w*h/5000));
+  if(enoughPerson){liveCtx.clearRect(0,0,w,h);liveCtx.drawImage(cutoutCanvas,0,0,w,h);cutoutFrame=true;cutoutGoodFrames++;cutoutLastSuccess=performance.now()}
+  maskWorkerFailures=0;updateCutoutUI();
+  $('ktvCutoutHint').textContent=enoughPerson?'✅ AI 遮罩背景運算中（Worker）':cutoutFrame?'⏳ 保留上一張去背畫面':'⏳ 正在辨識人物';
+ }catch(e){disableMaskWorker(e.message)}
+}
+try{if(typeof Worker!=='undefined'){
+ maskWorker=new Worker('./ktv-mask-worker.js');
+ maskWorker.onmessage=e=>applyWorkerMask(e.data);
+ maskWorker.onerror=e=>disableMaskWorker(e.message||'Worker 失敗');
+}}catch(e){maskWorker=null}
 function processCutoutResults(r){try{
  const w=Math.min(cam.videoWidth||640,640),h=Math.round(w*(cam.videoHeight||480)/(cam.videoWidth||640));
  if(cutoutCanvas.width!==w||cutoutCanvas.height!==h){cutoutCanvas.width=liveCutout.width=maskCanvas.width=w;cutoutCanvas.height=liveCutout.height=maskCanvas.height=h}
  // V1.5.7.07: feather a tighter alpha mask; filter detached background components.
  maskCtx.clearRect(0,0,w,h);maskCtx.save();maskCtx.filter='blur('+(.4+cutoutTune.feather*.04).toFixed(2)+'px)';maskCtx.drawImage(r.segmentationMask,0,0,w,h);maskCtx.restore();
  const mask=maskCtx.getImageData(0,0,w,h),px=mask.data;
+ // Move per-pixel matting and connected-component cleanup into a Worker where available.
+ // Snapshot camera pixels before dispatch so mask and camera image stay in step.
+ if(maskWorker && !maskWorkerPending){
+   const frameCanvas=document.createElement('canvas');frameCanvas.width=w;frameCanvas.height=h;
+   frameCanvas.getContext('2d').drawImage(r.image,0,0,w,h);
+   const id=++maskWorkerSequence;
+   maskWorkerPending={id,frameCanvas,w,h,started:performance.now()};
+   try{maskWorker.postMessage({id,width:w,height:h,buffer:mask.data.buffer,tune:{...cutoutTune}},[mask.data.buffer]);return;}
+   catch(e){maskWorkerPending=null;disableMaskWorker('傳送遮罩失敗：'+e.message);}
+ }
+ // Worker busy or unsupported: keep the last good cutout, don't block audio/UI with cleanup.
+ if(maskWorkerPending)return;
  for(let i=0;i<px.length;i+=4){const m=px[i]/255;const threshold=.29+cutoutTune.residue*.0017-cutoutTune.detail*.0009;const width=.52-cutoutTune.feather*.0018+cutoutTune.detail*.0005;const t=Math.max(0,Math.min(1,(m-threshold)/Math.max(.18,width)));const a=t*t*(3-2*t);px[i]=px[i+1]=px[i+2]=255;px[i+3]=Math.round(a*255)}
  // Remove disconnected segmentation islands (background furniture, tiny ghost figures).
  // Analyze a reduced mask so the camera loop stays responsive on desktop/mobile.
@@ -226,7 +314,7 @@ $('ktvCutoutQuality').addEventListener('change',async e=>{
 });
 $('ktvRemoveBackground').addEventListener('change',async e=>{
  if(e.target.checked){try{if(!camStream){$('ktvCutoutHint').textContent='✅ 已選擇人像去背。請另外點「開啟鏡頭」，不會自動開始錄影。';return;} $('ktvCutoutHint').textContent='⏳ 人物去背模型載入中…';await initCutout();$('studioOverlay').checked=true;if(!cutoutFrame)$('ktvCutoutHint').textContent='⏳ 模型已載入，正在辨識人物…';}catch(err){e.target.checked=false;cutoutFrame=false;updateCutoutUI();$('ktvQuickCutout').checked=false;$('ktvCutoutHint').textContent='⚠️ '+err.message;status('去背無法啟動：'+err.message)}}
- else{cutoutFrame=false;updateCutoutUI();$('ktvCutoutHint').textContent='去背已關閉，使用一般自拍小視窗。'}
+ else{maskWorkerPending=null;cutoutFrame=false;updateCutoutUI();$('ktvCutoutHint').textContent='去背已關閉，使用一般自拍小視窗。'}
 });
 const status=s=>$('studioStatus').textContent=s;
 function updateMixer(){if(musicGain)musicGain.gain.value=Number($('ktvMusicVolume').value)/100;if(micGain)micGain.gain.value=Number($('ktvMicVolume').value)/100;$('ktvMusicRead').textContent=$('ktvMusicVolume').value+'%';$('ktvMicRead').textContent=$('ktvMicVolume').value+'%';if(voiceFilter){const v=$('ktvVoiceEffect').value;voiceFilter.type=v==='warm'?'lowshelf':v==='bright'?'highshelf':'peaking';voiceFilter.frequency.value=v==='warm'?250:v==='bright'?3000:1000;voiceFilter.gain.value=v==='warm'?4:v==='bright'?5:0;if(echoGain)echoGain.gain.value=v==='echo'?.23:0}}
@@ -245,7 +333,7 @@ function drawScreenContained(src){
  ctx.drawImage(src,(canvas.width-dw)/2,(canvas.height-dh)/2,dw,dh);
 }
 function drawCover(src){const sw=src.videoWidth||src.naturalWidth,sh=src.videoHeight||src.naturalHeight;if(!sw||!sh)return;const k=Math.max(canvas.width/sw,canvas.height/sh);ctx.drawImage(src,(canvas.width-sw*k)/2,(canvas.height-sh*k)/2,sw*k,sh*k)}
-function frame(now=0){raf=requestAnimationFrame(frame);if(mobileCapture&&recording&&now-lastDrawTime<50)return;lastDrawTime=now;const bg=$('studioBackground').value;ctx.fillStyle='#132039';ctx.fillRect(0,0,1280,720);if(bg==='gradient'){const g=ctx.createLinearGradient(0,0,1280,720);g.addColorStop(0,'#151641');g.addColorStop(.5,'#7d2e69');g.addColorStop(1,'#14112e');ctx.fillStyle=g;ctx.fillRect(0,0,1280,720)}else if(bg==='stage'){const g=ctx.createRadialGradient(640,170,20,640,400,850);g.addColorStop(0,'#a35e9d');g.addColorStop(.4,'#39275b');g.addColorStop(1,'#080b1e');ctx.fillStyle=g;ctx.fillRect(0,0,1280,720);for(let i=0;i<7;i++){ctx.strokeStyle='rgba(255,210,255,.13)';ctx.lineWidth=24;ctx.beginPath();ctx.moveTo((i*220)-200,0);ctx.lineTo(640+(i-3)*70,720);ctx.stroke()}}else if(bg==='photo'&&bgImg)drawCover(bgImg);else if(bg==='video'&&video.readyState>=2)drawCover(video);else if(bg==='screen'&&video.readyState>=2)drawScreenContained(video);
+function frame(now=0){raf=requestAnimationFrame(frame);if(mobileCapture&&recording&&now-lastDrawTime<66)return;lastDrawTime=now;diagnosticFrame();const bg=$('studioBackground').value;ctx.fillStyle='#132039';ctx.fillRect(0,0,1280,720);if(bg==='gradient'){const g=ctx.createLinearGradient(0,0,1280,720);g.addColorStop(0,'#151641');g.addColorStop(.5,'#7d2e69');g.addColorStop(1,'#14112e');ctx.fillStyle=g;ctx.fillRect(0,0,1280,720)}else if(bg==='stage'){const g=ctx.createRadialGradient(640,170,20,640,400,850);g.addColorStop(0,'#a35e9d');g.addColorStop(.4,'#39275b');g.addColorStop(1,'#080b1e');ctx.fillStyle=g;ctx.fillRect(0,0,1280,720);for(let i=0;i<7;i++){ctx.strokeStyle='rgba(255,210,255,.13)';ctx.lineWidth=24;ctx.beginPath();ctx.moveTo((i*220)-200,0);ctx.lineTo(640+(i-3)*70,720);ctx.stroke()}}else if(bg==='photo'&&bgImg)drawCover(bgImg);else if(bg==='video'&&video.readyState>=2)drawCover(video);else if(bg==='screen'&&video.readyState>=2)drawScreenContained(video);
 if(bg==='camera'&&cam.readyState>=2)drawCover(cam);
 if(window.ktvLyricsEngine)window.ktvLyricsEngine.draw(ctx,canvas.width,canvas.height);
 if(float&&!float.classList.contains('hidden')&&cam.readyState>=2) {const r=stage.getBoundingClientRect(); if(r.width){float.style.width=(overlay.w*100)+'%';float.style.left=(Math.min(overlay.x,1-overlay.w)*100)+'%';float.style.top=(Math.min(overlay.y,Math.max(0,1-(overlay.w*(cam.videoHeight||720)/(cam.videoWidth||1280))*r.width/r.height))*100)+'%';}}
@@ -325,7 +413,44 @@ async function getStableMicrophone(){
  const el=$('ktvMicDeviceStatus');if(el)el.textContent='🎤 錄音設定：'+(speakerModeEl?.selectedOptions?.[0]?.textContent||'平衡')+'；回音消除 '+(actual.echoCancellation===undefined?'依裝置':actual.echoCancellation?'開':'關')+'、降噪 '+(actual.noiseSuppression===undefined?'依裝置':actual.noiseSuppression?'開':'關')+'。';
  return stream;
 }
-async function startRecording(){if(recording)return;if(!window.MediaRecorder||!canvas.captureStream){status('本裝置不支援此錄影方式。');return}try{let bg=$('studioBackground').value;const caps=deviceCapabilities();
+
+// V1.5.7.19: recording readiness review. No device permissions are requested by opening it.
+const preflightSheet=document.createElement('div');
+preflightSheet.id='ktvRecordingPreflight';preflightSheet.className='ktv-preflight-hidden';
+preflightSheet.setAttribute('role','dialog');preflightSheet.setAttribute('aria-modal','true');
+preflightSheet.setAttribute('aria-label','錄影前完整檢查');
+preflightSheet.innerHTML=`<div class="ktv-preflight-shade"></div><section class="ktv-preflight-card" tabindex="-1"><header><h2>🎬 錄影前檢查</h2><button type="button" id="ktvPreflightClose" aria-label="關閉檢查">✕</button></header><p class="ktv-preflight-note">先確認歌曲、字幕與錄影來源；開啟檢查不會啟動鏡頭或麥克風。</p><div id="ktvPreflightRows"></div><p id="ktvPreflightWarning" class="ktv-preflight-warning"></p><footer><button type="button" id="ktvPreflightCancel">返回調整</button><button type="button" id="ktvPreflightProceed">確認並開始錄影</button></footer></section>`;
+document.body.appendChild(preflightSheet);
+let preflightBusy=false;
+function hidePreflight(){if(preflightBusy)return;preflightSheet.classList.add('ktv-preflight-hidden')}
+function showPreflight(){
+ if(recording||preflightBusy)return;
+ const caps=deviceCapabilities(),bg=$('studioBackground').value;
+ const lyricState=window.ktvLyricsEngine?.getTimelineState?.();
+ const lyricEnabled=!!$('ktvLyricsEnabled')?.checked;
+ const sourceOk=bg==='screen'?caps.display:(bg==='photo'?!!bgImg:bg==='video'?!!(bgVideoUrl||video.src):true);
+ const rows=[
+  ['歌曲',$('ktvPlayerTitle')?.textContent?.trim()||'尚未選歌',!!$('ktvPlayerTitle')?.textContent?.trim()&&!/尚未播放/.test($('ktvPlayerTitle').textContent)],
+  ['歌詞核對',!lyricEnabled?'字幕未開啟（可錄影）':lyricState?.items?.length?'已載入歌詞；仍請確認版本':'尚無已同步歌詞',!lyricEnabled||!!lyricState?.items?.length],
+  ['字幕時間',!lyricEnabled?'不需校時':lyricState?.reliable?'已收到播放器時間':'目前沒有可靠播放時間，不能保證同步',!lyricEnabled||!!lyricState?.reliable],
+  ['背景來源',bg==='screen'?(caps.display?'電腦分享分頁；開始後須勾選分享音訊':'手機無法直接擷取 YouTube 畫面與伴奏'):bg==='photo'?'自訂圖片':bg==='video'?'自訂影片':bg==='stage'?'舞台背景':'漸層背景',sourceOk],
+  ['鏡頭',camStream?.getVideoTracks()?.some(t=>t.readyState==='live')?'鏡頭已連接':'開始錄影時會一併請求鏡頭權限',true],
+  ['麥克風',micStream?.getAudioTracks()?.some(t=>t.readyState==='live')?'麥克風已連接':'開始錄影時會請求麥克風權限',!!caps.media],
+  ['錄製格式',caps.mp4?'此瀏覽器可能支援 MP4':'依瀏覽器支援輸出，可能為 WebM',caps.rec]
+ ];
+ const wrap=$('ktvPreflightRows');wrap.replaceChildren();
+ rows.forEach(([label,message,ok])=>{const row=document.createElement('div');row.className='ktv-preflight-row';const statusNode=document.createElement('span');statusNode.textContent=ok?'●':'▲';statusNode.className=ok?'ktv-preflight-ok':'ktv-preflight-alert';const body=document.createElement('div');const title=document.createElement('strong');title.textContent=label;const desc=document.createElement('small');desc.textContent=message;body.append(title,desc);row.append(statusNode,body);wrap.append(row)});
+ const blockers=!caps.secure||!caps.media||!caps.rec||!sourceOk;
+ $('ktvPreflightWarning').textContent=!caps.secure?'此頁不是安全連線（HTTPS），無法錄影。':!sourceOk?'目前背景尚不可用，請返回選擇有效的照片／影片或預設背景。':bg==='screen'&&!caps.display?'手機無法直接擷取 YouTube。請先返回選擇自訂背景。':lyricEnabled&&(!lyricState?.items?.length||!lyricState?.reliable)?'字幕尚未完全確認或同步。可以繼續，但成品字幕可能缺少或不準確。':'按開始後瀏覽器可能要求裝置授權。錄影完請先確認影片與聲音。';
+ $('ktvPreflightProceed').disabled=blockers;
+ preflightSheet.classList.remove('ktv-preflight-hidden');preflightSheet.querySelector('.ktv-preflight-card').focus();
+}
+async function startRecording(){if(preflightBusy || recording || !preflightSheet.classList.contains('ktv-preflight-hidden'))return;showPreflight()}
+$('ktvPreflightClose').onclick=hidePreflight;
+$('ktvPreflightCancel').onclick=hidePreflight;
+preflightSheet.querySelector('.ktv-preflight-shade').onclick=hidePreflight;
+$('ktvPreflightProceed').onclick=async()=>{if(preflightBusy)return;preflightBusy=true;const b=$('ktvPreflightProceed');b.disabled=true;b.textContent='正在啟動…';$('ktvQuickStart').disabled=true;$('ktvQuickStart').textContent='⏳ 準備錄影中';preflightSheet.classList.add('ktv-preflight-hidden');try{await startRecordingCore()}finally{preflightBusy=false;b.textContent='確認並開始錄影';b.disabled=false;$('ktvQuickStart').textContent='🔴 開始錄影';syncQuickButtons()}};
+async function startRecordingCore(){if(recording)return;if(!window.MediaRecorder||!canvas.captureStream){status('本裝置不支援此錄影方式。');return}try{let bg=$('studioBackground').value;const caps=deviceCapabilities();
  if(!caps.secure||!caps.media){status(capabilityDescription());return}
  if(bg==='screen'&&!caps.display&&bgImg){bg='photo';$('studioBackground').value='photo';status('手機已自動使用預先設定的背景圖片，歌詞將疊加錄製。');}
  if(bg==='screen'&&!caps.display){
@@ -344,13 +469,14 @@ if(mobileCapture && !camStream){
   $('ktvCamToggle').textContent='📷 關閉鏡頭';$('ktvQuickCamera').textContent='📷 關閉鏡頭';
   micStream=new MediaStream(combinedStream.getAudioTracks());
 }else micStream=await getStableMicrophone();
-const stream=canvas.captureStream(mobileCapture?18:24);
+// A lower capture target reduces frame production pressure; audio capture is independent.
+const stream=canvas.captureStream(mobileCapture?15:24);
 // For a mobile microphone-only recording, bypass WebAudio entirely; this avoids an unnecessary live mixer and keeps the original mic track.
 const directMic=mobileCapture && !(['screen','video'].includes(bg)) && $('ktvVoiceEffect').value==='natural' && Number($('ktvMicVolume').value)===100;
 if(directMic){micStream.getAudioTracks().forEach(t=>stream.addTrack(t));}
-else{audioCtx=new (window.AudioContext||window.webkitAudioContext)({latencyHint:'playback'});await audioCtx.resume();audioDestination=audioCtx.createMediaStreamDestination();connectAudio(micStream,'mic');}if(!directMic && bg==='screen'&&screenStream?.getAudioTracks().length)connectAudio(screenStream,'music');if(!directMic && bg==='video'&&video.src&&!video.srcObject){try{const node=audioCtx.createMediaElementSource(video);musicGain=audioCtx.createGain();node.connect(musicGain);musicGain.connect(audioDestination);sourceNodes.push(node,musicGain);updateMixer()}catch(e){status('自訂影片音訊未能混合：'+e.message)}}if(!directMic)audioDestination.stream.getAudioTracks().forEach(t=>stream.addTrack(t));const type=mime();recorder=new MediaRecorder(stream,{...(type?{mimeType:type}:{}),videoBitsPerSecond:mobileCapture?1100000:3500000,audioBitsPerSecond:160000});chunks=[];recorder.ondataavailable=e=>{if(e.data.size)chunks.push(e.data)};recorder.onerror=e=>status('錄製失敗：'+(e.error?.message||'未知錯誤'));recorder.onstop=()=>{releaseTabCapture();blob=new Blob(chunks,{type:recorder.mimeType||'video/webm'});if(!blob.size){setKtvRecordState(false,'錄製失敗');status('錄製沒有產生有效影片；請檢查裝置權限及錄影格式。');cleanupAudio();$('studioRec').disabled=false;$('ktvRecordStart').disabled=false;syncQuickButtons();return;}blobURL=URL.createObjectURL(blob);$('studioPlayback').src=blobURL;setRecordSummary(blob);setKtvRecordState(false,'錄製完成，請預覽確認');explainFormat(blob);$('studioResult').classList.remove('studio-hidden');$('studioRec').disabled=false;$('studioStop').disabled=true;$('ktvRecordStart').disabled=false;$('ktvRecordStop').disabled=true;syncQuickButtons();openCompactSettings(true);fsPanel.classList.remove('ktv-tools-open');updateFsUi();$('studioResult').scrollIntoView({behavior:'smooth',block:'nearest'});status('錄製完成（'+extension(blob).toUpperCase()+'），請先預覽確認影音，再選擇儲存或重唱。');cleanupAudio()};recorder.start(2000);recording=true;/* The shared tab already contains the live cutout camera; never hide it or add it twice. */startTime=Date.now();setKtvRecordState(true, bg==='screen'?'錄製中：分頁畫面＋'+(screenStream.getAudioTracks().length?'伴奏＋':'無伴奏＋')+'麥克風':'錄製中：自訂背景＋麥克風（僅本機影片可有背景音軌）');$('studioRec').disabled=true;$('studioStop').disabled=false;$('ktvRecordStart').disabled=true;$('ktvRecordStop').disabled=false;syncQuickButtons();status(bg==='screen'?'● 正在錄製 KTV 分享畫面＋'+(screenStream.getAudioTracks().length?'伴奏音訊':'未取得伴奏')+'＋麥克風；可調整混音滑桿。':'● 正在錄製自訂背景與麥克風，非分頁模式無法擷取 YouTube 伴奏；上傳本機影片可混入該影片聲音。為減少聲音回授，建議使用有線耳機。')}catch(e){releaseTabCapture();setKtvRecordState(false,'無法開始錄影');cleanupAudio();status('啟動錄製失敗：'+e.message)}}
+else{audioCtx=new (window.AudioContext||window.webkitAudioContext)({latencyHint:'playback'});await audioCtx.resume();audioDestination=audioCtx.createMediaStreamDestination();connectAudio(micStream,'mic');}if(!directMic && bg==='screen'&&screenStream?.getAudioTracks().length)connectAudio(screenStream,'music');if(!directMic && bg==='video'&&video.src&&!video.srcObject){try{const node=audioCtx.createMediaElementSource(video);musicGain=audioCtx.createGain();node.connect(musicGain);musicGain.connect(audioDestination);sourceNodes.push(node,musicGain);updateMixer()}catch(e){status('自訂影片音訊未能混合：'+e.message)}}if(!directMic)audioDestination.stream.getAudioTracks().forEach(t=>stream.addTrack(t));const type=mime();recorder=new MediaRecorder(stream,{...(type?{mimeType:type}:{}),videoBitsPerSecond:mobileCapture?950000:3500000,audioBitsPerSecond:160000});chunks=[];recorder.ondataavailable=e=>{if(e.data.size){chunks.push(e.data);diagnosticChunk(e.data)}};recorder.onerror=e=>status('錄製失敗：'+(e.error?.message||'未知錯誤'));recorder.onstop=()=>{window.ktvLyricsEngine?.endRecording?.();releaseTabCapture();blob=new Blob(chunks,{type:recorder.mimeType||'video/webm'});if(!blob.size){diagnosticStop(true);setKtvRecordState(false,'錄製失敗');status('錄製沒有產生有效影片；請檢查裝置權限及錄影格式。');cleanupAudio();$('studioRec').disabled=false;$('ktvRecordStart').disabled=false;syncQuickButtons();return;}blobURL=URL.createObjectURL(blob);$('studioPlayback').src=blobURL;setRecordSummary(blob);diagnosticStop(true);setKtvRecordState(false,'錄製完成，請預覽確認');explainFormat(blob);$('studioResult').classList.remove('studio-hidden');$('studioRec').disabled=false;$('studioStop').disabled=true;$('ktvRecordStart').disabled=false;$('ktvRecordStop').disabled=true;syncQuickButtons();openCompactSettings(true);fsPanel.classList.remove('ktv-tools-open');updateFsUi();$('studioResult').scrollIntoView({behavior:'smooth',block:'nearest'});status('錄製完成（'+extension(blob).toUpperCase()+'），請先預覽確認影音，再選擇儲存或重唱。');cleanupAudio()};recorder.start(2000);diagnosticStart(stream,bg);window.ktvLyricsEngine?.beginRecording?.();recording=true;/* The shared tab already contains the live cutout camera; never hide it or add it twice. */startTime=Date.now();setKtvRecordState(true, bg==='screen'?'錄製中：分頁畫面＋'+(screenStream.getAudioTracks().length?'伴奏＋':'無伴奏＋')+'麥克風':'錄製中：自訂背景＋麥克風（僅本機影片可有背景音軌）');$('studioRec').disabled=true;$('studioStop').disabled=false;$('ktvRecordStart').disabled=true;$('ktvRecordStop').disabled=false;syncQuickButtons();status(bg==='screen'?'● 正在錄製 KTV 分享畫面＋'+(screenStream.getAudioTracks().length?'伴奏音訊':'未取得伴奏')+'＋麥克風；可調整混音滑桿。':'● 正在錄製自訂背景與麥克風，非分頁模式無法擷取 YouTube 伴奏；上傳本機影片可混入該影片聲音。為減少聲音回授，建議使用有線耳機。')}catch(e){diagnosticStop(false);window.ktvLyricsEngine?.endRecording?.();releaseTabCapture();setKtvRecordState(false,'無法開始錄影');cleanupAudio();status('啟動錄製失敗：'+e.message)}}
 function cleanupAudio(){stopStream(micStream);micStream=null;sourceNodes.forEach(n=>{try{n.disconnect()}catch(e){}});sourceNodes=[];if(audioCtx)audioCtx.close().catch(()=>{});audioCtx=null;musicGain=micGain=voiceFilter=echoDelay=echoGain=null}
-function stopRecording(){if(!recording)return;pauseKtvOnStop();recording=false;setKtvRecordState(false,'正在處理錄影檔案…');float.classList.remove('ktv-hide-from-capture');$('ktvRecordStop').disabled=true;syncQuickButtons();try{if(recorder&&recorder.state!=='inactive')recorder.stop()}catch(e){releaseTabCapture();cleanupAudio();status(e.message)}}
+function stopRecording(){if(!recording)return;pauseKtvOnStop();recording=false;setKtvRecordState(false,'正在處理錄影檔案…');float.classList.remove('ktv-hide-from-capture');$('ktvRecordStop').disabled=true;syncQuickButtons();try{if(recorder&&recorder.state!=='inactive')recorder.stop()}catch(e){diagnosticStop(true);releaseTabCapture();cleanupAudio();status(e.message)}}
 $('studioRec').onclick=startRecording;$('studioStop').onclick=stopRecording;
 $('studioRetry').onclick=()=>{releaseTabCapture();resetResult();$('ktvPlayerStage').scrollIntoView({behavior:'smooth',block:'center'});status('已捨棄本次成品，可以重新開始錄製。')};$('studioDiscard').onclick=()=>{releaseTabCapture();resetResult();$('ktvStudioDetails').open=false;status('已放棄本次錄製，沒有儲存。')};
 const DB='watch-ktv-records-v1';function openDB(){return new Promise((resolve,reject)=>{const r=indexedDB.open(DB,1);r.onupgradeneeded=()=>r.result.createObjectStore('items',{keyPath:'id'});r.onsuccess=()=>resolve(r.result);r.onerror=()=>reject(r.error)})}
@@ -416,8 +542,8 @@ recordingLibrary.querySelector('.ktv-library-backdrop').addEventListener('click'
 $('ktvLibraryRefresh').addEventListener('click',renderHistory);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!recordingLibrary.classList.contains('ktv-library-hidden'))closeMyRecordings()});
 
-function syncQuickButtons(){const a=$('ktvQuickStart'),b=$('ktvQuickStop');a.disabled=recording||$('ktvRecordStart').disabled;b.disabled=!recording;}
-function openCompactSettings(force){const d=$('ktvStudioDetails');const next=typeof force==='boolean'?force:!d.open;d.open=next;$('ktvStudio').classList.toggle('ktv-settings-open',next);$('ktvCompactSettings').setAttribute('aria-expanded',String(next));if(next){$('ktvStudio').scrollTop=0}}
+function syncQuickButtons(){const a=$('ktvQuickStart'),b=$('ktvQuickStop');a.disabled=preflightBusy||recording||$('ktvRecordStart').disabled;b.disabled=!recording;}
+function openCompactSettings(force){const d=$('ktvStudioDetails');const next=typeof force==='boolean'?force:!d.open;d.open=next;$('ktvStudio').classList.toggle('ktv-settings-open',next);$('ktvCompactSettings').setAttribute('aria-expanded',String(next));if(next){$('ktvStudio').scrollTop=0;$('ktvSettingsClose').focus({preventScroll:true})}}
 $('ktvCompactSettings').addEventListener('click',()=>openCompactSettings());$('ktvSettingsClose').addEventListener('click',()=>openCompactSettings(false));
 $('ktvQuickStart').addEventListener('click',()=>startRecording());
 $('ktvQuickStop').addEventListener('click',()=>stopRecording());
@@ -434,15 +560,79 @@ function updateFsUi(){
  document.body.classList.toggle('ktv-theatre-open',active);
  fsButton.textContent=active?'✕ 退出全螢幕':'⛶ 全螢幕';
  fsButton.setAttribute('aria-pressed',String(active));
- fsMenu.textContent=fsPanel.classList.contains('ktv-tools-open')?'✕ 收合工具':'⚙ 工具';
+ fsMenu.textContent=fsPanel.classList.contains('ktv-tools-open')?'✕ 收合工具':'⋯ 更多工具';
  fsMenu.setAttribute('aria-expanded',String(fsPanel.classList.contains('ktv-tools-open')));
- if(!active){fsPanel.classList.remove('ktv-tools-open');fsMenu.setAttribute('aria-expanded','false');fsMenu.textContent='⚙ 工具'}
+ if(!active){fsMenu.textContent=fsPanel.classList.contains('ktv-tools-open')?'✕ 收合工具':'⋯ 更多工具'}
 }
 fsButton.addEventListener('click',()=>{fsPanel.classList.toggle('ktv-ios-fullscreen');updateFsUi()});
-fsMenu.addEventListener('click',()=>{if(!fsPanel.classList.contains('ktv-ios-fullscreen'))fsPanel.classList.add('ktv-ios-fullscreen');fsPanel.classList.toggle('ktv-tools-open');updateFsUi()});
+fsMenu.addEventListener('click',()=>{fsPanel.classList.toggle('ktv-tools-open');updateFsUi()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&fsPanel.classList.contains('ktv-ios-fullscreen')){fsPanel.classList.remove('ktv-ios-fullscreen');updateFsUi()}});
 $('ktvClosePlayerBtn')?.addEventListener('click',()=>{fsPanel.classList.remove('ktv-ios-fullscreen');updateFsUi()});
 window.ktvEnterTheatre=()=>{fsPanel.classList.add('ktv-ios-fullscreen');fsPanel.classList.remove('ktv-tools-open');updateFsUi()};
 window.ktvExitTheatre=()=>{fsPanel.classList.remove('ktv-ios-fullscreen','ktv-tools-open');updateFsUi()};
-updateMixer();frame();window.addEventListener('pagehide',()=>{stopStream(camStream);releaseTabCapture();stopStream(micStream);if(segmentTimer)clearInterval(segmentTimer);if(segmenter)segmenter.close?.();if(raf)cancelAnimationFrame(raf)});
+updateMixer();frame();window.addEventListener('pagehide',()=>{stopStream(camStream);releaseTabCapture();stopStream(micStream);if(segmentTimer)clearInterval(segmentTimer);if(segmenter)segmenter.close?.();if(raf)cancelAnimationFrame(raf);try{maskWorker?.terminate()}catch(e){}});
+})();
+
+
+// V1.5.7.25: lightweight user guidance; does not touch the recording pipeline.
+(function(){
+ const guide=document.getElementById('ktvUserGuide'), message=document.getElementById('ktvGuideMessage');
+ const camButton=document.getElementById('ktvQuickCamera'), recButton=document.getElementById('ktvQuickStart');
+ const stopButton=document.getElementById('ktvQuickStop');
+ if(!guide||!message||!camButton||!recButton||!stopButton)return;
+ function updateGuide(){
+  if(!stopButton.disabled){ message.textContent='● 正在錄影，結束後可預覽、儲存或重唱';guide.dataset.phase='recording';return; }
+  if(/關閉鏡頭/.test(camButton.textContent)){message.textContent='鏡頭已開啟｜按「開始錄影」就能錄唱';guide.dataset.phase='camera';return;}
+  message.textContent='① 選歌播放　② 開啟鏡頭　③ 按錄影';guide.dataset.phase='ready';
+ }
+ const observer=new MutationObserver(updateGuide);
+ [camButton,recButton,stopButton].forEach(el=>observer.observe(el,{attributes:true,childList:true,subtree:true,attributeFilter:['disabled']}));
+ updateGuide();
+ document.getElementById('ktvGuideDismiss')?.addEventListener('click',()=>{guide.hidden=true});
+})();
+
+// V1.5.7.25 two-layer KTV UX; keep existing action IDs and handlers intact.
+(function(){
+ const studio=document.getElementById('ktvStudio');
+ const basic=document.getElementById('ktvModeBasic');
+ const advanced=document.getElementById('ktvModeAdvanced');
+ const panel=document.getElementById('ktvPlayerPanel');
+ const toolbox=document.getElementById('ktvFullscreenToolbox');
+ if(!studio||!basic||!advanced||!panel||!toolbox)return;
+ function setMode(mode){
+   const isAdvanced=mode==='advanced';
+   studio.classList.toggle('ktv-advanced-mode',isAdvanced);
+   basic.setAttribute('aria-pressed',String(!isAdvanced));
+   advanced.setAttribute('aria-pressed',String(isAdvanced));
+   try{localStorage.setItem('ktv-settings-mode-v124',mode)}catch(_e){}
+ }
+ basic.addEventListener('click',()=>setMode('basic'));
+ advanced.addEventListener('click',()=>setMode('advanced'));
+ let saved='basic';try{saved=localStorage.getItem('ktv-settings-mode-v124')||'basic'}catch(_e){}
+ setMode(saved);
+ // Move secondary actions into existing menu, preserving their click listeners and IDs.
+ ['ktvLyricsQuick','ktvOpenLyricStudio'].forEach(id=>{const item=document.getElementById(id);if(item)toolbox.insertBefore(item,toolbox.firstChild)});
+ // Ensure closing secondary menu is straightforward and does not dismiss the KTV player.
+ toolbox.addEventListener('click',e=>{if(e.target.closest('button')){
+   panel.classList.remove('ktv-tools-open');
+   const trigger=document.getElementById('ktvFullscreenMenu');
+   if(trigger){trigger.setAttribute('aria-expanded','false');trigger.textContent='⋯ 更多工具'}
+ }});
+})();
+
+// V1.5.7.25: predictable escape/click-out behavior for KTV auxiliary panels.
+(()=>{
+ const panel=document.getElementById('ktvPlayerPanel'), settings=document.getElementById('ktvStudio');
+ const details=document.getElementById('ktvStudioDetails');
+ const toolbox=document.getElementById('ktvFullscreenToolbox');
+ const more=document.getElementById('ktvFullscreenMenu');
+ const settingsBtn=document.getElementById('ktvCompactSettings');
+ document.addEventListener('keydown',e=>{
+   if(e.key!=='Escape')return;
+   if(details?.open){details.open=false;settings?.classList.remove('ktv-settings-open');settingsBtn?.setAttribute('aria-expanded','false');settingsBtn?.focus({preventScroll:true});return}
+   if(panel?.classList.contains('ktv-tools-open')){panel.classList.remove('ktv-tools-open');more?.setAttribute('aria-expanded','false');more.textContent='⋯ 更多工具';more?.focus({preventScroll:true})}
+ });
+ document.addEventListener('pointerdown',e=>{
+   if(panel?.classList.contains('ktv-tools-open')&&!toolbox?.contains(e.target)&&e.target!==more){panel.classList.remove('ktv-tools-open');more?.setAttribute('aria-expanded','false');more.textContent='⋯ 更多工具'}
+ });
 })();
