@@ -398,21 +398,37 @@ function setMedia(file,type){if(!file)return;const u=URL.createObjectURL(file);i
 try{const saved=localStorage.getItem('ktv-custom-photo-v15704');if(saved){const im=new Image();im.onload=()=>{bgImg=im;if(mobileCapture&&$('studioBackground').value==='screen')$('studioBackground').value='photo';};im.src=saved;}}catch(err){}
 $('studioPhoto').onchange=e=>{setMedia(e.target.files[0],'image');$('studioBackground').value='photo';try{const file=e.target.files[0];if(file&&file.size<3500000){const reader=new FileReader();reader.onload=()=>{try{localStorage.setItem('ktv-custom-photo-v15704',reader.result);$('ktvPhotoNotice').textContent='✅ 已記住背景圖片';}catch(err){$('ktvPhotoNotice').textContent='圖片已載入，但本機空間不足，無法記住';}};reader.readAsDataURL(file);}else $('ktvPhotoNotice').textContent='已套用圖片。大於 3.5MB 的圖片不會持久儲存。'}catch(err){}};
 $('studioVideo').onchange=e=>{setMedia(e.target.files[0],'video');$('studioBackground').value='video'};
-$('studioCamera').onclick=async()=>{try{
+// Camera preview diagnostics: one native video, with selectable camera device and capture profile.
+const cameraPanel=document.createElement('details');cameraPanel.id='ktvCameraCaptureSettings';
+cameraPanel.innerHTML=`<summary>📷 攝影機來源與流暢度</summary><div class="ktv-camera-options">
+<label>攝影機 <select id="ktvCameraDevice"><option value="">系統預設</option></select></label>
+<label>影像設定 <select id="ktvCameraProfile"><option value="640x480@30">640×480 / 30 fps</option><option value="640x480@15">640×480 / 15 fps</option><option value="320x240@30">320×240 / 30 fps</option><option value="1280x720@30">1280×720 / 30 fps</option></select></label>
+<button type="button" id="ktvCameraRestart">套用設定並重開鏡頭</button>
+<span id="ktvCameraActual" role="status">尚未啟動鏡頭</span></div>`;
+$('ktvCamToggle').insertAdjacentElement('afterend',cameraPanel);
+let cameraOpening=false;
+try{const old=localStorage.getItem('ktvCameraProfile');if(old&&cameraPanel.querySelector('#ktvCameraProfile option[value="'+old+'"]'))$('ktvCameraProfile').value=old}catch(e){}
+async function updateCameraChoices(){try{const devices=await navigator.mediaDevices.enumerateDevices();const chosen=$('ktvCameraDevice').value;const select=$('ktvCameraDevice');select.replaceChildren(new Option('系統預設',''));for(const d of devices.filter(x=>x.kind==='videoinput'))select.add(new Option(d.label||'攝影機 '+(select.options.length),d.deviceId));select.value=[...select.options].some(x=>x.value===chosen)?chosen:'';}catch(e){}}
+$('ktvCameraProfile').addEventListener('change',()=>{try{localStorage.setItem('ktvCameraProfile',$('ktvCameraProfile').value)}catch(e){}});
+$('ktvCameraRestart').addEventListener('click',async()=>{if(cameraOpening)return;if(camStream){$('ktvCamToggle').click();setTimeout(()=>$('ktvCamToggle').click(),180);}else $('ktvCamToggle').click()});
+$('studioCamera').onclick=async()=>{if(cameraOpening)return;cameraOpening=true;try{
  if(!navigator.mediaDevices?.getUserMedia)throw Error('此瀏覽器無法使用攝影機，或網頁不是 HTTPS');
  endCameraFrameWatch();stopStream(camStream);camStream=null;cam.pause();cam.srcObject=null;cutoutFrame=false;updateCutoutUI();
- const newStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'user',width:{ideal:640},height:{ideal:480},frameRate:{ideal:24}},audio:false});
+ const [dimensions,rate]=($('ktvCameraProfile').value||'640x480@30').split('@');const [desiredWidth,desiredHeight]=dimensions.split('x').map(Number);const deviceId=$('ktvCameraDevice').value;
+ const newStream=await navigator.mediaDevices.getUserMedia({video:{...(deviceId?{deviceId:{exact:deviceId}}:{facingMode:'user'}),width:{ideal:desiredWidth},height:{ideal:desiredHeight},frameRate:{ideal:Number(rate)}},audio:false});
  camStream=newStream;cam.srcObject=newStream;cam.muted=true;cam.autoplay=true;cam.playsInline=true;
  try{newStream.getVideoTracks()[0].contentHint='motion'}catch(e){}
- await cam.play();beginCameraFrameWatch();
+ await cam.play();beginCameraFrameWatch();const settingsNow=newStream.getVideoTracks()[0]?.getSettings?.()||{};$('ktvCameraActual').textContent='實際：'+(settingsNow.width||'?')+'×'+(settingsNow.height||'?')+' / '+(settingsNow.frameRate||'?')+' fps（瀏覽器回報）';
  if(!cam.videoWidth||!cam.videoHeight){await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('攝影機未提供有效影像')),4500);const ready=()=>{if(cam.videoWidth&&cam.videoHeight){clearTimeout(timer);cam.removeEventListener('loadeddata',ready);resolve()}};cam.addEventListener('loadeddata',ready);ready()})}
- float.classList.remove('hidden','ktv-hide-from-capture');syncCameraRatio();positionCameraOverlay();if($('ktvRemoveBackground').checked){$('ktvCutoutHint').textContent='⏳ 人像去背載入中…';try{await initCutout()}catch(err){$('ktvCutoutHint').textContent='⚠️ 人像去背不可用：'+err.message}}$('ktvCamToggle').textContent='📷 關閉鏡頭';$('ktvQuickCamera').textContent='📷 關閉鏡頭';$('studioOverlay').checked=true;status('鏡頭已開啟；可以在畫面中拖動人物框，使用大小滑桿調整比例。')}catch(e){status('無法使用鏡頭：'+e.message)}};
+ float.classList.remove('hidden','ktv-hide-from-capture');try{const cs=newStream.getVideoTracks()[0]?.getSettings?.()||{};status('鏡頭已啟動 '+(cs.width||'?')+'×'+(cs.height||'?')+' / '+(cs.frameRate||'?')+' fps；若仍卡頓，請使用「鏡頭診斷」比較。')}catch(e){}syncCameraRatio();positionCameraOverlay();if($('ktvRemoveBackground').checked){$('ktvCutoutHint').textContent='⏳ 人像去背載入中…';try{await initCutout()}catch(err){$('ktvCutoutHint').textContent='⚠️ 人像去背不可用：'+err.message}}$('ktvCamToggle').textContent='📷 關閉鏡頭';$('ktvQuickCamera').textContent='📷 關閉鏡頭';$('studioOverlay').checked=true;status('鏡頭已開啟；可以在畫面中拖動人物框，使用大小滑桿調整比例。')}catch(e){status('無法使用鏡頭：'+e.message);$('ktvCameraActual').textContent='⚠️ '+e.message}finally{cameraOpening=false;updateCameraChoices()}};
 $('studioScreen').onclick=async()=>{try{await requestTabCapture()}catch(e){status('畫面分享無法啟動：'+e.message)}};
 async function requestTabCapture(){if(!navigator.mediaDevices?.getDisplayMedia)throw Error('此瀏覽器沒有分頁擷取功能；請用電腦版 Chrome／Edge。');releaseTabCapture();screenStream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:24},audio:{echoCancellation:false,noiseSuppression:false},preferCurrentTab:true,selfBrowserSurface:'include',surfaceSwitching:'exclude',systemAudio:'include'});const track=screenStream.getVideoTracks()[0],info=track?.getSettings?.()||{};video.srcObject=screenStream;await video.play();$('studioBackground').value='screen';track.onended=()=>{if(endingTabCapture)return;if(recording)stopRecording();else releaseTabCapture();status('KTV 分頁分享已結束。')};if(screenStream.getAudioTracks().length===0)status('⚠️ 已取得影像，但沒有分頁音訊！請重新分享「目前分頁」並勾選「分享分頁音訊」。');else status('已擷取完整分享畫面（不裁切）；請選「目前分頁」並保留 KTV 與工具列可見。來源：'+(info.displaySurface||'瀏覽器分頁')+'。');return screenStream}
 $('studioScale').oninput=e=>{overlay.w=Number(e.target.value)/100;positionCameraOverlay()};
 
 $('ktvCamToggle').onclick=async()=>{if(camStream){endCameraFrameWatch();stopStream(camStream);camStream=null;cam.pause();cam.srcObject=null;cutoutFrame=false;updateCutoutUI();float.classList.add('hidden');$('ktvCamToggle').textContent='📷 開啟鏡頭';$('ktvQuickCamera').textContent='📷 開啟鏡頭';return}await $('studioCamera').onclick()};
 $('ktvQuickCamera').addEventListener('click',()=> $('ktvCamToggle').click());
+// Standalone comparison avoids KTV/YouTube/segmentation to isolate webcam or browser driver lag.
+const diagLink=document.createElement('a');diagLink.href='./camera-diagnostic.html';diagLink.target='_blank';diagLink.rel='noopener';diagLink.textContent='🧪 鏡頭診斷';diagLink.title='單獨測試攝影機影格率，不載入 KTV 或去背';diagLink.style.cssText='display:inline-flex;align-items:center;padding:8px 10px;border-radius:10px;background:#334b67;color:white;text-decoration:none;font-size:14px;margin:4px;';$('ktvCamToggle').insertAdjacentElement('afterend',diagLink);
 // V1.5.6.91: recording preflight distinguishes media recording from KTV tab capture.
 function deviceCapabilities(){
  const display=!!navigator.mediaDevices?.getDisplayMedia;

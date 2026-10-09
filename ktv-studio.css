@@ -296,3 +296,13 @@ body > #studioPreviewTheatre.ktv-preview-theatre #studioPlaybackBack{display:non
 #ktvPlayerPanel.ktv-fs-active.ktv-tools-open #ktvFullscreenToolbox{position:absolute;z-index:999}
 #ktvPlayerPanel #ktvFullscreenMenu[aria-expanded="true"]{background:#345e91;color:#fff}
 @media(max-width:680px){#ktvPlayerPanel .ktv-player-fullbar{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:7px}#ktvPlayerPanel .ktv-player-fullbar button{font-size:13px}#ktvStudio .ktv-setting-mode button{min-height:48px}}
+
+/* V1.5.7.29: native camera preview should not be filtered or blurred. */
+#ktvCamFloat:not(.ktv-cutout-on){filter:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;box-shadow:none!important;}
+#ktvCamFloat:not(.ktv-cutout-on) video{filter:none!important;backdrop-filter:none!important;-webkit-backdrop-filter:none!important;animation:none!important;transition:none!important;}
+#ktvCameraCaptureSettings{margin:8px 0;padding:9px;border:1px solid #5c7b9c;border-radius:12px;background:#1b304b;color:#fff;font:14px/1.5 system-ui;}
+#ktvCameraCaptureSettings summary{font-weight:700;cursor:pointer;}
+#ktvCameraCaptureSettings .ktv-camera-options{display:grid;grid-template-columns:1fr;gap:8px;padding:10px 0;}
+#ktvCameraCaptureSettings label{display:grid;gap:4px;min-width:0;}
+#ktvCameraCaptureSettings select,#ktvCameraRestart{box-sizing:border-box;width:100%;min-height:42px;padding:8px;border:1px solid #7495b5;border-radius:8px;background:#253e60;color:white;font:inherit;}
+#ktvCameraActual{overflow-wrap:anywhere;color:#d8e9fc;}
