@@ -205,7 +205,7 @@ $('studioCamera').onclick=async()=>{if(cameraOpening)return;cameraOpening=true;t
  if(!navigator.mediaDevices?.getUserMedia)throw Error('此瀏覽器無法使用攝影機，或網頁不是 HTTPS');
  endCameraFrameWatch();stopStream(camStream);camStream=null;cam.pause();cam.srcObject=null;
  const [dimensions,rate]=($('ktvCameraProfile').value||'640x480@30').split('@');const [desiredWidth,desiredHeight]=dimensions.split('x').map(Number);const deviceId=$('ktvCameraDevice').value;
- const newStream=await navigator.mediaDevices.getUserMedia({video:{...(deviceId?{deviceId:{exact:deviceId}}:{facingMode:'user'}),width:{ideal:desiredWidth},height:{ideal:desiredHeight},frameRate:{ideal:Number(rate)}},audio:false});
+ const newStream=await navigator.mediaDevices.getUserMedia({video:{...(deviceId?{deviceId:{exact:deviceId}}:{facingMode:{ideal:'user'}}),width:{ideal:desiredWidth},height:{ideal:desiredHeight},frameRate:{ideal:Number(rate)}},audio:false});
  camStream=newStream;cam.srcObject=newStream;cam.muted=true;cam.autoplay=true;cam.playsInline=true;
  try{newStream.getVideoTracks()[0].contentHint='motion'}catch(e){}
  await cam.play();beginCameraFrameWatch();const settingsNow=newStream.getVideoTracks()[0]?.getSettings?.()||{};$('ktvCameraActual').textContent='實際：'+(settingsNow.width||'?')+'×'+(settingsNow.height||'?')+' / '+(settingsNow.frameRate||'?')+' fps（瀏覽器回報）';
@@ -289,12 +289,12 @@ function showPreflight(){
  const caps=deviceCapabilities(),bg=$('studioBackground').value;
  const lyricState=window.ktvLyricsEngine?.getTimelineState?.();
  const lyricEnabled=!!$('ktvLyricsEnabled')?.checked;
- const sourceOk=bg==='screen'?caps.display:(bg==='photo'?!!bgImg:bg==='video'?!!(bgVideoUrl||video.src):true);
+ const sourceOk=bg==='screen'?true:(bg==='photo'?!!bgImg:bg==='video'?!!(bgVideoUrl||video.src):true);
  const rows=[
   ['歌曲',$('ktvPlayerTitle')?.textContent?.trim()||'尚未選歌',!!$('ktvPlayerTitle')?.textContent?.trim()&&!/尚未播放/.test($('ktvPlayerTitle').textContent)],
   ['歌詞核對',!lyricEnabled?'字幕未開啟（可錄影）':lyricState?.items?.length?'已載入歌詞；仍請確認版本':'尚無已同步歌詞',!lyricEnabled||!!lyricState?.items?.length],
   ['字幕時間',!lyricEnabled?'不需校時':lyricState?.reliable?'已收到播放器時間':'目前沒有可靠播放時間，不能保證同步',!lyricEnabled||!!lyricState?.reliable],
-  ['背景來源',bg==='screen'?(caps.display?'電腦分享分頁；開始後須勾選分享音訊':'手機無法直接擷取 YouTube 畫面與伴奏'):bg==='photo'?'自訂圖片':bg==='video'?'自訂影片':bg==='stage'?'舞台背景':'漸層背景',sourceOk],
+  ['背景來源',bg==='screen'?(caps.display?'電腦分享分頁；開始後須勾選分享音訊':'手機不能擷取 YouTube；錄影時將提示選擇預設舞台或自訂背景'):bg==='photo'?'自訂圖片':bg==='video'?'自訂影片':bg==='stage'?'舞台背景':'漸層背景',sourceOk],
   ['鏡頭',camStream?.getVideoTracks()?.some(t=>t.readyState==='live')?'鏡頭已連接':'開始錄影時會一併請求鏡頭權限',true],
   ['麥克風',micStream?.getAudioTracks()?.some(t=>t.readyState==='live')?'麥克風已連接':'開始錄影時會請求麥克風權限',!!caps.media],
   ['錄製格式',caps.mp4?'此瀏覽器可能支援 MP4':'依瀏覽器支援輸出，可能為 WebM',caps.rec]
@@ -403,7 +403,7 @@ recordingLibrary.querySelector('.ktv-library-backdrop').addEventListener('click'
 $('ktvLibraryRefresh').addEventListener('click',renderHistory);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'&&!recordingLibrary.classList.contains('ktv-library-hidden'))closeMyRecordings()});
 
-function syncQuickButtons(){const a=$('ktvQuickStart'),b=$('ktvQuickStop');a.disabled=preflightBusy||recording;b.disabled=!recording;}
+function syncQuickButtons(){const a=$('ktvQuickStart'),b=$('ktvQuickStop');a.disabled=preflightBusy||recording;b.disabled=!recording;a.setAttribute('aria-busy',String(preflightBusy));}
 function openCompactSettings(force){const d=$('ktvStudioDetails');const next=typeof force==='boolean'?force:!d.open;d.open=next;$('ktvStudio').classList.toggle('ktv-settings-open',next);$('ktvCompactSettings').setAttribute('aria-expanded',String(next));if(next){$('ktvStudio').scrollTop=0;$('ktvSettingsClose').focus({preventScroll:true})}}
 $('ktvCompactSettings').addEventListener('click',()=>openCompactSettings());$('ktvSettingsClose').addEventListener('click',()=>openCompactSettings(false));
 $('ktvQuickStart').addEventListener('click',()=>{
@@ -433,6 +433,8 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&fsPanel.classList.c
 $('ktvClosePlayerBtn')?.addEventListener('click',()=>{fsPanel.classList.remove('ktv-ios-fullscreen');updateFsUi()});
 window.ktvEnterTheatre=()=>{fsPanel.classList.add('ktv-ios-fullscreen');fsPanel.classList.remove('ktv-tools-open');updateFsUi()};
 window.ktvExitTheatre=()=>{fsPanel.classList.remove('ktv-ios-fullscreen','ktv-tools-open');updateFsUi()};
+window.ktvStudioActions={camera:()=>$('ktvCamToggle').onclick(),record:()=>startRecording(),stop:()=>stopRecording(),status};
+window.ktvStudioReady=true;
 updateMixer();window.addEventListener('pagehide',()=>{endCameraFrameWatch();stopStream(camStream);releaseTabCapture();stopStream(micStream);if(raf)cancelAnimationFrame(raf);});
 })();
 
