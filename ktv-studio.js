@@ -17,7 +17,7 @@ function releaseTabCapture(){
 
 // V1.5.7.25: mobile recording protection and correlation diagnostics. No microphone samples are collected.
 let diagnostic=null, diagnosticTick=null, diagnosticFrames=0, diagnosticLastFrame=0;
-let recordingLoadLevel=0, recordingLowFpsStreak=0, recordingGoodFpsStreak=0;
+
 const diagnosticPanel=document.createElement('section');
 diagnosticPanel.id='ktvRecordingDiagnostics';
 diagnosticPanel.setAttribute('aria-live','polite');
@@ -30,34 +30,21 @@ diagnosticPanel.querySelector('#ktvDiagnosticToggle').onclick=()=>{diagnosticExp
 function diagnosticShow(message){diagnosticPanel.hidden=false;diagnosticPanel.querySelector('#ktvDiagnosticData').textContent=message}
 function diagnosticStart(stream,bg){
  diagnosticStop(false); diagnosticFrames=0;diagnosticLastFrame=0;
- recordingLoadLevel=0;recordingLowFpsStreak=0;recordingGoodFpsStreak=0;
- diagnostic={start:performance.now(),samples:[],audio:stream.getAudioTracks(),video:stream.getVideoTracks(),bg,events:[],bytes:0,chunks:0,loadChanges:0};
- const sample=()=>{if(!diagnostic)return;const now=performance.now();const fps=diagnosticFrames-diagnosticLastFrame;diagnosticLastFrame=diagnosticFrames;const audioLive=diagnostic.audio.some(t=>t.readyState==='live'&&t.enabled&&!t.muted);const videoLive=diagnostic.video.some(t=>t.readyState==='live'&&t.enabled&&!t.muted);const segment=Number.isFinite(cutoutAvgMs)&&$('ktvRemoveBackground')?.checked?Math.round(cutoutAvgMs):null;
- // Auto-throttle only while recording, and only when sustained frame loss occurs.
- if(mobileCapture && recording && $('ktvRemoveBackground')?.checked && camStream){
-   recordingLowFpsStreak=fps>0&&fps<12?recordingLowFpsStreak+1:0;
-   recordingGoodFpsStreak=fps>=17?recordingGoodFpsStreak+1:0;
-   if(recordingLowFpsStreak>=3 && recordingLoadLevel<2){
-     recordingLoadLevel++;diagnostic.loadChanges++;
-     recordingLowFpsStreak=0;recordingGoodFpsStreak=0;
-     restartSegmentationTimer();
-     diagnostic.events.push('手機掉格，自動降低去背辨識頻率至第'+recordingLoadLevel+'級');
-   }
-   // Avoid oscillations: recover only after ten stable seconds.
-   if(recordingGoodFpsStreak>=10 && recordingLoadLevel>0){recordingLoadLevel--;recordingGoodFpsStreak=0;restartSegmentationTimer()}
- }
- diagnostic.samples.push({fps,audioLive,videoLive,segment,loadLevel:recordingLoadLevel});if(diagnostic.samples.length>7200)diagnostic.samples.shift();
+ 
+ diagnostic={start:performance.now(),samples:[],audio:stream.getAudioTracks(),video:stream.getVideoTracks(),bg,events:[],bytes:0,chunks:0};
+ const sample=()=>{if(!diagnostic)return;const now=performance.now();const fps=diagnosticFrames-diagnosticLastFrame;diagnosticLastFrame=diagnosticFrames;const audioLive=diagnostic.audio.some(t=>t.readyState==='live'&&t.enabled&&!t.muted);const videoLive=diagnostic.video.some(t=>t.readyState==='live'&&t.enabled&&!t.muted);
+ diagnostic.samples.push({fps,audioLive,videoLive});if(diagnostic.samples.length>7200)diagnostic.samples.shift();
  if(!audioLive&&!diagnostic.events.includes('麥克風或混音音軌中斷'))diagnostic.events.push('麥克風或混音音軌中斷');
  if(!videoLive&&!diagnostic.events.includes('影像軌中斷'))diagnostic.events.push('影像軌中斷');
- diagnosticShow('畫面更新：約 '+fps+' fps｜音訊軌：'+(audioLive?'連接中':'⚠️ 已中斷')+'｜去背計算：'+(segment===null?'未啟用':segment+' ms')+'｜手機去背降載：'+(recordingLoadLevel?'第'+recordingLoadLevel+'級':'未觸發')+'｜錄製資料：'+diagnostic.chunks+' 段');};
+ diagnosticShow('畫面更新：約 '+fps+' fps｜音訊軌：'+(audioLive?'連接中':'⚠️ 已中斷')+'｜錄製資料：'+diagnostic.chunks+' 段');};
  sample();diagnosticTick=setInterval(sample,1000);
 }
 function diagnosticChunk(data){if(diagnostic&&data?.size){diagnostic.bytes+=data.size;diagnostic.chunks++}}
 function diagnosticFrame(){if(diagnostic)diagnosticFrames++}
-function diagnosticStop(report=true){recordingLoadLevel=0;recordingLowFpsStreak=0;recordingGoodFpsStreak=0;if(segmentReady&&camStream&&$('ktvRemoveBackground')?.checked)restartSegmentationTimer();if(diagnosticTick){clearInterval(diagnosticTick);diagnosticTick=null;}if(!diagnostic)return;const d=diagnostic;diagnostic=null;if(!report)return;
- const samples=d.samples, fps=samples.length?samples.reduce((a,x)=>a+x.fps,0)/samples.length:0,low=samples.filter(x=>x.fps<12).length, lost=samples.some(x=>!x.audioLive),maxSeg=Math.max(0,...samples.map(x=>x.segment||0));
- const warnings=[];if(low>=3)warnings.push('畫面更新偏低（'+low+' 秒低於 12 fps）');if(lost)warnings.push('音訊軌曾中斷');if(maxSeg>180)warnings.push('AI 去背耗時偏高');if(!d.bytes)warnings.push('錄影資料尚未收到');
- if(d.loadChanges)warnings.push('已自動調低去背頻率 '+d.loadChanges+' 次（掉格與 AI 負載可能相關，但不能據此確認音訊破碎）');
+function diagnosticStop(report=true){if(diagnosticTick){clearInterval(diagnosticTick);diagnosticTick=null;}if(!diagnostic)return;const d=diagnostic;diagnostic=null;if(!report)return;
+ const samples=d.samples, fps=samples.length?samples.reduce((a,x)=>a+x.fps,0)/samples.length:0,low=samples.filter(x=>x.fps<12).length, lost=samples.some(x=>!x.audioLive);
+ const warnings=[];if(low>=3)warnings.push('畫面更新偏低（'+low+' 秒低於 12 fps）');if(lost)warnings.push('音訊軌曾中斷');if(!d.bytes)warnings.push('錄影資料尚未收到');
+ 
  const result='平均畫面更新約 '+fps.toFixed(1)+' fps；錄製資料 '+d.chunks+' 段／'+(d.bytes/1048576).toFixed(1)+' MB；音訊軌'+(lost?'曾中斷':'未偵測到中斷')+'。'+(warnings.length?'注意：'+warnings.join('、')+'。':'未偵測到明顯中斷。')+'此診斷無法直接判斷實際音質與字幕正確性，仍需播放成品確認。';
  diagnosticShow('錄影品質報告｜'+result);
  const target=$('ktvRecordedSummary');if(target){const line=document.createElement('p');line.style.cssText='white-space:normal;margin:8px 0;font-weight:600';line.textContent='📈 '+result;target.appendChild(line)}
@@ -80,93 +67,7 @@ function setRecordSummary(b){
  summary.textContent='錄製長度：約 '+Math.max(0,seconds)+' 秒｜格式：'+extension(b).toUpperCase()+'｜檔案：'+tracks.toFixed(1)+' MB。請播放確認聲音與畫面。';
 }
 
-const maskCanvas=document.createElement('canvas'),maskCtx=maskCanvas.getContext('2d',{willReadFrequently:true});let segmenter=null,segmentBusy=false,segmentReady=false,segmentTimer=null,cutoutFrame=null,cutoutCanvas=document.createElement('canvas'),cutoutCtx=cutoutCanvas.getContext('2d');cutoutCanvas.width=640;cutoutCanvas.height=360;const liveCutout=document.createElement('canvas');liveCutout.id='ktvLiveCutout';liveCutout.width=640;liveCutout.height=360;float.appendChild(liveCutout);const liveCtx=liveCutout.getContext('2d');let cutoutFailures=0,cutoutGoodFrames=0,cutoutLastSuccess=0;
-// V1.5.7.11: real-time person matting parameters, persisted per browser.
-const cutoutTune={residue:50,feather:35,detail:50};
-function setTune(name,value){cutoutTune[name]=Math.max(0,Math.min(100,Number(value)||0));const suffix={residue:'Residue',feather:'Feather',detail:'Detail'}[name];const slider=$('ktvTune'+suffix),out=$('ktvTune'+suffix+'Val');if(slider)slider.value=cutoutTune[name];if(out)out.textContent=String(cutoutTune[name]);try{localStorage.setItem('ktvCutoutTune_'+name,String(cutoutTune[name]))}catch(e){}}
-for(const name of ['residue','feather','detail']){const suffix={residue:'Residue',feather:'Feather',detail:'Detail'}[name];let val=({residue:50,feather:35,detail:50})[name];try{const stored=localStorage.getItem('ktvCutoutTune_'+name);if(stored!==null&&Number.isFinite(Number(stored)))val=Number(stored)}catch(e){}setTune(name,val);$('ktvTune'+suffix)?.addEventListener('input',e=>setTune(name,e.target.value))}
-$('ktvTuneReset')?.addEventListener('click',()=>{setTune('residue',50);setTune('feather',35);setTune('detail',50)});
-// V1.5.7.10: adaptive segmentation load guard. Only model rate is reduced,
-// while camera preview/recording remain independent to protect audio continuity.
-let cutoutPerfMode='balanced', cutoutSamples=0, cutoutAvgMs=0, cutoutLastAt=0;
-let cutoutSlowStreak=0, cutoutFastStreak=0, currentSegmentMs=0;
-function segmentPeriod(){const base=cutoutPerfMode==='performance'?(mobileCapture?420:360):cutoutPerfMode==='detail'?(mobileCapture?280:210):(mobileCapture?360:280);return base+(mobileCapture&&recording?120+recordingLoadLevel*260:0)}
-function trackSegmentCost(start){
- const elapsed=Math.max(0,performance.now()-start);
- cutoutAvgMs=cutoutSamples?cutoutAvgMs*.85+elapsed*.15:elapsed;cutoutSamples++;
- if(cutoutAvgMs>segmentPeriod()*.78){cutoutSlowStreak++;cutoutFastStreak=0}
- else if(cutoutAvgMs<segmentPeriod()*.36){cutoutFastStreak++;cutoutSlowStreak=0}
- const label=$('ktvCutoutPerfStatus');
- if(label && (cutoutSamples%5===0 || cutoutSamples===1)) label.textContent='去背處理：約 '+Math.round(cutoutAvgMs)+' ms／次 · '+(cutoutSlowStreak>=3?'裝置負載偏高，建議效能優先':'運作中');
- if(cutoutSlowStreak>=3 && cutoutPerfMode==='detail'){
-   cutoutPerfMode='balanced';const select=$('ktvCutoutPerfMode');if(select)select.value='balanced';
-   if(label)label.textContent='⚠️ 已自動轉平衡模式，降低去背運算負擔';
-   restartSegmentationTimer(); cutoutSlowStreak=0;
- }
-}
-function restartSegmentationTimer(){
- if(!segmentReady||!camStream||!$('ktvRemoveBackground').checked)return;
- if(segmentTimer)clearInterval(segmentTimer);segmentTimer=null;
- const period=segmentPeriod();
- if(qualityModeActive==='quality'){
-  let lastTimestamp=0;
-  segmentTimer=setInterval(()=>{
-   if(!camStream||cam.readyState<2||!cam.videoWidth||segmentBusy||!$('ktvRemoveBackground').checked)return;
-   segmentBusy=true;const started=performance.now();
-   try{
-    const timestamp=Math.max(performance.now(),lastTimestamp+1);lastTimestamp=timestamp;
-    const result=qualityTask.segmentForVideo(cam,timestamp);
-    try{
-     const cm=result.categoryMask;if(!cm)throw Error('模型沒有回傳人物遮罩');
-     const sw=cm.width,sh=cm.height,classes=cm.getAsUint8Array();
-     if(qualityMaskCanvas.width!==sw||qualityMaskCanvas.height!==sh){qualityMaskCanvas.width=sw;qualityMaskCanvas.height=sh}
-     const img=qualityMaskCtx.createImageData(sw,sh);
-     for(let i=0;i<classes.length;i++){const value=classes[i]===0?0:255,j=i*4;img.data[j]=img.data[j+1]=img.data[j+2]=value;img.data[j+3]=255;}
-     qualityMaskCtx.putImageData(img,0,0);processCutoutResults({segmentationMask:qualityMaskCanvas,image:cam});
-    }finally{result.close?.()}
-   }catch(err){if(++cutoutFailures>=3)$('ktvCutoutHint').textContent='⚠️ 去背運算暫停，保留最後畫面：'+err.message}
-   finally{segmentBusy=false;trackSegmentCost(started)}
-  },period);
- }else{
-  segmentTimer=setInterval(async()=>{
-   if(!camStream||cam.readyState<2||!cam.videoWidth||segmentBusy||!$('ktvRemoveBackground').checked)return;
-   segmentBusy=true;const started=performance.now();
-   try{await segmenter.send({image:cam})}catch(e){if(++cutoutFailures>=3)$('ktvCutoutHint').textContent='⚠️ 標準去背暫停：'+e.message}
-   finally{segmentBusy=false;trackSegmentCost(started)}
-  },period);
- }
-}
-const perfChoice=$('ktvCutoutPerfMode');
-if(perfChoice)perfChoice.addEventListener('change',()=>{
- cutoutPerfMode=perfChoice.value;cutoutSlowStreak=cutoutFastStreak=0;
- try{localStorage.setItem('ktvCutoutPerfMode',cutoutPerfMode)}catch(e){}
- restartSegmentationTimer();
-});
-try{let savedPerf=localStorage.getItem('ktvCutoutPerfMode');if(['performance','balanced','detail'].includes(savedPerf)){cutoutPerfMode=savedPerf;if(perfChoice)perfChoice.value=savedPerf}}catch(e){}
-let qualityTask=null,qualityModeActive='standard',cutoutInitPromise=null;const qualityMaskCanvas=document.createElement('canvas');const qualityMaskCtx=qualityMaskCanvas.getContext('2d');
-function updateMirror(){float.classList.toggle('ktv-no-mirror',!$('ktvMirrorCamera').checked)}
-function updateCutoutUI(){const enabled=!!$('ktvRemoveBackground').checked;const ready=enabled&&!!cutoutFrame&&!!camStream;float.classList.toggle('ktv-cutout-on',ready);float.classList.toggle('ktv-cutout-ready',ready);float.setAttribute('data-cutout-status',enabled?(ready?'ready':'loading'):'off');}
-// Never report successful background removal unless a real segmented frame was produced.
-let cutoutAttempt=0;
-async function verifyCutoutStarted(){
- const attempt=++cutoutAttempt,started=performance.now();
- while(attempt===cutoutAttempt && $('ktvRemoveBackground').checked && camStream && !cutoutFrame && performance.now()-started<7000){
-  await new Promise(resolve=>setTimeout(resolve,250));
- }
- if(attempt!==cutoutAttempt||!$('ktvRemoveBackground').checked||!camStream)return;
- if(!cutoutFrame){
-  const why='AI 未產生有效人物遮罩（可能是模型載入、瀏覽器或影像辨識問題）';
-  $('ktvRemoveBackground').checked=false;
-  if($('ktvQuickCutout'))$('ktvQuickCutout').checked=false;
-  clearInterval(segmentTimer);segmentTimer=null;
-  maskWorkerPending=null;updateCutoutUI();
-  $('ktvCutoutHint').textContent='⚠️ '+why+'，已恢復一般鏡頭；沒有完成去背。';
-  status('去背啟動失敗，已恢復一般鏡頭');
- }else{
-  $('ktvCutoutHint').textContent='✅ 已取得真正透明人物影像；去背運作中';
- }
-}
-
+// V1.5.7.34: AI segmentation and mask processing removed by request.
 function pauseKtvOnStop(){
  // This is the KTV-specific YouTube iframe, not the general video player.
  try{if(typeof pauseActiveKtvSong==='function')pauseActiveKtvSong();else{
@@ -199,10 +100,8 @@ function beginCameraFrameWatch(){
   if(now-cameraMeasureStart>=4000){
    const fps=Math.round(cameraFrames*1000/(now-cameraMeasureStart));
    const track=camStream.getVideoTracks()[0];const settings=track?.getSettings?.()||{};
-   const hint=$('ktvCutoutHint');
-   if(hint&&!$('ktvRemoveBackground').checked){
-    hint.textContent='📷 原始鏡頭 '+(settings.width||'?')+'×'+(settings.height||'?')+' · 實際約 '+fps+' fps'+(fps<12?' ⚠️ 鏡頭本身影格偏低':'');
-   }
+   const hint=$('ktvCameraActual');
+   if(hint){hint.textContent='📷 鏡頭 '+(settings.width||'?')+'×'+(settings.height||'?')+' · 實際約 '+fps+' fps'+(fps<12?' ⚠️ 更新偏低':'');}
    cameraFrames=0;cameraMeasureStart=now;
   }
   cameraFrameWatch=cam.requestVideoFrameCallback(sample);
@@ -214,163 +113,15 @@ window.addEventListener('resize',positionCameraOverlay,{passive:true});
 cam.addEventListener('loadedmetadata',syncCameraRatio);
 window.addEventListener('orientationchange',()=>setTimeout(syncCameraRatio,200));
 $('ktvMirrorCamera').addEventListener('change',updateMirror);updateMirror();
-function drawCamera(x,y,w,h,cutout){
- const source=cutout&&cutoutFrame?liveCutout:cam;
- if(!source || (!cutout&&cam.readyState<2))return;
- ctx.save();const sw=source.videoWidth||source.width||640,sh=source.videoHeight||source.height||480;const scale=Math.min(w/sw,h/sh),dw=sw*scale,dh=sh*scale,dx=x+(w-dw)/2,dy=y+(h-dh)/2;if($('ktvMirrorCamera').checked){ctx.translate(x+w,0);ctx.scale(-1,1);ctx.drawImage(source,x+w-(dx+dw),dy,dw,dh)}else ctx.drawImage(source,dx,dy,dw,dh);ctx.restore();
+function drawCamera(x,y,w,h){
+ if(cam.readyState<2||!cam.videoWidth)return;
+ ctx.save();const sw=cam.videoWidth,sh=cam.videoHeight;
+ const scale=Math.min(w/sw,h/sh),dw=sw*scale,dh=sh*scale;
+ const dx=x+(w-dw)/2,dy=y+(h-dh)/2;
+ if($('ktvMirrorCamera').checked){ctx.translate(x+w,0);ctx.scale(-1,1);ctx.drawImage(cam,x+w-(dx+dw),dy,dw,dh)}
+ else ctx.drawImage(cam,dx,dy,dw,dh);
+ ctx.restore();
 }
-async function initCutout(){
- if(segmentReady)return true;
- if(cutoutInitPromise)return cutoutInitPromise;
- cutoutInitPromise=startCutoutEngine();
- try{return await cutoutInitPromise}finally{cutoutInitPromise=null}
-}
-async function startCutoutEngine(){
- const highQuality=$('ktvCutoutQuality')?.value==='quality';
- if(highQuality){
-   try{return await initHighQualityCutout()}catch(err){
-     $('ktvCutoutHint').textContent='⚠️ 高畫質去背不可用，已自動退回標準模式：'+err.message;
-     if($('ktvCutoutQuality'))$('ktvCutoutQuality').value='standard';
-     qualityModeActive='standard';
-   }
- }
- return initStandardCutout();
-}
-async function initHighQualityCutout(){
- if(!navigator.onLine)throw Error('需要網路下載高畫質模型');
- // The official MediaPipe Tasks model detects background / hair / skin / clothes.
- const mp=await import('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/+esm');
- const resolver=await mp.FilesetResolver.forVisionTasks('https://cdn.jsdelivr.net/npm/@mediapipe/tasks-vision@0.10.21/wasm');
- qualityTask=await mp.ImageSegmenter.createFromOptions(resolver,{
-   baseOptions:{modelAssetPath:'https://storage.googleapis.com/mediapipe-models/image_segmenter/selfie_multiclass_256x256/float32/latest/selfie_multiclass_256x256.tflite',delegate:'CPU'},
-   runningMode:'VIDEO',outputCategoryMask:true,outputConfidenceMasks:false
- });
- qualityModeActive='quality';segmentReady=true;
- restartSegmentationTimer();
- $('ktvCutoutHint').textContent='✅ 高畫質多類別人物分割已啟動（頭髮／皮膚／衣服）';
- return true;
-}
-async function initStandardCutout(){
-
- if(!navigator.onLine)throw Error('目前離線，無法載入人物去背模型');
- if(!window.SelfieSegmentation){await new Promise((resolve,reject)=>{const sc=document.createElement('script');sc.src='https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1/selfie_segmentation.js';sc.onload=resolve;sc.onerror=()=>reject(Error('人物去背模型下載失敗'));document.head.appendChild(sc)})}
- segmenter=new window.SelfieSegmentation({locateFile:f=>'https://cdn.jsdelivr.net/npm/@mediapipe/selfie_segmentation@0.1/'+f});
- segmenter.setOptions({modelSelection:1,selfieMode:false});
- segmenter.onResults(processCutoutResults);
- qualityModeActive='standard';segmentReady=true;
- restartSegmentationTimer();
- return true;
-}
-let maskWorker=null,maskWorkerPending=null,maskWorkerSequence=0,maskWorkerFailures=0;
-function disableMaskWorker(reason){
- try{maskWorker?.terminate()}catch(e){} maskWorker=null;maskWorkerPending=null;
- const hint=$('ktvCutoutHint');if(hint)hint.textContent='⚠️ 去背背景運算已改回相容模式：'+reason;
-}
-function applyWorkerMask(payload){
- const pending=maskWorkerPending;if(!pending||pending.id!==payload.id)return;
- maskWorkerPending=null;
- if(payload.error){if(++maskWorkerFailures>=2)disableMaskWorker(payload.error);return;}
- const {w,h,frameCanvas}=pending;
- try{
-  if(!camStream||!$('ktvRemoveBackground')?.checked)return;
-  const image=new ImageData(new Uint8ClampedArray(payload.buffer),w,h);
-  maskCtx.putImageData(image,0,0);
-  cutoutCtx.clearRect(0,0,w,h);cutoutCtx.globalCompositeOperation='source-over';cutoutCtx.drawImage(frameCanvas,0,0,w,h);
-  cutoutCtx.globalCompositeOperation='destination-in';cutoutCtx.drawImage(maskCanvas,0,0,w,h);cutoutCtx.globalCompositeOperation='source-over';
-  let opaqueCount=0;const alpha=cutoutCtx.getImageData(0,0,w,h).data;
-  for(let yy=8;yy<h;yy+=16)for(let xx=8;xx<w;xx+=16){if(alpha[(yy*w+xx)*4+3]>100)opaqueCount++}
-  const enoughPerson=opaqueCount>=Math.max(8,Math.floor(w*h/5000));
-  if(enoughPerson){liveCtx.clearRect(0,0,w,h);liveCtx.drawImage(cutoutCanvas,0,0,w,h);cutoutFrame=true;cutoutGoodFrames++;cutoutLastSuccess=performance.now()}
-  maskWorkerFailures=0;updateCutoutUI();
-  $('ktvCutoutHint').textContent=enoughPerson?'✅ AI 遮罩背景運算中（Worker）':cutoutFrame?'⏳ 保留上一張去背畫面':'⏳ 正在辨識人物';
- }catch(e){disableMaskWorker(e.message)}
-}
-try{if(typeof Worker!=='undefined'){
- maskWorker=new Worker('./ktv-mask-worker.js');
- maskWorker.onmessage=e=>applyWorkerMask(e.data);
- maskWorker.onerror=e=>disableMaskWorker(e.message||'Worker 失敗');
-}}catch(e){maskWorker=null}
-function processCutoutResults(r){try{
- const w=Math.min(cam.videoWidth||640,640),h=Math.round(w*(cam.videoHeight||480)/(cam.videoWidth||640));
- if(cutoutCanvas.width!==w||cutoutCanvas.height!==h){cutoutCanvas.width=liveCutout.width=maskCanvas.width=w;cutoutCanvas.height=liveCutout.height=maskCanvas.height=h}
- // V1.5.7.07: feather a tighter alpha mask; filter detached background components.
- maskCtx.clearRect(0,0,w,h);maskCtx.save();maskCtx.filter='blur('+(.4+cutoutTune.feather*.04).toFixed(2)+'px)';maskCtx.drawImage(r.segmentationMask,0,0,w,h);maskCtx.restore();
- const mask=maskCtx.getImageData(0,0,w,h),px=mask.data;
- // Move per-pixel matting and connected-component cleanup into a Worker where available.
- // Snapshot camera pixels before dispatch so mask and camera image stay in step.
- if(maskWorkerPending && performance.now()-maskWorkerPending.started>2500)disableMaskWorker('遮罩處理逾時');
- if(maskWorker && !maskWorkerPending){
-   const frameCanvas=document.createElement('canvas');frameCanvas.width=w;frameCanvas.height=h;
-   frameCanvas.getContext('2d').drawImage(r.image,0,0,w,h);
-   const id=++maskWorkerSequence;
-   maskWorkerPending={id,frameCanvas,w,h,started:performance.now()};
-   try{maskWorker.postMessage({id,width:w,height:h,buffer:mask.data.buffer,tune:{...cutoutTune}},[mask.data.buffer]);return;}
-   catch(e){maskWorkerPending=null;disableMaskWorker('傳送遮罩失敗：'+e.message);}
- }
- // Worker busy or unsupported: keep the last good cutout, don't block audio/UI with cleanup.
- if(maskWorkerPending)return;
- for(let i=0;i<px.length;i+=4){const m=px[i]/255;const threshold=.29+cutoutTune.residue*.0017-cutoutTune.detail*.0009;const width=.52-cutoutTune.feather*.0018+cutoutTune.detail*.0005;const t=Math.max(0,Math.min(1,(m-threshold)/Math.max(.18,width)));const a=t*t*(3-2*t);px[i]=px[i+1]=px[i+2]=255;px[i+3]=Math.round(a*255)}
- // Remove disconnected segmentation islands (background furniture, tiny ghost figures).
- // Analyze a reduced mask so the camera loop stays responsive on desktop/mobile.
- const cell=4, gw=Math.ceil(w/cell), gh=Math.ceil(h/cell), occupancy=new Uint8Array(gw*gh);
- for(let gy=0;gy<gh;gy++)for(let gx=0;gx<gw;gx++){
-   const xx=Math.min(w-1,gx*cell+2),yy=Math.min(h-1,gy*cell+2);
-   occupancy[gy*gw+gx]=px[(yy*w+xx)*4+3]>(95+Math.round(cutoutTune.residue*.45))?1:0;
- }
- const visited=new Uint8Array(gw*gh),queue=new Int32Array(gw*gh);
- let best=[],bestSize=0,bestScore=-1;
- for(let start=0;start<occupancy.length;start++){
-   if(!occupancy[start]||visited[start])continue;
-   let front=0,end=1;queue[0]=start;visited[start]=1;
-   while(front<end){const v=queue[front++],x=v%gw,y=(v/gw)|0;
-     const neighbors=[x>0?v-1:-1,x<gw-1?v+1:-1,y>0?v-gw:-1,y<gh-1?v+gw:-1];
-     for(const n of neighbors)if(n>=0&&occupancy[n]&&!visited[n]){visited[n]=1;queue[end++]=n;}
-   }
-   // Prefer the sizeable connected shape nearest the image centre/lower torso.
-   // This avoids selecting a large stray background component at an edge.
-   let sx=0,sy=0;for(let q=0;q<end;q++){const k=queue[q];sx+=k%gw;sy+=(k/gw)|0;}
-   const cx=sx/end/gw,cy=sy/end/gh;
-   const d=Math.hypot((cx-.5)*1.35,(cy-.61)*.85);
-   const score=end*(1-.60*Math.min(1,d));
-   if(score>bestScore){bestScore=score;bestSize=end;best=Array.from(queue.subarray(0,end));}
- }
- // Skip destructive filtering if confidence is too low; retain previous valid frame instead.
- if(bestSize>Math.max(40,gw*gh*.009)){
-   const kept=new Uint8Array(gw*gh);for(const v of best)kept[v]=1;
-   for(let y=0;y<h;y++)for(let x=0;x<w;x++){
-     const gx=(x/cell)|0,gy=(y/cell)|0,i=(y*w+x)*4;
-     let isNear=false;
-     for(let yy=Math.max(0,gy-1);yy<=Math.min(gh-1,gy+1)&&!isNear;yy++)
-       for(let xx=Math.max(0,gx-1);xx<=Math.min(gw-1,gx+1);xx++)if(kept[yy*gw+xx]){isNear=true;break}
-     if(!isNear)px[i+3]=0;
-   }
- }
- maskCtx.putImageData(mask,0,0);
- cutoutCtx.clearRect(0,0,w,h);cutoutCtx.globalCompositeOperation='source-over';cutoutCtx.drawImage(r.image,0,0,w,h);cutoutCtx.globalCompositeOperation='destination-in';cutoutCtx.drawImage(maskCanvas,0,0,w,h);cutoutCtx.globalCompositeOperation='source-over';
- // Keep the last accepted transparent person frame when tracking momentarily fails.
-// Do not use a single centre pixel: it becomes transparent whenever the person moves.
-let opacitySum=0, opaqueCount=0;
-const alpha=cutoutCtx.getImageData(0,0,w,h).data;
-for(let yy=8;yy<h;yy+=16)for(let xx=8;xx<w;xx+=16){const a=alpha[(yy*w+xx)*4+3];opacitySum+=a;if(a>100)opaqueCount++;}
-const enoughPerson=opaqueCount>=Math.max(8,Math.floor(w*h/5000));
-if(enoughPerson){liveCtx.clearRect(0,0,w,h);liveCtx.drawImage(cutoutCanvas,0,0,w,h);cutoutFrame=true;cutoutGoodFrames++;cutoutLastSuccess=performance.now();}
-// A lost segmentation frame does not switch to raw video during recording.
-cutoutFailures=0;updateCutoutUI();
-$('ktvCutoutHint').textContent=enoughPerson?'✅ 去背持續運作中':cutoutFrame?'⏳ 暫時未辨識到人物，保持上一張去背畫面':'⏳ 正在尋找人物，不會閃回原始背景';
- }catch(e){updateCutoutUI();$('ktvCutoutHint').textContent='⚠️ 去背暫時未更新，保留最後人物影像：'+e.message}}
-$('ktvCutoutQuality').addEventListener('change',async e=>{
- if(recording){e.target.value=qualityModeActive==='quality'?'quality':'standard';status('錄影進行中不能切換去背引擎，請先停止錄影。');return}
- if(!camStream||!$('ktvRemoveBackground').checked){$('ktvCutoutHint').textContent='已選擇'+(e.target.value==='quality'?'高畫質':'標準')+'模式，開啟鏡頭及去背後生效。';return}
- clearInterval(segmentTimer);segmentTimer=null;segmentReady=false;segmentBusy=false;
- try{qualityTask?.close?.()}catch(err){}qualityTask=null;
- try{segmenter?.close?.()}catch(err){}segmenter=null;
- $('ktvCutoutHint').textContent='⏳ 正在切換去背引擎，上一張人物畫面會保留…';
- try{await initCutout()}catch(err){$('ktvCutoutHint').textContent='⚠️ 去背引擎切換失敗：'+err.message}
-});
-$('ktvRemoveBackground').addEventListener('change',async e=>{
- if(e.target.checked){updateCutoutUI();try{if(!camStream){$('ktvCutoutHint').textContent='✅ 已選擇人像去背。請另外點「開啟鏡頭」，不會自動開始錄影。';return;} $('ktvCutoutHint').textContent='⏳ 人物去背模型載入中…';await initCutout();void verifyCutoutStarted();$('studioOverlay').checked=true;if(!cutoutFrame)$('ktvCutoutHint').textContent='⏳ 模型已載入，正在辨識人物…';}catch(err){e.target.checked=false;cutoutFrame=false;updateCutoutUI();$('ktvQuickCutout').checked=false;$('ktvCutoutHint').textContent='⚠️ '+err.message;status('去背無法啟動：'+err.message)}}
- else{cutoutAttempt++;maskWorkerPending=null;cutoutFrame=false;updateCutoutUI();$('ktvCutoutHint').textContent='去背已關閉，使用一般自拍小視窗。'}
-});
 const status=s=>$('studioStatus').textContent=s;
 function updateMixer(){if(musicGain)musicGain.gain.value=Number($('ktvMusicVolume').value)/100;if(micGain)micGain.gain.value=Number($('ktvMicVolume').value)/100;$('ktvMusicRead').textContent=$('ktvMusicVolume').value+'%';$('ktvMicRead').textContent=$('ktvMicVolume').value+'%';if(voiceFilter){const v=$('ktvVoiceEffect').value;voiceFilter.type=v==='warm'?'lowshelf':v==='bright'?'highshelf':'peaking';voiceFilter.frequency.value=v==='warm'?250:v==='bright'?3000:1000;voiceFilter.gain.value=v==='warm'?4:v==='bright'?5:0;if(echoGain)echoGain.gain.value=v==='echo'?.23:0}}
 ['ktvMusicVolume','ktvMicVolume','ktvVoiceEffect'].forEach(id=>$(id).addEventListener('input',updateMixer));
@@ -403,14 +154,13 @@ if(bg==='camera'&&cam.readyState>=2)drawCover(cam);
 if(window.ktvLyricsEngine)window.ktvLyricsEngine.draw(ctx,canvas.width,canvas.height);
 
 if($('studioOverlay').checked&&cam.readyState>=2&&bg!=='camera') {
- const cutout=$('ktvRemoveBackground').checked;
+
  // Sharing this same browser tab already captures the ordinary floating camera.
  // Compositing it again would create the user's duplicated / opposite-direction image.
  const inCapturedTab=(bg==='screen'&&screenStream&&screenStream.active&&!float.classList.contains('hidden')); // Avoid duplicate camera on shared KTV page
  if(!inCapturedTab){
  const w=overlay.w*1280,h=Math.min(720,w*(cam.videoHeight||720)/(cam.videoWidth||1280)),x=Math.max(0,Math.min(1280-w,overlay.x*1280)),y=Math.max(0,Math.min(720-h,overlay.y*720));
- ctx.save();if(!cutout){ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x,y,w,h,18);else ctx.rect(x,y,w,h);ctx.clip()}
- drawCamera(x,y,w,h,cutout);ctx.restore();if(!cutout){ctx.strokeStyle='#e8c5fa';ctx.lineWidth=4;ctx.strokeRect(x,y,w,h)}
+ ctx.save();ctx.beginPath();if(ctx.roundRect)ctx.roundRect(x,y,w,h,18);else ctx.rect(x,y,w,h);ctx.clip();drawCamera(x,y,w,h);ctx.restore();ctx.strokeStyle='#e8c5fa';ctx.lineWidth=4;ctx.strokeRect(x,y,w,h)
  }
 }
 ctx.textAlign='left';ctx.shadowColor='rgba(0,0,0,.75)';ctx.shadowBlur=8;ctx.font='bold 28px sans-serif';ctx.fillStyle='white';ctx.fillText(($('studioTitle').value||'我的 KTV').slice(0,35),26,54);ctx.shadowBlur=0;
@@ -428,7 +178,7 @@ cameraPanel.innerHTML=`<summary>📷 攝影機來源與流暢度</summary><div c
 <button type="button" id="ktvCameraRestart">套用設定並重開鏡頭</button>
 <span id="ktvCameraActual" role="status">尚未啟動鏡頭</span></div>`;
 // Mount inside the VISIBLE settings section, not the hidden compatibility controls.
-const cameraAnchor=$('ktvRemoveBackground').closest('label');
+const cameraAnchor=$('ktvMirrorCamera').closest('label');
 cameraAnchor.insertAdjacentElement('beforebegin',cameraPanel);
 const cameraShortcut=document.createElement('button');
 cameraShortcut.type='button';cameraShortcut.id='ktvCameraSettingsShortcut';
@@ -453,22 +203,22 @@ $('ktvCameraRestart').addEventListener('click',async()=>{
 });
 $('studioCamera').onclick=async()=>{if(cameraOpening)return;cameraOpening=true;try{
  if(!navigator.mediaDevices?.getUserMedia)throw Error('此瀏覽器無法使用攝影機，或網頁不是 HTTPS');
- endCameraFrameWatch();stopStream(camStream);camStream=null;cam.pause();cam.srcObject=null;cutoutFrame=false;updateCutoutUI();
+ endCameraFrameWatch();stopStream(camStream);camStream=null;cam.pause();cam.srcObject=null;
  const [dimensions,rate]=($('ktvCameraProfile').value||'640x480@30').split('@');const [desiredWidth,desiredHeight]=dimensions.split('x').map(Number);const deviceId=$('ktvCameraDevice').value;
  const newStream=await navigator.mediaDevices.getUserMedia({video:{...(deviceId?{deviceId:{exact:deviceId}}:{facingMode:'user'}),width:{ideal:desiredWidth},height:{ideal:desiredHeight},frameRate:{ideal:Number(rate)}},audio:false});
  camStream=newStream;cam.srcObject=newStream;cam.muted=true;cam.autoplay=true;cam.playsInline=true;
  try{newStream.getVideoTracks()[0].contentHint='motion'}catch(e){}
  await cam.play();beginCameraFrameWatch();const settingsNow=newStream.getVideoTracks()[0]?.getSettings?.()||{};$('ktvCameraActual').textContent='實際：'+(settingsNow.width||'?')+'×'+(settingsNow.height||'?')+' / '+(settingsNow.frameRate||'?')+' fps（瀏覽器回報）';
  if(!cam.videoWidth||!cam.videoHeight){await new Promise((resolve,reject)=>{const timer=setTimeout(()=>reject(Error('攝影機未提供有效影像')),4500);const ready=()=>{if(cam.videoWidth&&cam.videoHeight){clearTimeout(timer);cam.removeEventListener('loadeddata',ready);resolve()}};cam.addEventListener('loadeddata',ready);ready()})}
- float.classList.remove('hidden','ktv-hide-from-capture');try{const cs=newStream.getVideoTracks()[0]?.getSettings?.()||{};status('鏡頭已啟動 '+(cs.width||'?')+'×'+(cs.height||'?')+' / '+(cs.frameRate||'?')+' fps；若仍卡頓，請使用「鏡頭診斷」比較。')}catch(e){}syncCameraRatio();positionCameraOverlay();if($('ktvRemoveBackground').checked){$('ktvCutoutHint').textContent='⏳ 人像去背載入中…';try{await initCutout();void verifyCutoutStarted()}catch(err){$('ktvCutoutHint').textContent='⚠️ 人像去背不可用：'+err.message}}$('ktvCamToggle').textContent='📷 關閉鏡頭';$('ktvQuickCamera').textContent='📷 關閉鏡頭';$('studioOverlay').checked=true;status('鏡頭已開啟；可以在畫面中拖動人物框，使用大小滑桿調整比例。')}catch(e){status('無法使用鏡頭：'+e.message);$('ktvCameraActual').textContent='⚠️ '+e.message}finally{cameraOpening=false;updateCameraChoices()}};
+ float.classList.remove('hidden','ktv-hide-from-capture');try{const cs=newStream.getVideoTracks()[0]?.getSettings?.()||{};status('鏡頭已啟動 '+(cs.width||'?')+'×'+(cs.height||'?')+' / '+(cs.frameRate||'?')+' fps；若仍卡頓，請使用「鏡頭診斷」比較。')}catch(e){}syncCameraRatio();positionCameraOverlay();$('ktvCamToggle').textContent='📷 關閉鏡頭';$('ktvQuickCamera').textContent='📷 關閉鏡頭';$('studioOverlay').checked=true;status('鏡頭已開啟；可以在畫面中拖動人物框，使用大小滑桿調整比例。')}catch(e){status('無法使用鏡頭：'+e.message);$('ktvCameraActual').textContent='⚠️ '+e.message}finally{cameraOpening=false;updateCameraChoices()}};
 $('studioScreen').onclick=async()=>{try{await requestTabCapture()}catch(e){status('畫面分享無法啟動：'+e.message)}};
 async function requestTabCapture(){if(!navigator.mediaDevices?.getDisplayMedia)throw Error('此瀏覽器沒有分頁擷取功能；請用電腦版 Chrome／Edge。');releaseTabCapture();screenStream=await navigator.mediaDevices.getDisplayMedia({video:{frameRate:24},audio:{echoCancellation:false,noiseSuppression:false},preferCurrentTab:true,selfBrowserSurface:'include',surfaceSwitching:'exclude',systemAudio:'include'});const track=screenStream.getVideoTracks()[0],info=track?.getSettings?.()||{};video.srcObject=screenStream;await video.play();$('studioBackground').value='screen';track.onended=()=>{if(endingTabCapture)return;if(recording)stopRecording();else releaseTabCapture();status('KTV 分頁分享已結束。')};if(screenStream.getAudioTracks().length===0)status('⚠️ 已取得影像，但沒有分頁音訊！請重新分享「目前分頁」並勾選「分享分頁音訊」。');else status('已擷取完整分享畫面（不裁切）；請選「目前分頁」並保留 KTV 與工具列可見。來源：'+(info.displaySurface||'瀏覽器分頁')+'。');return screenStream}
 $('studioScale').oninput=e=>{overlay.w=Number(e.target.value)/100;positionCameraOverlay()};
 
-$('ktvCamToggle').onclick=async()=>{if(camStream){endCameraFrameWatch();stopStream(camStream);camStream=null;cam.pause();cam.srcObject=null;cutoutFrame=false;updateCutoutUI();float.classList.add('hidden');$('ktvCamToggle').textContent='📷 開啟鏡頭';$('ktvQuickCamera').textContent='📷 開啟鏡頭';return}await $('studioCamera').onclick()};
+$('ktvCamToggle').onclick=async()=>{if(camStream){endCameraFrameWatch();stopStream(camStream);camStream=null;cam.pause();cam.srcObject=null;float.classList.add('hidden');$('ktvCamToggle').textContent='📷 開啟鏡頭';$('ktvQuickCamera').textContent='📷 開啟鏡頭';return}await $('studioCamera').onclick()};
 $('ktvQuickCamera').addEventListener('click',()=> $('ktvCamToggle').click());
 // Standalone comparison avoids KTV/YouTube/segmentation to isolate webcam or browser driver lag.
-const diagLink=document.createElement('a');diagLink.href='./camera-diagnostic.html';diagLink.target='_blank';diagLink.rel='noopener';diagLink.textContent='🧪 鏡頭診斷';diagLink.title='單獨測試攝影機影格率，不載入 KTV 或去背';diagLink.style.cssText='display:inline-flex;align-items:center;padding:8px 10px;border-radius:10px;background:#334b67;color:white;text-decoration:none;font-size:14px;margin:4px;';$('ktvCamToggle').insertAdjacentElement('afterend',diagLink);
+const diagLink=document.createElement('a');diagLink.href='./camera-diagnostic.html';diagLink.target='_blank';diagLink.rel='noopener';diagLink.textContent='🧪 鏡頭診斷';diagLink.title='單獨測試攝影機影格率，不載入 KTV 或錄影';diagLink.style.cssText='display:inline-flex;align-items:center;padding:8px 10px;border-radius:10px;background:#334b67;color:white;text-decoration:none;font-size:14px;margin:4px;';$('ktvCamToggle').insertAdjacentElement('afterend',diagLink);
 // V1.5.6.91: recording preflight distinguishes media recording from KTV tab capture.
 function deviceCapabilities(){
  const display=!!navigator.mediaDevices?.getDisplayMedia;
@@ -574,7 +324,7 @@ const stream=canvas.captureStream(mobileCapture?15:24);
 // For a mobile microphone-only recording, bypass WebAudio entirely; this avoids an unnecessary live mixer and keeps the original mic track.
 const directMic=mobileCapture && !(['screen','video'].includes(bg)) && $('ktvVoiceEffect').value==='natural' && Number($('ktvMicVolume').value)===100;
 if(directMic){micStream.getAudioTracks().forEach(t=>stream.addTrack(t));}
-else{audioCtx=new (window.AudioContext||window.webkitAudioContext)({latencyHint:'playback'});await audioCtx.resume();audioDestination=audioCtx.createMediaStreamDestination();connectAudio(micStream,'mic');}if(!directMic && bg==='screen'&&screenStream?.getAudioTracks().length)connectAudio(screenStream,'music');if(!directMic && bg==='video'&&video.src&&!video.srcObject){try{const node=audioCtx.createMediaElementSource(video);musicGain=audioCtx.createGain();node.connect(musicGain);musicGain.connect(audioDestination);sourceNodes.push(node,musicGain);updateMixer()}catch(e){status('自訂影片音訊未能混合：'+e.message)}}if(!directMic)audioDestination.stream.getAudioTracks().forEach(t=>stream.addTrack(t));const type=mime();recorder=new MediaRecorder(stream,{...(type?{mimeType:type}:{}),videoBitsPerSecond:mobileCapture?950000:3500000,audioBitsPerSecond:160000});chunks=[];recorder.ondataavailable=e=>{if(e.data.size){chunks.push(e.data);diagnosticChunk(e.data)}};recorder.onerror=e=>status('錄製失敗：'+(e.error?.message||'未知錯誤'));recorder.onstop=()=>{window.ktvLyricsEngine?.endRecording?.();releaseTabCapture();blob=new Blob(chunks,{type:recorder.mimeType||'video/webm'});if(!blob.size){diagnosticStop(true);setKtvRecordState(false,'錄製失敗');status('錄製沒有產生有效影片；請檢查裝置權限及錄影格式。');cleanupAudio();$('studioRec').disabled=false;$('ktvRecordStart').disabled=false;syncQuickButtons();return;}blobURL=URL.createObjectURL(blob);$('studioPlayback').src=blobURL;setRecordSummary(blob);diagnosticStop(true);setKtvRecordState(false,'錄製完成，請預覽確認');explainFormat(blob);$('studioResult').classList.remove('studio-hidden');$('studioRec').disabled=false;$('studioStop').disabled=true;$('ktvRecordStart').disabled=false;$('ktvRecordStop').disabled=true;syncQuickButtons();openCompactSettings(true);fsPanel.classList.remove('ktv-tools-open');updateFsUi();$('studioResult').scrollIntoView({behavior:'smooth',block:'nearest'});status('錄製完成（'+extension(blob).toUpperCase()+'），請先預覽確認影音，再選擇儲存或重唱。');cleanupAudio()};recorder.start(2000);diagnosticStart(stream,bg);window.ktvLyricsEngine?.beginRecording?.();recording=true;if(!raf){lastDrawTime=0;raf=requestAnimationFrame(frame);}/* The shared tab already contains the live cutout camera; never hide it or add it twice. */startTime=Date.now();setKtvRecordState(true, bg==='screen'?'錄製中：分頁畫面＋'+(screenStream.getAudioTracks().length?'伴奏＋':'無伴奏＋')+'麥克風':'錄製中：自訂背景＋麥克風（僅本機影片可有背景音軌）');$('studioRec').disabled=true;$('studioStop').disabled=false;$('ktvRecordStart').disabled=true;$('ktvRecordStop').disabled=false;syncQuickButtons();status(bg==='screen'?'● 正在錄製 KTV 分享畫面＋'+(screenStream.getAudioTracks().length?'伴奏音訊':'未取得伴奏')+'＋麥克風；可調整混音滑桿。':'● 正在錄製自訂背景與麥克風，非分頁模式無法擷取 YouTube 伴奏；上傳本機影片可混入該影片聲音。為減少聲音回授，建議使用有線耳機。')}catch(e){diagnosticStop(false);window.ktvLyricsEngine?.endRecording?.();releaseTabCapture();setKtvRecordState(false,'無法開始錄影');cleanupAudio();status('啟動錄製失敗：'+e.message)}}
+else{audioCtx=new (window.AudioContext||window.webkitAudioContext)({latencyHint:'playback'});await audioCtx.resume();audioDestination=audioCtx.createMediaStreamDestination();connectAudio(micStream,'mic');}if(!directMic && bg==='screen'&&screenStream?.getAudioTracks().length)connectAudio(screenStream,'music');if(!directMic && bg==='video'&&video.src&&!video.srcObject){try{const node=audioCtx.createMediaElementSource(video);musicGain=audioCtx.createGain();node.connect(musicGain);musicGain.connect(audioDestination);sourceNodes.push(node,musicGain);updateMixer()}catch(e){status('自訂影片音訊未能混合：'+e.message)}}if(!directMic)audioDestination.stream.getAudioTracks().forEach(t=>stream.addTrack(t));const type=mime();recorder=new MediaRecorder(stream,{...(type?{mimeType:type}:{}),videoBitsPerSecond:mobileCapture?950000:3500000,audioBitsPerSecond:160000});chunks=[];recorder.ondataavailable=e=>{if(e.data.size){chunks.push(e.data);diagnosticChunk(e.data)}};recorder.onerror=e=>status('錄製失敗：'+(e.error?.message||'未知錯誤'));recorder.onstop=()=>{window.ktvLyricsEngine?.endRecording?.();releaseTabCapture();blob=new Blob(chunks,{type:recorder.mimeType||'video/webm'});if(!blob.size){diagnosticStop(true);setKtvRecordState(false,'錄製失敗');status('錄製沒有產生有效影片；請檢查裝置權限及錄影格式。');cleanupAudio();$('studioRec').disabled=false;$('ktvRecordStart').disabled=false;syncQuickButtons();return;}blobURL=URL.createObjectURL(blob);$('studioPlayback').src=blobURL;setRecordSummary(blob);diagnosticStop(true);setKtvRecordState(false,'錄製完成，請預覽確認');explainFormat(blob);$('studioResult').classList.remove('studio-hidden');$('studioRec').disabled=false;$('studioStop').disabled=true;$('ktvRecordStart').disabled=false;$('ktvRecordStop').disabled=true;syncQuickButtons();openCompactSettings(true);fsPanel.classList.remove('ktv-tools-open');updateFsUi();$('studioResult').scrollIntoView({behavior:'smooth',block:'nearest'});status('錄製完成（'+extension(blob).toUpperCase()+'），請先預覽確認影音，再選擇儲存或重唱。');cleanupAudio()};recorder.start(2000);diagnosticStart(stream,bg);window.ktvLyricsEngine?.beginRecording?.();recording=true;if(!raf){lastDrawTime=0;raf=requestAnimationFrame(frame);}/* The shared tab already includes the camera preview; avoid duplicating it. */startTime=Date.now();setKtvRecordState(true, bg==='screen'?'錄製中：分頁畫面＋'+(screenStream.getAudioTracks().length?'伴奏＋':'無伴奏＋')+'麥克風':'錄製中：自訂背景＋麥克風（僅本機影片可有背景音軌）');$('studioRec').disabled=true;$('studioStop').disabled=false;$('ktvRecordStart').disabled=true;$('ktvRecordStop').disabled=false;syncQuickButtons();status(bg==='screen'?'● 正在錄製 KTV 分享畫面＋'+(screenStream.getAudioTracks().length?'伴奏音訊':'未取得伴奏')+'＋麥克風；可調整混音滑桿。':'● 正在錄製自訂背景與麥克風，非分頁模式無法擷取 YouTube 伴奏；上傳本機影片可混入該影片聲音。為減少聲音回授，建議使用有線耳機。')}catch(e){diagnosticStop(false);window.ktvLyricsEngine?.endRecording?.();releaseTabCapture();setKtvRecordState(false,'無法開始錄影');cleanupAudio();status('啟動錄製失敗：'+e.message)}}
 function cleanupAudio(){stopStream(micStream);micStream=null;sourceNodes.forEach(n=>{try{n.disconnect()}catch(e){}});sourceNodes=[];if(audioCtx)audioCtx.close().catch(()=>{});audioCtx=null;musicGain=micGain=voiceFilter=echoDelay=echoGain=null}
 function stopRecording(){if(!recording)return;pauseKtvOnStop();recording=false;if(raf){cancelAnimationFrame(raf);raf=0;}setKtvRecordState(false,'正在處理錄影檔案…');float.classList.remove('ktv-hide-from-capture');$('ktvRecordStop').disabled=true;syncQuickButtons();try{if(recorder&&recorder.state!=='inactive')recorder.stop()}catch(e){diagnosticStop(true);releaseTabCapture();cleanupAudio();status(e.message)}}
 $('studioRec').onclick=startRecording;$('studioStop').onclick=stopRecording;
@@ -647,8 +397,6 @@ function openCompactSettings(force){const d=$('ktvStudioDetails');const next=typ
 $('ktvCompactSettings').addEventListener('click',()=>openCompactSettings());$('ktvSettingsClose').addEventListener('click',()=>openCompactSettings(false));
 $('ktvQuickStart').addEventListener('click',()=>startRecording());
 $('ktvQuickStop').addEventListener('click',()=>stopRecording());
-$('ktvQuickCutout').addEventListener('change',e=>{$('ktvRemoveBackground').checked=e.target.checked;$('ktvRemoveBackground').dispatchEvent(new Event('change',{bubbles:true}));});
-$('ktvRemoveBackground').addEventListener('change',()=>{$('ktvQuickCutout').checked=$('ktvRemoveBackground').checked});
 $('ktvStudioDetails').addEventListener('toggle',()=>{if(!$('ktvStudioDetails').open)$('ktvStudio').classList.remove('ktv-settings-open')});
 syncQuickButtons();
 const fsPanel=$('ktvPlayerPanel'),fsButton=$('ktvFullscreenBtn'),fsMenu=$('ktvFullscreenMenu');
@@ -670,7 +418,7 @@ document.addEventListener('keydown',e=>{if(e.key==='Escape'&&fsPanel.classList.c
 $('ktvClosePlayerBtn')?.addEventListener('click',()=>{fsPanel.classList.remove('ktv-ios-fullscreen');updateFsUi()});
 window.ktvEnterTheatre=()=>{fsPanel.classList.add('ktv-ios-fullscreen');fsPanel.classList.remove('ktv-tools-open');updateFsUi()};
 window.ktvExitTheatre=()=>{fsPanel.classList.remove('ktv-ios-fullscreen','ktv-tools-open');updateFsUi()};
-updateMixer();window.addEventListener('pagehide',()=>{endCameraFrameWatch();stopStream(camStream);releaseTabCapture();stopStream(micStream);if(segmentTimer)clearInterval(segmentTimer);if(segmenter)segmenter.close?.();if(raf)cancelAnimationFrame(raf);try{maskWorker?.terminate()}catch(e){}});
+updateMixer();window.addEventListener('pagehide',()=>{endCameraFrameWatch();stopStream(camStream);releaseTabCapture();stopStream(micStream);if(raf)cancelAnimationFrame(raf);});
 })();
 
 
