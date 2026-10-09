@@ -5,18 +5,18 @@
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="referrer" content="strict-origin-when-cross-origin">
 <meta name="theme-color" content="#0b1220">
-<title>WATCH_VIDEOtu V1.5.7.46</title>
+<title>WATCH_VIDEOtu V1.5.7.47</title>
 <link rel="manifest" href="manifest.webmanifest">
-<link rel="stylesheet" href="styles.css?v=15746">
-  <link rel="stylesheet" href="responsive-v63.css?v=15746">
-  <link rel="stylesheet" href="ui-v65.css?v=15746">
+<link rel="stylesheet" href="styles.css?v=15747">
+  <link rel="stylesheet" href="responsive-v63.css?v=15747">
+  <link rel="stylesheet" href="ui-v65.css?v=15747">
 
 <link rel="icon" type="image/png" sizes="192x192" href="icons/icon-192.png?v=15652">
 <link rel="icon" type="image/png" sizes="512x512" href="icons/icon-512.png?v=15652">
 <link rel="apple-touch-icon" sizes="180x180" href="icons/apple-touch-icon-180.png?v=15652">
 <meta name="apple-mobile-web-app-title" content="WATCH_VIDEOtu">
 
-<link rel="stylesheet" href="ktv-simple.css?v=15746">
+<link rel="stylesheet" href="ktv-simple.css?v=15747">
 </head>
 <body>
 <header class="topbar">
@@ -29,7 +29,7 @@
       <circle cx="50" cy="14" r="6" fill="#fff"/><path d="M50 10.7v6.6M46.7 14h6.6" stroke="#ff174d" stroke-width="2.4" stroke-linecap="round"/>
     </svg>
   </span>
-  <span class="brand-copy"><strong>WATCH_VIDEO<span class="brand-tu">tu</span></strong><span class="brand-version" title="手機 TV 簡化版 V1.5.7.46">V1.5.7.46</span><small>Kids Video Hub</small></span>
+  <span class="brand-copy"><strong>WATCH_VIDEO<span class="brand-tu">tu</span></strong><span class="brand-version" title="手機 TV 簡化版 V1.5.7.47">V1.5.7.47</span><small>Kids Video Hub</small></span>
 </button>
 <div class="mode-switch" id="modeSwitch">
   <button id="videoModeBtn" class="mode-btn active" type="button">🎬 影片模式</button>
@@ -348,7 +348,9 @@
           <label>錄製畫面<select id="simpleBackground"><option value="tab">KTV 歌曲畫面＋自拍鏡頭（電腦）</option><option value="camera">自拍鏡頭全畫面</option><option value="gradient">預設舞台背景＋自拍鏡頭</option><option value="photo">相簿照片＋自拍鏡頭</option></select></label>
           <div id="simplePresetWrap" class="simple-bg-group"><label>事先設定預設舞台<select id="simplePreset"><option value="night">深藍演唱會</option><option value="purple">紫色星光</option><option value="gold">暖金舞台</option><option value="green">綠色森林</option></select></label></div>
           <div id="simplePhotoWrap" class="simple-bg-group"><label>選擇手機／平板相簿照片<input id="simplePhoto" type="file" accept="image/*"></label><div class="simple-photo-actions"><img id="simplePhotoThumb" alt="已選擇的背景照片預覽" hidden><div><span id="simplePhotoState">尚未選擇背景照片</span><button id="simplePhotoClear" type="button">清除照片</button></div></div><p class="simple-note">照片會儲存在這個裝置的瀏覽器資料中，方便下次直接使用；清除網站資料後需要重新選擇。</p></div>
-          <label>麥克風音量 <input id="simpleMicVolume" type="range" min="0" max="200" value="100"></label>
+          <label>麥克風增益 <input id="simpleMicVolume" type="range" min="100" max="250" value="160" step="10"></label>
+          <label><input type="checkbox" id="simpleMicBoost"> 🎤 麥克風增強（手機人聲太小時開啟，需試錄確認）</label>
+          <label>收音測試 <progress id="simpleMicMeter" max="100" value="0" style="width:100%;height:16px"></progress><small id="simpleMicSignal">開始錄影後顯示麥克風收音</small></label>
           <p class="simple-note">電腦請分享目前 KTV 分頁並啟用分頁音訊；畫面會包含你看到的 KTV 和鏡頭。手機／平板使用鏡頭、預設舞台或相簿照片錄製，YouTube 畫面與原始伴奏不會直接錄入。</p>
         </div>
       </div>
@@ -476,12 +478,12 @@
 <div id="modal" class="modal hidden">
   <div class="modal-card"><h3>輸入家長 PIN</h3><input id="modalInput" inputmode="numeric" maxlength="6"><div class="modal-actions"><button id="modalCancel">取消</button><button id="modalOk">確定</button></div></div>
 </div>
-<script defer src="ktv_singers.js?v=15746"></script>
-<script defer src="ktv_songs.js?v=15746"></script>
-<script defer src="app.js?v=15746"></script>
+<script defer src="ktv_singers.js?v=15747"></script>
+<script defer src="ktv_songs.js?v=15747"></script>
+<script defer src="app.js?v=15747"></script>
 
-<script defer src="ktv-simple.js?v=15746"></script>
-<script defer src="ktv-review-lyrics.js?v=15746"></script>
+<script defer src="ktv-simple.js?v=15747"></script>
+<script defer src="ktv-review-lyrics.js?v=15747"></script>
 
 <div id="ktvToast" class="ktv-toast hidden" role="status" aria-live="polite"></div>
 </body>

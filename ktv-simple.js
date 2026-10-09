@@ -1,6 +1,6 @@
 (()=>{'use strict';
 const $=id=>document.getElementById(id);const elt=id=>$(id);const stage=$('ktvPlayerStage'), cameraBox=$('ktvCamFloat'), camera=$('ktvCamPreview');if(!stage||!camera)return;
-let canvasStream=null,recordOut=null;let reviewSong={title:'',artist:''};window.addEventListener('ktv-song-changed',e=>{if(!recording&&!starting)reviewSong={title:e.detail?.title||'',artist:e.detail?.artist||''}});let camStream=null,micStream=null,tabStream=null,recorder=null,canvas=null,raf=0,audioCtx=null,recorded=[],mime='',recordURL='',recordBlob=null,recording=false,starting=false,finishing=false,photo=null,lastFile='',ready=false,stopWatchdog=null;
+let micMonitorCtx=null,micMonitorTimer=null,micMonitorSource=null;let canvasStream=null,recordOut=null;let reviewSong={title:'',artist:''};window.addEventListener('ktv-song-changed',e=>{if(!recording&&!starting)reviewSong={title:e.detail?.title||'',artist:e.detail?.artist||''}});let camStream=null,micStream=null,tabStream=null,recorder=null,canvas=null,raf=0,audioCtx=null,recorded=[],mime='',recordURL='',recordBlob=null,recording=false,starting=false,finishing=false,photo=null,lastFile='',ready=false,stopWatchdog=null;
 const status=t=>{const e=$('simpleStatus');if(e)e.textContent=t};
 const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.maxTouchPoints>1&&Math.min(screen.width,screen.height)<1100);
 const backgroundSelect=$('simpleBackground'), presetSelect=$('simplePreset');
@@ -41,6 +41,9 @@ async function openCamera(){
 }function closeCamera(){if(recording)return;stopTracks(camStream);camStream=null;camera.srcObject=null;cameraBox.classList.add('hidden');cameraBox.style.display='none';status('已關閉鏡頭');buttonState()}
 $('simpleCamera').addEventListener('click',async()=>{if(starting)return;try{if(camStream)closeCamera();else await openCamera()}catch(e){status('無法開啟鏡頭：'+e.message);buttonState()}});
 const opts=$('simpleOptions');$('simpleOptionsBtn').onclick=()=>{opts.hidden=!opts.hidden};$('simpleOptionsClose').onclick=()=>{opts.hidden=true};
+// Microphone live input meter and safe cleanup (not connected to speakers).
+function stopMicMonitor(){if(micMonitorTimer){clearInterval(micMonitorTimer);micMonitorTimer=null;}if(micMonitorCtx){const ctx=micMonitorCtx;micMonitorCtx=null;ctx.close().catch(()=>{});}const meter=$('simpleMicMeter');if(meter)meter.value=0;}
+async function monitorMic(){stopMicMonitor();const meter=$('simpleMicMeter');if(!meter||!micStream)return;try{const ctx=new (window.AudioContext||window.webkitAudioContext)();micMonitorCtx=ctx;await ctx.resume();const source=ctx.createMediaStreamSource(micStream),analyser=ctx.createAnalyser();analyser.fftSize=1024;source.connect(analyser);const data=new Uint8Array(analyser.fftSize);micMonitorTimer=setInterval(()=>{if(!micStream)return;analyser.getByteTimeDomainData(data);let sum=0;for(const sample of data){const n=(sample-128)/128;sum+=n*n;}const rms=Math.sqrt(sum/data.length);meter.value=Math.min(100,Math.round(rms*450));const text=$('simpleMicSignal');if(text)text.textContent=rms<.006?'收音很小／請靠近麥克風':rms<.025?'麥克風有收音':'麥克風收音正常';},140);}catch(e){if($('simpleMicSignal'))$('simpleMicSignal').textContent='無法顯示收音音量（不影響錄製）';}}
 $('simplePhoto').onchange=async e=>{const f=e.target.files?.[0];if(!f)return;try{if(!f.type.startsWith('image/'))throw Error('檔案不是圖片');await applyPhotoBlob(f);backgroundSelect.value='photo';updateBackgroundUI();try{await photoStore('put',f)}catch{status('已載入照片，但瀏覽器無法永久保存。請勿清除網頁資料。');return}status('背景照片已保存，下次開啟可繼續使用');}catch(e){status('無法載入圖片：'+e.message)}};
 function drawContain(ctx,img,w,h){const iw=img.videoWidth||img.naturalWidth||w,ih=img.videoHeight||img.naturalHeight||h;if(!iw||!ih)return;const z=Math.min(w/iw,h/ih);ctx.drawImage(img,(w-iw*z)/2,(h-ih*z)/2,iw*z,ih*z)}
 function drawCover(ctx,img,w,h){const iw=img.videoWidth||img.naturalWidth||w,ih=img.videoHeight||img.naturalHeight||h;if(!iw||!ih)return;const z=Math.max(w/iw,h/ih);ctx.drawImage(img,(w-iw*z)/2,(h-ih*z)/2,iw*z,ih*z)}
@@ -63,7 +66,9 @@ async function start(){if(starting||recording||finishing)return;reviewSong={titl
  const audioOnly=$('simpleRecordingType').value==='audio';const mode=audioOnly?'gradient':$('simpleBackground').value;
    if(isMobile){setImmersive(true);opts.hidden=true;}if(mode==='photo'&&!photo)throw Error('請先選擇背景照片，或改用預設背景');
  if($('simpleRecordingType').value!=='audio'&&!camStream)await openCamera();
- micStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:false,autoGainControl:false},video:false});
+ micStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:false,noiseSuppression:false,autoGainControl:true,channelCount:{ideal:1}},video:false});
+ if(!micStream.getAudioTracks().some(t=>t.readyState==='live'&&t.enabled))throw Error('麥克風沒有可用的音軌，請檢查網站麥克風權限');
+ await monitorMic();
  if(mode==='tab'){
  if(isMobile)throw Error('手機／平板不能直接擷取 KTV 分頁。請選自拍鏡頭、預設舞台或相簿照片');
  if(!navigator.mediaDevices.getDisplayMedia)throw Error('這個瀏覽器無法分享 KTV 分頁；請選擇預設背景或自選照片');
@@ -83,17 +88,31 @@ async function start(){if(starting||recording||finishing)return;reviewSong={titl
  const out=new MediaStream(captureVideoTrack?[captureVideoTrack]:canvasStream?canvasStream.getVideoTracks():[]);
  recordOut=out;
  // iOS Safari: record native mic tracks without AudioContext mixing for reliable MP4 output.
- if(isMobile){micStream.getAudioTracks().forEach(t=>out.addTrack(t));}
+ if(isMobile){
+   // Default direct native microphone track on iOS: avoids audio-context silence.
+   // Optional boost uses WebAudio only when the user explicitly enables it.
+   const boost=$('simpleMicBoost')?.checked;
+   if(boost&&window.AudioContext){try{
+      audioCtx=new (window.AudioContext||window.webkitAudioContext)();await audioCtx.resume();
+      if(audioCtx.state!=='running')throw Error('音訊處理未啟動');
+      const source=audioCtx.createMediaStreamSource(micStream),gain=audioCtx.createGain(),dest=audioCtx.createMediaStreamDestination();
+      gain.gain.value=Math.max(1,Math.min(2.5,Number($('simpleMicVolume').value)/100));source.connect(gain).connect(dest);
+      const track=dest.stream.getAudioTracks()[0];if(!track||track.readyState!=='live')throw Error('增強音軌無法使用');
+      out.addTrack(track);status('🎤 麥克風增強已啟用，請先試錄 10 秒確認聲音');
+   }catch(e){if(audioCtx){audioCtx.close().catch(()=>{});audioCtx=null;}micStream.getAudioTracks().forEach(t=>out.addTrack(t));status('🎤 增強模式不支援，已使用原始麥克風：'+e.message)}
+   }else{micStream.getAudioTracks().forEach(t=>out.addTrack(t));}
+ }
  else {audioCtx=new (window.AudioContext||window.webkitAudioContext)();await audioCtx.resume();const dest=audioCtx.createMediaStreamDestination();
  const micSource=audioCtx.createMediaStreamSource(micStream),gain=audioCtx.createGain();gain.gain.value=Number($('simpleMicVolume').value)/100;micSource.connect(gain).connect(dest);
  if(tabStream?.getAudioTracks().length){audioCtx.createMediaStreamSource(tabStream).connect(dest)}
  dest.stream.getAudioTracks().forEach(t=>out.addTrack(t));}
+ if(!out.getAudioTracks().length||out.getAudioTracks().every(t=>t.readyState!=='live'))throw Error('錄影沒有取得麥克風音軌，已取消錄製');
  const types=audioOnly?['audio/mp4','audio/mp4;codecs=mp4a.40.2','audio/webm;codecs=opus','audio/webm']:['video/mp4;codecs="avc1.42E01E,mp4a.40.2"','video/mp4','video/webm;codecs=vp8,opus','video/webm'];mime=types.find(t=>{try{return MediaRecorder.isTypeSupported(t)&&(!isMobile||!!document.createElement('video').canPlayType(t))}catch{return false}})||types.find(t=>{try{return MediaRecorder.isTypeSupported(t)}catch{return false}})||'';
  try{recorder=new MediaRecorder(out,mime?{mimeType:mime,videoBitsPerSecond:1800000,audioBitsPerSecond:128000}:undefined)}
  catch(e){recorder=new MediaRecorder(out);mime=recorder.mimeType||'';}recorded=[];
  recorder.ondataavailable=e=>{if(e.data?.size)recorded.push(e.data)};
  let completed=false;
- async function completeRecording(){if(completed)return;completed=true;clearTimeout(stopWatchdog);stopWatchdog=null;document.documentElement.classList.remove('ktv-direct-capture');cancelAnimationFrame(raf);stopTracks(canvasStream);canvasStream=null;stopTracks(tabStream);tabStream=null;stopTracks(micStream);micStream=null;stopTracks(recordOut);recordOut=null;document.getElementById('simpleTabVideo')?.remove();if(audioCtx){const closing=audioCtx;audioCtx=null;closing.close().catch(()=>{})}
+ async function completeRecording(){if(completed)return;completed=true;clearTimeout(stopWatchdog);stopWatchdog=null;document.documentElement.classList.remove('ktv-direct-capture');cancelAnimationFrame(raf);stopTracks(canvasStream);canvasStream=null;stopTracks(tabStream);tabStream=null;stopMicMonitor();stopTracks(micStream);micStream=null;stopTracks(recordOut);recordOut=null;document.getElementById('simpleTabVideo')?.remove();if(audioCtx){const closing=audioCtx;audioCtx=null;closing.close().catch(()=>{})}
  const t=recorder?.mimeType||mime||(audioOnly?'audio/webm':'video/webm');recordBlob=new Blob(recorded,{type:t});recording=false;starting=false;finishing=false;
  // Release the camera after a mobile recording to clear iOS camera-in-use indicator.
  if(isMobile){stopTracks(camStream);camStream=null;camera.pause();camera.srcObject=null;cameraBox.classList.add('hidden');cameraBox.style.display='none';}
@@ -108,13 +127,13 @@ async function start(){if(starting||recording||finishing)return;reviewSong={titl
  }
  if(recordURL)URL.revokeObjectURL(recordURL);recordURL=URL.createObjectURL(recordBlob);
  const playback=$('simplePlayback');playback.hidden=false;playback.pause();playback.removeAttribute('src');playback.load();playback.src=recordURL;playback.muted=false;playback.controls=true;playback.playsInline=true;playback.load();
- $('simpleReview').hidden=false;if(isMobile)$('simpleLyricsOpen').hidden=false;status('✅ 已停止錄影，可預覽及儲存');$('simpleReviewHint').textContent='影片已完成，點擊畫面上的播放鍵。若瀏覽器不支援此格式，仍可先下載原始檔。';
+ $('simpleReview').hidden=false;if(isMobile)$('simpleLyricsOpen').hidden=false;status('✅ 已停止錄影，可預覽及儲存');$('simpleReviewHint').textContent='影片已完成，請播放確認人聲。若沒有聲音，請先試用錄製選項內的「麥克風增強」並確認收音指示。';
  window.dispatchEvent(new CustomEvent('ktv-recording-review-open',{detail:{title:reviewSong.title,artist:reviewSong.artist}}));
  }
  recorder.onstop=completeRecording;
  recorder.onerror=e=>{status('錄影發生錯誤：'+(e.error?.message||'未知錯誤'));if(finishing)completeRecording()};
  recording=true;starting=false;if(useTab)document.documentElement.classList.add('ktv-direct-capture');buttonState();recorder.start(isMobile?1000:1000);if(canvas)paint();status(useTab?'🔴 正直接錄製 KTV 分頁與鏡頭，無二次合成；點「停止」可預覽':'🔴 正在錄影；點「停止」可結束並預覽');
- }catch(e){if(isMobile)setImmersive(false);document.documentElement.classList.remove('ktv-direct-capture');recording=false;starting=false;stopTracks(tabStream);tabStream=null;document.getElementById('simpleTabVideo')?.remove();stopTracks(micStream);micStream=null;if(audioCtx){audioCtx.close().catch(()=>{});audioCtx=null}if(isMobile){stopTracks(camStream);camStream=null;camera.pause();camera.srcObject=null;cameraBox.classList.add('hidden');cameraBox.style.display='none'}status('無法開始錄影：'+e.message);buttonState()}}
+ }catch(e){if(isMobile)setImmersive(false);document.documentElement.classList.remove('ktv-direct-capture');recording=false;starting=false;stopTracks(tabStream);tabStream=null;document.getElementById('simpleTabVideo')?.remove();stopMicMonitor();stopTracks(micStream);micStream=null;if(audioCtx){audioCtx.close().catch(()=>{});audioCtx=null}if(isMobile){stopTracks(camStream);camStream=null;camera.pause();camera.srcObject=null;cameraBox.classList.add('hidden');cameraBox.style.display='none'}status('無法開始錄影：'+e.message);buttonState()}}
 function pauseSong(){try{const f=$('ktvPlayerFrame');if(f?.contentWindow)f.contentWindow.postMessage(JSON.stringify({event:'command',func:'pauseVideo',args:[]}), '*')}catch{}}
 function stop(){if(!recording||finishing)return;pauseSong();finishing=true;recording=false;buttonState();status('正在完成影片，請稍候…');cancelAnimationFrame(raf);
  try{if(recorder?.state==='recording'){if(!isMobile){try{recorder.requestData()}catch{}}recorder.stop()}else if(recorder?.state==='inactive'){recorder.onstop?.()}else throw Error('錄影器狀態異常')}catch(e){status('正在嘗試完成錄影：'+e.message);recorder?.onstop?.()}
