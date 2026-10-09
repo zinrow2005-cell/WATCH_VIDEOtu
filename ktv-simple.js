@@ -192,9 +192,55 @@ $('simpleLibraryClose').onclick=closeLibrary;
 let drag=null;cameraBox.style.touchAction='none';cameraBox.addEventListener('pointerdown',e=>{if(e.target.closest('#simpleCamSizeHandle'))return;if(!camStream)return;const a=stage.getBoundingClientRect(),b=cameraBox.getBoundingClientRect();drag={x:e.clientX,y:e.clientY,l:b.left-a.left,t:b.top-a.top};cameraBox.setPointerCapture(e.pointerId)});cameraBox.addEventListener('pointermove',e=>{if(!drag)return;const a=stage.getBoundingClientRect(),w=cameraBox.offsetWidth,h=cameraBox.offsetHeight;cameraBox.style.left=Math.max(0,Math.min(a.width-w,drag.l+e.clientX-drag.x))+'px';cameraBox.style.top=Math.max(0,Math.min(a.height-h,drag.t+e.clientY-drag.y))+'px';cameraBox.style.right='auto'});cameraBox.addEventListener('pointerup',()=>drag=null);cameraBox.addEventListener('pointercancel',()=>drag=null);
 const sizeHandle=document.createElement('button');sizeHandle.id='simpleCamSizeHandle';sizeHandle.type='button';sizeHandle.textContent='⤡';sizeHandle.setAttribute('aria-label','拖曳調整鏡頭大小');sizeHandle.title='拖曳調整鏡頭大小';cameraBox.appendChild(sizeHandle);camera.addEventListener('click',()=>{if(camStream&&camera.paused)camera.play().catch(()=>status('請允許瀏覽器播放鏡頭影像'))});
 const cameraSize=$('simpleCameraSize');const camPrefsKey='simpleKtvCamSizeV1';
-function setCameraWidth(pct){const clamped=Math.max(16,Math.min(58,Number(pct)||24));cameraBox.style.width=clamped+'%';cameraBox.style.minWidth='0';cameraBox.style.maxWidth='none';cameraBox.style.aspectRatio=isMobile?'9/16':'16/9';if(cameraSize)cameraSize.value=Math.round(clamped);try{localStorage.setItem(camPrefsKey,String(clamped))}catch{}if(camStream){const bounds=stage.getBoundingClientRect(),rect=cameraBox.getBoundingClientRect();if(rect.right>bounds.right)cameraBox.style.left=Math.max(0,bounds.width-rect.width)+'px';if(rect.bottom>bounds.bottom)cameraBox.style.top=Math.max(0,bounds.height-rect.height)+'px';cameraBox.style.right='auto'}}
-if(cameraSize)cameraSize.addEventListener('input',()=>setCameraWidth(cameraSize.value));let initialCameraWidth=isMobile?28:24;try{initialCameraWidth=localStorage.getItem(camPrefsKey)||initialCameraWidth}catch{}setCameraWidth(initialCameraWidth);
-let resizeOrigin=null;sizeHandle.addEventListener('pointerdown',e=>{e.stopPropagation();const r=cameraBox.getBoundingClientRect();resizeOrigin={x:e.clientX,y:e.clientY,width:r.width};sizeHandle.setPointerCapture(e.pointerId)});sizeHandle.addEventListener('pointermove',e=>{if(!resizeOrigin)return;e.stopPropagation();const change=e.clientX-resizeOrigin.x;setCameraWidth((resizeOrigin.width+change)/Math.max(1,stage.getBoundingClientRect().width)*100)});['pointerup','pointercancel'].forEach(evt=>sizeHandle.addEventListener(evt,()=>resizeOrigin=null));
+function cameraIsLandscape(){return window.matchMedia('(orientation: landscape)').matches && isMobile;}
+function cameraAspect(){return isMobile?(cameraIsLandscape()?16/9:9/16):16/9;}
+function setCameraWidth(pct,save=true){
+ const wanted=Math.max(16,Math.min(58,Number(pct)||24));
+ const bounds=stage.getBoundingClientRect();
+ const aspect=cameraAspect();
+ // Landscape phone viewports can be very short. Fit the entire camera and its resize control.
+ const maxWidthByHeight=bounds.height>0?(bounds.height*0.78*aspect):Infinity;
+ const stageWidth=Math.max(1,bounds.width);
+ const targetWidth=Math.max(55,Math.min(stageWidth*wanted/100,maxWidthByHeight,stageWidth*0.90));
+ cameraBox.style.width=targetWidth+'px';cameraBox.style.minWidth='0';cameraBox.style.maxWidth='none';cameraBox.style.maxHeight='none';cameraBox.style.aspectRatio=aspect.toString();
+ if(cameraSize)cameraSize.value=Math.round(wanted);
+ if(save)try{localStorage.setItem(camPrefsKey,String(wanted))}catch{}
+ if(camStream){
+  const rect=cameraBox.getBoundingClientRect();
+  // CSS right/top offsets may survive a rotation; normalize to stage-local coordinates.
+  const left=Math.max(0,Math.min(Math.max(0,bounds.width-rect.width),rect.left-bounds.left));
+  const top=Math.max(0,Math.min(Math.max(0,bounds.height-rect.height),rect.top-bounds.top));
+  cameraBox.style.left=left+'px';cameraBox.style.top=top+'px';cameraBox.style.right='auto';
+ }
+}
+if(cameraSize)cameraSize.addEventListener('input',()=>setCameraWidth(cameraSize.value));
+let initialCameraWidth=isMobile?28:24;
+try{initialCameraWidth=localStorage.getItem(camPrefsKey)||initialCameraWidth}catch{}
+setCameraWidth(initialCameraWidth,false);
+let resizeOrigin=null;
+sizeHandle.addEventListener('pointerdown',e=>{
+ e.preventDefault();e.stopPropagation();
+ const r=cameraBox.getBoundingClientRect();
+ resizeOrigin={x:e.clientX,y:e.clientY,width:r.width,height:r.height,pointer:e.pointerId};
+ sizeHandle.setPointerCapture(e.pointerId);
+});
+sizeHandle.addEventListener('pointermove',e=>{
+ if(!resizeOrigin||resizeOrigin.pointer!==e.pointerId)return;
+ e.preventDefault();e.stopPropagation();
+ const deltaX=e.clientX-resizeOrigin.x,deltaY=e.clientY-resizeOrigin.y;
+ const aspect=cameraAspect();
+ // Support diagonal/vertical finger movement when the phone is landscape.
+ const delta=Math.abs(deltaX)>=Math.abs(deltaY)?deltaX:deltaY*aspect;
+ const wanted=(resizeOrigin.width+delta)/Math.max(1,stage.getBoundingClientRect().width)*100;
+ setCameraWidth(wanted);
+});
+['pointerup','pointercancel','lostpointercapture'].forEach(evt=>sizeHandle.addEventListener(evt,()=>resizeOrigin=null));
+function refreshCameraOrientation(){
+ const value=cameraSize?.value||initialCameraWidth;
+ requestAnimationFrame(()=>setCameraWidth(value,false));
+}
+window.addEventListener('orientationchange',()=>setTimeout(refreshCameraOrientation,200));
+window.addEventListener('resize',refreshCameraOrientation);
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){opts.hidden=true;reviewClose();closeLibrary()}});
 
 const fs=$('ktvFullscreenBtn');function setImmersive(active){const panel=$('ktvPlayerPanel');if(!panel)return;panel.classList.toggle('simple-fullview',!!active);document.documentElement.classList.toggle('ktv-recording-immersive',!!active);if(fs)fs.textContent=active?'✕ 退出全螢幕':'⛶ 全螢幕';if(active)panel.scrollTop=0;}
