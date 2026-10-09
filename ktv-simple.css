@@ -37,3 +37,8 @@ html.ktv-direct-capture #ktvCamFloat { box-shadow:none!important; }
 /* V1.5.7.44: full-frame selfie composition on phones, no letterboxing */
 #ktvCamPreview{object-fit:cover!important}
 @media(max-width:800px){#ktvCamFloat{aspect-ratio:9/16;width:34%;max-height:75%;min-width:80px}#ktvCamPreview{object-fit:cover!important}.simple-modal video{max-height:48dvh}.simple-modal-inner{max-height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 20px)}}
+
+/* v1.5.7.45: keep native iOS camera video visible, avoid black overlays */
+#ktvCamPreview{background:transparent!important;transform:translateZ(0);-webkit-transform:translateZ(0)}
+#simplePlayback[hidden]{display:none!important}
+@media(max-width:800px){#ktvCamFloat{background:#101827!important}#simpleLyricsOpen{min-height:50px}}
