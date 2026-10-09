@@ -50,7 +50,7 @@ async function start(){if(starting||recording)return;starting=true;buttonState()
  if(mode==='tab'){
  if(isMobile)throw Error('手機／平板不能直接擷取 KTV 分頁。請選自拍鏡頭、預設舞台或相簿照片');
  if(!navigator.mediaDevices.getDisplayMedia)throw Error('這個瀏覽器無法分享 KTV 分頁；請選擇預設背景或自選照片');
- status('請選「目前 KTV 分頁」，並勾選分享分頁音訊；自拍鏡頭請保持顯示在分頁上。');tabStream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:true});
+ status('瀏覽器將要求擷取 KTV 畫面：請選「目前 KTV 分頁」並開啟「分享分頁音訊」。這不會上傳到 GitHub。');tabStream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:true});
  const v=document.createElement('video');v.id='simpleTabVideo';v.muted=true;v.playsInline=true;v.srcObject=tabStream;v.style.display='none';document.body.appendChild(v);await v.play();tabStream.getVideoTracks()[0].addEventListener('ended',()=>{if(recording)stop()}, {once:true});
  }
  const useTab=mode==='tab'&&tabStream,srcV=tabStream?.getVideoTracks()[0].getSettings();
@@ -71,8 +71,24 @@ function pauseSong(){try{const f=$('ktvPlayerFrame');if(f?.contentWindow)f.conte
 function stop(){if(!recording)return;pauseSong();recording=false;buttonState();status('正在完成錄影檔…');if(recorder?.state==='recording')recorder.stop();else{stopTracks(tabStream);stopTracks(micStream)}}
 $('simpleRecord').onclick=start;$('simpleStop').onclick=stop;
 const review=$('simpleReview');function reviewClose(){review.hidden=true;$('simplePlayback').pause()};$('simpleReviewClose').onclick=reviewClose;$('simpleRetry').onclick=()=>{reviewClose();start()};
-function save(){if(!recordBlob)return;const ext=recordBlob.type.includes('mp4')?'mp4':recordBlob.type.startsWith('audio/')?'webm':'webm';const name='我的KTV作品_'+new Date().toISOString().replace(/[:.]/g,'-')+'.'+ext;const a=document.createElement('a');a.href=recordURL;a.download=name;document.body.appendChild(a);a.click();a.remove();lastFile=name;try{const r=JSON.parse(localStorage.getItem('simpleKtvList')||'[]');r.unshift({name,time:Date.now(),size:recordBlob.size,type:recordBlob.type});localStorage.setItem('simpleKtvList',JSON.stringify(r.slice(0,50)))}catch{}$('simpleReviewHint').textContent='已送至瀏覽器下載。手機請到下載項目或分享選單儲存到相簿。';}
-$('simpleSave').onclick=save;$('simpleShare').onclick=async()=>{if(!recordBlob)return;try{const file=new File([recordBlob],lastFile||'KTV作品.'+(recordBlob.type.includes('mp4')?'mp4':recordBlob.type.startsWith('audio/')?'webm':'webm'),{type:recordBlob.type});if(navigator.canShare?.({files:[file]}))await navigator.share({files:[file]});else save()}catch(e){if(e.name!=='AbortError')status('分享失敗：'+e.message)}};
+function outputName(){const type=recordBlob?.type||'';const ext=type.includes('mp4')?'mp4':type.includes('ogg')?'ogg':type.startsWith('audio/')?'webm':'webm';return '我的KTV作品_'+new Date().toISOString().replace(/[:.]/g,'-')+'.'+ext}
+function saveLog(name){lastFile=name;try{const r=JSON.parse(localStorage.getItem('simpleKtvList')||'[]');r.unshift({name,time:Date.now(),size:recordBlob.size,type:recordBlob.type});localStorage.setItem('simpleKtvList',JSON.stringify(r.slice(0,50)))}catch{}}
+function downloadRecording(){if(!recordBlob)return;const name=outputName();const a=document.createElement('a');a.href=recordURL;a.download=name;document.body.appendChild(a);a.click();a.remove();saveLog(name);$('simpleReviewHint').textContent='已送至瀏覽器下載。請在下載項目查看；手機／平板可再從檔案 App 移到相簿。';status('已送至瀏覽器下載：'+name)}
+async function saveToDevice(){if(!recordBlob)return;const name=outputName();if(!isMobile&&typeof window.showSaveFilePicker==='function'){
+ try{const ext='.'+name.split('.').pop(),handle=await window.showSaveFilePicker({suggestedName:name,types:[{description:'KTV 錄製作品',accept:{[recordBlob.type||'application/octet-stream']:[ext]}}]});const writer=await handle.createWritable();await writer.write(recordBlob);await writer.close();saveLog(handle.name||name);$('simpleReviewHint').textContent='✓ 已儲存到你選擇的位置：'+(handle.name||name);status('作品已儲存到指定位置');return}catch(e){if(e?.name==='AbortError'){status('已取消儲存');return}status('無法使用檔案選擇器，改用下載：'+(e.message||e))}
+ }
+ downloadRecording();}
+async function saveToPhotos(){if(!recordBlob)return;const name=outputName();const file=new File([recordBlob],name,{type:recordBlob.type||'application/octet-stream'});
+ if(navigator.canShare?.({files:[file]})&&typeof navigator.share==='function'){
+ try{await navigator.share({files:[file],title:'儲存 KTV 作品'});$('simpleReviewHint').textContent='已開啟系統分享功能。iPhone／iPad 請選「儲存影片」（如有提供）；其他裝置請選擇相簿或檔案 App。';status('已開啟系統分享選單');return}catch(e){if(e?.name==='AbortError'){status('已取消儲存');return}status('無法使用系統分享：'+(e.message||e))}
+ }
+ downloadRecording();$('simpleReviewHint').textContent='這個瀏覽器不支援直接分享錄影檔。已下載檔案，請到下載項目或檔案 App 將影片存入相簿。';}
+$('simpleSave').onclick=saveToDevice;
+$('simpleShare').onclick=saveToPhotos;
+$('simpleSave').textContent=isMobile?'⬇ 下載影片':'💾 選擇資料夾儲存';
+$('simpleShare').textContent='📱 儲存至相簿／檔案';
+$('simpleShare').hidden=!isMobile;
+$('simpleReviewHint').textContent=isMobile?'錄製完成後可選「儲存至相簿／檔案」，若系統不支援請先下載。':'錄製完成後可選擇要儲存的檔名與資料夾；不支援時改用瀏覽器下載。';
 const library=$('simpleLibrary');$('simpleLibraryBtn').onclick=()=>{const div=$('simpleLibraryList');let items=[];try{items=JSON.parse(localStorage.getItem('simpleKtvList')||'[]')}catch{}div.replaceChildren();const intro=document.createElement('p');intro.textContent='這裡顯示下載紀錄；影片實際儲存在裝置下載位置，不會自動同步到其他裝置。';div.appendChild(intro);items.forEach(it=>{let el=document.createElement('p');el.textContent=`${new Date(it.time).toLocaleString()}　${it.name}`;div.appendChild(el)});if(!items.length)div.append('目前沒有儲存紀錄。');library.hidden=false};$('simpleLibraryClose').onclick=()=>{library.hidden=true};
 // For no-crop control, keep the actual camera inside the stage and allow pointer drag.
 let drag=null;cameraBox.style.touchAction='none';cameraBox.addEventListener('pointerdown',e=>{if(!camStream)return;const a=stage.getBoundingClientRect(),b=cameraBox.getBoundingClientRect();drag={x:e.clientX,y:e.clientY,l:b.left-a.left,t:b.top-a.top};cameraBox.setPointerCapture(e.pointerId)});cameraBox.addEventListener('pointermove',e=>{if(!drag)return;const a=stage.getBoundingClientRect(),w=cameraBox.offsetWidth,h=cameraBox.offsetHeight;cameraBox.style.left=Math.max(0,Math.min(a.width-w,drag.l+e.clientX-drag.x))+'px';cameraBox.style.top=Math.max(0,Math.min(a.height-h,drag.t+e.clientY-drag.y))+'px';cameraBox.style.right='auto'});cameraBox.addEventListener('pointerup',()=>drag=null);cameraBox.addEventListener('pointercancel',()=>drag=null);
