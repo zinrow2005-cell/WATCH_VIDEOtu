@@ -1,0 +1,6 @@
+V1.5.7.26 Desktop camera performance fix
+- Desktop recording canvas no longer repaints 1280x720 at monitor refresh rate when idle.
+- During recording canvas target <=24fps desktop / <=15fps mobile.
+- Desktop segmentation default intervals reduced for balanced/performance modes.
+- Camera preview still native video so stays responsive without canvas updates.
+- Does not claim real-camera benchmark.

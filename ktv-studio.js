@@ -90,7 +90,7 @@ $('ktvTuneReset')?.addEventListener('click',()=>{setTune('residue',50);setTune('
 // while camera preview/recording remain independent to protect audio continuity.
 let cutoutPerfMode='balanced', cutoutSamples=0, cutoutAvgMs=0, cutoutLastAt=0;
 let cutoutSlowStreak=0, cutoutFastStreak=0, currentSegmentMs=0;
-function segmentPeriod(){const base=cutoutPerfMode==='performance'?(mobileCapture?380:250):cutoutPerfMode==='detail'?(mobileCapture?250:130):(mobileCapture?300:190);return base+(mobileCapture&&recording?120+recordingLoadLevel*260:0)}
+function segmentPeriod(){const base=cutoutPerfMode==='performance'?(mobileCapture?420:360):cutoutPerfMode==='detail'?(mobileCapture?280:210):(mobileCapture?360:280);return base+(mobileCapture&&recording?120+recordingLoadLevel*260:0)}
 function trackSegmentCost(start){
  const elapsed=Math.max(0,performance.now()-start);
  cutoutAvgMs=cutoutSamples?cutoutAvgMs*.85+elapsed*.15:elapsed;cutoutSamples++;
@@ -333,7 +333,15 @@ function drawScreenContained(src){
  ctx.drawImage(src,(canvas.width-dw)/2,(canvas.height-dh)/2,dw,dh);
 }
 function drawCover(src){const sw=src.videoWidth||src.naturalWidth,sh=src.videoHeight||src.naturalHeight;if(!sw||!sh)return;const k=Math.max(canvas.width/sw,canvas.height/sh);ctx.drawImage(src,(canvas.width-sw*k)/2,(canvas.height-sh*k)/2,sw*k,sh*k)}
-function frame(now=0){raf=requestAnimationFrame(frame);if(mobileCapture&&recording&&now-lastDrawTime<66)return;lastDrawTime=now;diagnosticFrame();const bg=$('studioBackground').value;ctx.fillStyle='#132039';ctx.fillRect(0,0,1280,720);if(bg==='gradient'){const g=ctx.createLinearGradient(0,0,1280,720);g.addColorStop(0,'#151641');g.addColorStop(.5,'#7d2e69');g.addColorStop(1,'#14112e');ctx.fillStyle=g;ctx.fillRect(0,0,1280,720)}else if(bg==='stage'){const g=ctx.createRadialGradient(640,170,20,640,400,850);g.addColorStop(0,'#a35e9d');g.addColorStop(.4,'#39275b');g.addColorStop(1,'#080b1e');ctx.fillStyle=g;ctx.fillRect(0,0,1280,720);for(let i=0;i<7;i++){ctx.strokeStyle='rgba(255,210,255,.13)';ctx.lineWidth=24;ctx.beginPath();ctx.moveTo((i*220)-200,0);ctx.lineTo(640+(i-3)*70,720);ctx.stroke()}}else if(bg==='photo'&&bgImg)drawCover(bgImg);else if(bg==='video'&&video.readyState>=2)drawCover(video);else if(bg==='screen'&&video.readyState>=2)drawScreenContained(video);
+// V1.5.7.26: cap canvas compositing on every device, including desktop.
+// The camera preview is the native <video> element and does not need a 720p canvas redraw at 60fps.
+function frame(now=0){
+ raf=requestAnimationFrame(frame);
+ if(document.hidden&&!recording)return;
+ // No recording: idle canvas is invisible; only refresh occasionally for standby.
+ const interval=recording?(mobileCapture?67:42):(camStream?125:500);
+ if(now-lastDrawTime<interval)return;
+ lastDrawTime=now;diagnosticFrame();const bg=$('studioBackground').value;ctx.fillStyle='#132039';ctx.fillRect(0,0,1280,720);if(bg==='gradient'){const g=ctx.createLinearGradient(0,0,1280,720);g.addColorStop(0,'#151641');g.addColorStop(.5,'#7d2e69');g.addColorStop(1,'#14112e');ctx.fillStyle=g;ctx.fillRect(0,0,1280,720)}else if(bg==='stage'){const g=ctx.createRadialGradient(640,170,20,640,400,850);g.addColorStop(0,'#a35e9d');g.addColorStop(.4,'#39275b');g.addColorStop(1,'#080b1e');ctx.fillStyle=g;ctx.fillRect(0,0,1280,720);for(let i=0;i<7;i++){ctx.strokeStyle='rgba(255,210,255,.13)';ctx.lineWidth=24;ctx.beginPath();ctx.moveTo((i*220)-200,0);ctx.lineTo(640+(i-3)*70,720);ctx.stroke()}}else if(bg==='photo'&&bgImg)drawCover(bgImg);else if(bg==='video'&&video.readyState>=2)drawCover(video);else if(bg==='screen'&&video.readyState>=2)drawScreenContained(video);
 if(bg==='camera'&&cam.readyState>=2)drawCover(cam);
 if(window.ktvLyricsEngine)window.ktvLyricsEngine.draw(ctx,canvas.width,canvas.height);
 if(float&&!float.classList.contains('hidden')&&cam.readyState>=2) {const r=stage.getBoundingClientRect(); if(r.width){float.style.width=(overlay.w*100)+'%';float.style.left=(Math.min(overlay.x,1-overlay.w)*100)+'%';float.style.top=(Math.min(overlay.y,Math.max(0,1-(overlay.w*(cam.videoHeight||720)/(cam.videoWidth||1280))*r.width/r.height))*100)+'%';}}
@@ -620,7 +628,7 @@ updateMixer();frame();window.addEventListener('pagehide',()=>{stopStream(camStre
  }});
 })();
 
-// V1.5.7.25: predictable escape/click-out behavior for KTV auxiliary panels.
+// V1.5.7.26: predictable escape/click-out behavior for KTV auxiliary panels.
 (()=>{
  const panel=document.getElementById('ktvPlayerPanel'), settings=document.getElementById('ktvStudio');
  const details=document.getElementById('ktvStudioDetails');
