@@ -1,6 +1,6 @@
 (()=>{'use strict';
 const $=id=>document.getElementById(id);const elt=id=>$(id);const stage=$('ktvPlayerStage'), cameraBox=$('ktvCamFloat'), camera=$('ktvCamPreview');if(!stage||!camera)return;
-let reviewSong={title:'',artist:''};window.addEventListener('ktv-song-changed',e=>{if(!recording&&!starting)reviewSong={title:e.detail?.title||'',artist:e.detail?.artist||''}});let camStream=null,micStream=null,tabStream=null,recorder=null,canvas=null,raf=0,audioCtx=null,recorded=[],mime='',recordURL='',recordBlob=null,recording=false,starting=false,photo=null,lastFile='',ready=false;
+let reviewSong={title:'',artist:''};window.addEventListener('ktv-song-changed',e=>{if(!recording&&!starting)reviewSong={title:e.detail?.title||'',artist:e.detail?.artist||''}});let camStream=null,micStream=null,tabStream=null,recorder=null,canvas=null,raf=0,audioCtx=null,recorded=[],mime='',recordURL='',recordBlob=null,recording=false,starting=false,finishing=false,photo=null,lastFile='',ready=false,stopWatchdog=null;
 const status=t=>{const e=$('simpleStatus');if(e)e.textContent=t};
 const isMobile=/Android|iPhone|iPad|iPod/i.test(navigator.userAgent)||(navigator.maxTouchPoints>1&&Math.min(screen.width,screen.height)<1100);
 const backgroundSelect=$('simpleBackground'), presetSelect=$('simplePreset');
@@ -19,7 +19,7 @@ async function applyPhotoBlob(blob){if(photoURL)URL.revokeObjectURL(photoURL);ph
 photoStore('get').then(async blob=>{if(blob)await applyPhotoBlob(blob);if(backgroundSelect.value==='photo'&&!photo)status('請選擇背景照片')}).catch(()=>{});
 $('simplePhotoClear').onclick=async()=>{photo=null;if(photoURL)URL.revokeObjectURL(photoURL);photoURL='';$('simplePhotoThumb').hidden=true;$('simplePhotoState').textContent='尚未選擇背景照片';$('simplePhoto').value='';try{await photoStore('delete')}catch{}status('已清除背景照片')};
 
-function buttonState(){ $('simpleCamera').textContent=camStream?'📷 關閉鏡頭':'📷 開啟鏡頭';$('simpleRecord').disabled=starting||recording;$('simpleStop').disabled=!recording;$('simpleRecord').textContent=starting?'⏳ 準備中…':recording?'🔴 錄製中':'🔴 開始錄影'; }
+function buttonState(){ $('simpleCamera').textContent=camStream?'📷 關閉鏡頭':'📷 開啟鏡頭';$('simpleRecord').disabled=starting||recording||finishing;$('simpleStop').disabled=!recording||finishing;$('simpleRecord').textContent=finishing?'⏳ 正在完成…':starting?'⏳ 準備中…':recording?'🔴 錄製中':'🔴 開始錄影'; }
 function stopTracks(stream){if(stream)stream.getTracks().forEach(t=>t.stop())}
 async function openCamera(){if(camStream)return true;if(!navigator.mediaDevices?.getUserMedia)throw Error('瀏覽器不支援攝影機。請使用 HTTPS 頁面與新版瀏覽器。');camStream=await navigator.mediaDevices.getUserMedia({video:{width:{ideal:1280},height:{ideal:720},frameRate:{ideal:30}},audio:false});camera.srcObject=camStream;camera.muted=true;camera.setAttribute('playsinline','');cameraBox.classList.remove('hidden');cameraBox.style.display='block';camera.style.display='block';await camera.play();if(!camera.videoWidth)await new Promise(resolve=>{const timer=setTimeout(resolve,1800);camera.addEventListener('loadedmetadata',()=>{clearTimeout(timer);resolve()}, {once:true})});status('📷 鏡頭已開啟，可調整位置或開始錄影');buttonState();return true}
 function closeCamera(){if(recording)return;stopTracks(camStream);camStream=null;camera.srcObject=null;cameraBox.classList.add('hidden');cameraBox.style.display='none';status('已關閉鏡頭');buttonState()}
@@ -31,7 +31,7 @@ function drawCover(ctx,img,w,h){const iw=img.videoWidth||img.naturalWidth||w,ih=
 function paint(){if(!recording||!canvas)return;const ctx=canvas.getContext('2d',{alpha:false}),w=canvas.width,h=canvas.height;ctx.fillStyle='#060914';ctx.fillRect(0,0,w,h);const mode=$('simpleBackground').value;
 if(mode==='tab'&&tabStream){const tv=$('simpleTabVideo');if(tv?.readyState>=2)drawContain(ctx,tv,w,h)}
 else if(mode==='photo'&&photo)drawCover(ctx,photo,w,h);
-else if(mode==='camera'&&camera.readyState>=2)drawContain(ctx,camera,w,h);
+else if(mode==='camera'&&camera.readyState>=2)drawCover(ctx,camera,w,h);
 else{const colors={night:['#102b62','#39235b','#080f31'],purple:['#48166d','#b74da8','#151049'],gold:['#6b3214','#cd9b4a','#25152a'],green:['#082b32','#327a59','#091f30']}[presetSelect.value]||['#102b62','#39235b','#080f31'];const g=ctx.createLinearGradient(0,0,w,h);g.addColorStop(0,colors[0]);g.addColorStop(.5,colors[1]);g.addColorStop(1,colors[2]);ctx.fillStyle=g;ctx.fillRect(0,0,w,h);}
 if(camStream&&camera.readyState>=2&&mode!=='camera'&&mode!=='tab'){
  const box=stage.getBoundingClientRect(),p=cameraBox.getBoundingClientRect();const sx=box.width?w/box.width:1,sy=box.height?h/box.height:1;
@@ -43,7 +43,7 @@ if(camStream&&camera.readyState>=2&&mode!=='camera'&&mode!=='tab'){
  raf=requestAnimationFrame(paint)
 }
 function drawImageIn(ctx,v,x,y,w,h){const iw=v.videoWidth||w,ih=v.videoHeight||h,z=Math.min(w/iw,h/ih);ctx.drawImage(v,x+(w-iw*z)/2,y+(h-ih*z)/2,iw*z,ih*z)}
-async function start(){if(starting||recording)return;reviewSong={title:$('ktvPlayerTitle')?.textContent||'',artist:$('ktvPlayerArtist')?.textContent||''};starting=true;buttonState();try{
+async function start(){if(starting||recording||finishing)return;reviewSong={title:$('ktvPlayerTitle')?.textContent||'',artist:$('ktvPlayerArtist')?.textContent||''};starting=true;buttonState();try{
  const audioOnly=$('simpleRecordingType').value==='audio';const mode=audioOnly?'gradient':$('simpleBackground').value;if(mode==='photo'&&!photo)throw Error('請先選擇背景照片，或改用預設背景');
  if($('simpleRecordingType').value!=='audio'&&!camStream)await openCamera();
  micStream=await navigator.mediaDevices.getUserMedia({audio:{echoCancellation:true,noiseSuppression:false,autoGainControl:false},video:false});
@@ -58,7 +58,7 @@ async function start(){if(starting||recording)return;reviewSong={title:$('ktvPla
  // Record its ORIGINAL video track, not a 20 fps canvas redraw of that track.
  // This avoids a second compositor/canvas pass that can make the webcam flicker.
  canvas=null;
- if(!audioOnly&&!useTab){canvas=document.createElement('canvas');canvas.width=960;canvas.height=540;}
+ if(!audioOnly&&!useTab){canvas=document.createElement('canvas');const mobilePortrait=isMobile&&window.innerHeight>window.innerWidth;canvas.width=mobilePortrait?720:960;canvas.height=mobilePortrait?1280:540;}
  const canvasStream=canvas?canvas.captureStream(30):null;
  const captureVideoTrack=!audioOnly&&useTab?tabStream.getVideoTracks()[0]:null;
  const out=new MediaStream(captureVideoTrack?[captureVideoTrack]:canvasStream?canvasStream.getVideoTracks():[]);
@@ -66,17 +66,29 @@ async function start(){if(starting||recording)return;reviewSong={title:$('ktvPla
  const micSource=audioCtx.createMediaStreamSource(micStream),gain=audioCtx.createGain();gain.gain.value=Number($('simpleMicVolume').value)/100;micSource.connect(gain).connect(dest);
  if(tabStream?.getAudioTracks().length){audioCtx.createMediaStreamSource(tabStream).connect(dest)}
  dest.stream.getAudioTracks().forEach(t=>out.addTrack(t));
- const types=audioOnly?['audio/mp4;codecs=mp4a.40.2','audio/webm;codecs=opus','audio/webm']:['video/mp4;codecs="avc1.42E01E,mp4a.40.2"','video/webm;codecs=vp8,opus','video/webm'];mime=types.find(t=>MediaRecorder.isTypeSupported(t))||'';
+ const types=audioOnly?['audio/mp4','audio/mp4;codecs=mp4a.40.2','audio/webm;codecs=opus','audio/webm']:['video/mp4','video/mp4;codecs="avc1.42E01E,mp4a.40.2"','video/webm;codecs=vp8,opus','video/webm'];mime=types.find(t=>{try{return MediaRecorder.isTypeSupported(t)&&(!isMobile||!!document.createElement('video').canPlayType(t))}catch{return false}})||types.find(t=>{try{return MediaRecorder.isTypeSupported(t)}catch{return false}})||'';
  recorder=new MediaRecorder(out,mime?{mimeType:mime,videoBitsPerSecond:1800000,audioBitsPerSecond:128000}:undefined);recorded=[];
  recorder.ondataavailable=e=>{if(e.data?.size)recorded.push(e.data)};
- recorder.onstop=async()=>{document.documentElement.classList.remove('ktv-direct-capture');cancelAnimationFrame(raf);stopTracks(canvasStream);stopTracks(tabStream);tabStream=null;stopTracks(micStream);micStream=null;document.getElementById('simpleTabVideo')?.remove();if(audioCtx){await audioCtx.close().catch(()=>{});audioCtx=null}const t=recorder.mimeType||mime||'video/webm';recordBlob=new Blob(recorded,{type:t});if(recordURL)URL.revokeObjectURL(recordURL);recordURL=URL.createObjectURL(recordBlob);$('simplePlayback').src=recordURL;recording=false;starting=false;buttonState();status('錄製完成，可預覽及儲存');$('simpleReview').hidden=false;window.dispatchEvent(new CustomEvent('ktv-recording-review-open',{detail:{title:reviewSong.title,artist:reviewSong.artist}}));};
- recorder.onerror=e=>status('錄影發生錯誤：'+(e.error?.message||'未知錯誤'));
+ let completed=false;
+ async function completeRecording(){if(completed)return;completed=true;clearTimeout(stopWatchdog);stopWatchdog=null;document.documentElement.classList.remove('ktv-direct-capture');cancelAnimationFrame(raf);stopTracks(canvasStream);stopTracks(tabStream);tabStream=null;stopTracks(micStream);micStream=null;document.getElementById('simpleTabVideo')?.remove();if(audioCtx){const closing=audioCtx;audioCtx=null;closing.close().catch(()=>{})}
+ const t=recorder?.mimeType||mime||(audioOnly?'audio/webm':'video/webm');recordBlob=new Blob(recorded,{type:t});recording=false;starting=false;finishing=false;buttonState();
+ if(!recordBlob.size){status('錄影已結束，但瀏覽器沒有產生影片資料；請改用其他錄製格式或 Chrome／Safari 最新版。');return}
+ if(recordURL)URL.revokeObjectURL(recordURL);recordURL=URL.createObjectURL(recordBlob);
+ const playback=$('simplePlayback');playback.pause();playback.removeAttribute('src');playback.load();playback.src=recordURL;playback.muted=false;playback.controls=true;playback.playsInline=true;playback.load();
+ $('simpleReview').hidden=false;status('✅ 已停止錄影，可預覽及儲存');$('simpleReviewHint').textContent='影片已完成，點擊畫面上的播放鍵。若瀏覽器不支援此格式，仍可先下載原始檔。';
+ window.dispatchEvent(new CustomEvent('ktv-recording-review-open',{detail:{title:reviewSong.title,artist:reviewSong.artist}}));
+ }
+ recorder.onstop=completeRecording;
+ recorder.onerror=e=>{status('錄影發生錯誤：'+(e.error?.message||'未知錯誤'));if(finishing)completeRecording()};
  recording=true;starting=false;if(useTab)document.documentElement.classList.add('ktv-direct-capture');buttonState();recorder.start(1000);if(canvas)paint();status(useTab?'🔴 正直接錄製 KTV 分頁與鏡頭，無二次合成；點「停止」可預覽':'🔴 正在錄影；點「停止」可結束並預覽');
  }catch(e){document.documentElement.classList.remove('ktv-direct-capture');recording=false;starting=false;stopTracks(tabStream);tabStream=null;document.getElementById('simpleTabVideo')?.remove();stopTracks(micStream);micStream=null;if(audioCtx){audioCtx.close().catch(()=>{});audioCtx=null}status('無法開始錄影：'+e.message);buttonState()}}
 function pauseSong(){try{const f=$('ktvPlayerFrame');if(f?.contentWindow)f.contentWindow.postMessage(JSON.stringify({event:'command',func:'pauseVideo',args:[]}), '*')}catch{}}
-function stop(){if(!recording)return;pauseSong();recording=false;buttonState();status('正在完成錄影檔…');if(recorder?.state==='recording')recorder.stop();else{stopTracks(tabStream);stopTracks(micStream)}}
+function stop(){if(!recording||finishing)return;pauseSong();finishing=true;recording=false;buttonState();status('正在完成影片，請稍候…');cancelAnimationFrame(raf);
+ try{if(recorder?.state==='recording'){try{recorder.requestData()}catch{}recorder.stop()}else if(recorder?.state==='inactive'){recorder.onstop?.()}else throw Error('錄影器狀態異常')}catch(e){status('正在嘗試完成錄影：'+e.message);recorder?.onstop?.()}
+ stopWatchdog=setTimeout(()=>{if(finishing){status('影片封裝超時，嘗試顯示已錄內容');recorder?.onstop?.()}},4500);
+ }
 $('simpleRecord').onclick=start;$('simpleStop').onclick=stop;
-const review=$('simpleReview');function reviewClose(){review.hidden=true;$('simplePlayback').pause()};$('simpleReviewClose').onclick=reviewClose;$('simpleRetry').onclick=()=>{reviewClose();start()};
+const review=$('simpleReview');$('simplePlayback').addEventListener('error',()=>{if(recordBlob?.size)$('simpleReviewHint').textContent='此瀏覽器無法播放目前的錄影格式，影片仍可使用下方儲存按鈕下載。';});function reviewClose(){review.hidden=true;$('simplePlayback').pause();$('simpleLyricsPanel').hidden=true};$('simpleReviewClose').onclick=reviewClose;$('simpleRetry').onclick=()=>{reviewClose();start()};
 function outputName(){const type=recordBlob?.type||'';const ext=type.includes('mp4')?'mp4':type.includes('ogg')?'ogg':type.startsWith('audio/')?'webm':'webm';return '我的KTV作品_'+new Date().toISOString().replace(/[:.]/g,'-')+'.'+ext}
 function saveLog(name){lastFile=name;try{const r=JSON.parse(localStorage.getItem('simpleKtvList')||'[]');r.unshift({name,time:Date.now(),size:recordBlob.size,type:recordBlob.type});localStorage.setItem('simpleKtvList',JSON.stringify(r.slice(0,50)))}catch{}}
 function downloadRecording(){if(!recordBlob)return;const name=outputName();const a=document.createElement('a');a.href=recordURL;a.download=name;document.body.appendChild(a);a.click();a.remove();saveLog(name);$('simpleReviewHint').textContent='已送至瀏覽器下載。請在下載項目查看；手機／平板可再從檔案 App 移到相簿。';status('已送至瀏覽器下載：'+name)}

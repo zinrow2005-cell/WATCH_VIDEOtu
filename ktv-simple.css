@@ -23,7 +23,7 @@ html.ktv-direct-capture #ktvCamPreview {
 }
 html.ktv-direct-capture #ktvCamFloat { box-shadow:none!important; }
 
-/* V1.5.7.43: lyrics exist only as a manual-scrolling mobile review aid. */
+/* V1.5.7.44: lyrics exist only as a manual-scrolling mobile review aid. */
 .simple-lyrics-open{display:block;margin:10px auto 0;padding:12px 20px;border:1px solid #8aa4d0;border-radius:12px;background:#264a7a;color:#fff;font-size:16px;font-weight:700}
 .simple-lyrics-panel[hidden],.simple-lyrics-open[hidden],.simple-lyrics-panel textarea[hidden],.simple-lyrics-panel button[hidden]{display:none!important}
 .simple-lyrics-panel{margin:12px 0;padding:14px;border:1px solid #526887;border-radius:15px;background:#142239;color:#eef5ff;max-width:100%;}
@@ -33,3 +33,7 @@ html.ktv-direct-capture #ktvCamFloat { box-shadow:none!important; }
 .simple-lyrics-scroll{height:min(48vh,400px);overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;-webkit-overflow-scrolling:touch;white-space:pre-wrap;line-height:2.15;font-size:clamp(17px,4.8vw,23px);text-align:center;padding:18px 14px;border-radius:10px;background:#081322;color:#fff}
 .simple-lyrics-panel textarea{box-sizing:border-box;width:100%;font-size:16px;background:#f7faff;color:#142239;padding:10px;border-radius:8px}
 @media(min-width:1100px) and (pointer:fine){#simpleLyricsOpen,#simpleLyricsPanel{display:none!important}}
+
+/* V1.5.7.44: full-frame selfie composition on phones, no letterboxing */
+#ktvCamPreview{object-fit:cover!important}
+@media(max-width:800px){#ktvCamFloat{aspect-ratio:9/16;width:34%;max-height:75%;min-width:80px}#ktvCamPreview{object-fit:cover!important}.simple-modal video{max-height:48dvh}.simple-modal-inner{max-height:calc(100dvh - env(safe-area-inset-top) - env(safe-area-inset-bottom) - 20px)}}
