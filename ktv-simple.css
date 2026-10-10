@@ -86,3 +86,6 @@ html.ktv-direct-capture #ktvCamFloat { box-shadow:none!important; }
 
 /* V1.5.7.55: restore a comfortable desktop preview; mobile layouts unchanged. */
 @media (min-width:1101px) and (pointer:fine){#ktvCamFloat{min-width:0!important;}#simpleCamMirror{width:27px!important;height:27px!important}}
+
+/* V1.5.7.56: desktop size fallback before JS measures a previously hidden stage. */
+@media(min-width:1101px){#ktvCamFloat{width:40%;min-width:240px;max-width:58%;}}

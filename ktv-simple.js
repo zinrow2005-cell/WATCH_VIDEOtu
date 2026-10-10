@@ -40,6 +40,8 @@ async function openCamera(){
   }
   // Show the native video element before play(), and do not discard a live stream for an autoplay delay.
   cameraBox.classList.remove('hidden');cameraBox.style.setProperty('display','block','important');cameraBox.style.visibility='visible';cameraBox.style.opacity='1';
+  // Camera may have been measured while the KTV panel was hidden (0px stage). Refit once visible.
+  if(typeof refreshCameraOrientation==='function') refreshCameraOrientation();
   camera.setAttribute('playsinline','');camera.setAttribute('webkit-playsinline','');
   camera.playsInline=true;camera.autoplay=true;camera.muted=true;camera.defaultMuted=true;
   camera.style.display='block';camera.style.visibility='visible';camera.style.opacity='1';
@@ -213,8 +215,10 @@ const camPrefsKey=isMobile?'simpleKtvCamSizeV1':'simpleKtvDesktopCamSizeV2';
 function cameraIsLandscape(){return window.matchMedia('(orientation: landscape)').matches && isMobile;}
 function cameraAspect(){return isMobile?(cameraIsLandscape()?16/9:9/16):16/9;}
 function setCameraWidth(pct,save=true){
- const wanted=Math.max(16,Math.min(58,Number(pct)||24));
+ const wanted=Math.max(16,Math.min(58,Number(pct)|| (isMobile?28:40)));
  const bounds=stage.getBoundingClientRect();
+ // A hidden stage has no usable dimensions; never replace the default with a 55px box.
+ if(bounds.width<120 || bounds.height<60){if(cameraSize)cameraSize.value=Math.round(wanted);return;}
  const aspect=cameraAspect();
  // Landscape phone viewports can be very short. Fit the entire camera and its resize control.
  const maxWidthByHeight=bounds.height>0?(bounds.height*0.78*aspect):Infinity;
@@ -259,6 +263,13 @@ function refreshCameraOrientation(){
 }
 window.addEventListener('orientationchange',()=>setTimeout(refreshCameraOrientation,200));
 window.addEventListener('resize',refreshCameraOrientation);
+// ResizeObserver fires when the KTV stage becomes visible after initial page loading.
+if(typeof ResizeObserver!=='undefined'){
+ const stageSizeObserver=new ResizeObserver(entries=>{const r=entries[0]?.contentRect;if(r&&r.width>120&&r.height>60)refreshCameraOrientation();});
+ stageSizeObserver.observe(stage);
+}
+// Returning to KTV after browsing channels can also reattach a previously hidden stage.
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)refreshCameraOrientation()});
 document.addEventListener('keydown',e=>{if(e.key==='Escape'){opts.hidden=true;reviewClose();closeLibrary()}});
 
 const fs=$('ktvFullscreenBtn');function setImmersive(active){const panel=$('ktvPlayerPanel');if(!panel)return;panel.classList.toggle('simple-fullview',!!active);document.documentElement.classList.toggle('ktv-recording-immersive',!!active);if(fs)fs.textContent=active?'✕ 退出全螢幕':'⛶ 全螢幕';if(active)panel.scrollTop=0;}
