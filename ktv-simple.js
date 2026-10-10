@@ -22,6 +22,20 @@ $('simplePhotoClear').onclick=async()=>{photo=null;if(photoURL)URL.revokeObjectU
 function buttonState(){ $('simpleCamera').textContent=camStream?'📷 關閉鏡頭':'📷 開啟鏡頭';$('simpleRecord').disabled=starting||recording||finishing;$('simpleStop').disabled=!recording||finishing;$('simpleRecord').textContent=finishing?'⏳ 正在完成…':starting?'⏳ 準備中…':recording?'🔴 錄製中':'🔴 開始錄影'; }
 function stopTracks(stream){if(stream)stream.getTracks().forEach(t=>t.stop())}
 let cameraOpening=false;
+let ktvInactive=false;
+let cleanupOnRecordEnd=false;
+function releaseKtvDevices(){
+ stopTracks(camStream);camStream=null;camera.pause();camera.srcObject=null;cameraBox.classList.add('hidden');cameraBox.style.display='none';
+ stopMicMonitor();stopTracks(micStream);micStream=null;stopTracks(tabStream);tabStream=null;
+ buttonState();
+}
+window.addEventListener('ktv-mode-entering',()=>{ktvInactive=false;cleanupOnRecordEnd=false});
+window.addEventListener('ktv-mode-leaving',()=>{
+ ktvInactive=true;cleanupOnRecordEnd=true;
+ if(recording){stop();return;}
+ if(starting||finishing)return;
+ releaseKtvDevices();
+});
 async function openCamera(){
  if(cameraOpening)return false;
  cameraOpening=true;
@@ -38,6 +52,7 @@ async function openCamera(){
      else throw first;
    }
   }
+  if(ktvInactive){releaseKtvDevices();return false;}
   // Show the native video element before play(), and do not discard a live stream for an autoplay delay.
   cameraBox.classList.remove('hidden');cameraBox.style.setProperty('display','block','important');cameraBox.style.visibility='visible';cameraBox.style.opacity='1';
   // Camera may have been measured while the KTV panel was hidden (0px stage). Refit once visible.
@@ -138,6 +153,7 @@ async function start(){if(starting||recording||finishing||Date.now()-lastCameraT
  const t=recorder?.mimeType||mime||(audioOnly?'audio/webm':'video/webm');recordBlob=new Blob(recorded,{type:t});savedCurrentBlob=null;recording=false;starting=false;finishing=false;
  // Release the camera after a mobile recording to clear iOS camera-in-use indicator.
  if(isMobile){stopTracks(camStream);camStream=null;camera.pause();camera.srcObject=null;cameraBox.classList.add('hidden');cameraBox.style.display='none';}
+ if(cleanupOnRecordEnd||ktvInactive){releaseKtvDevices();cleanupOnRecordEnd=false;}
  buttonState();if(isMobile)setImmersive(false);
  if(!recordBlob.size){
    $('simplePlayback').hidden=true;
@@ -154,8 +170,9 @@ async function start(){if(starting||recording||finishing||Date.now()-lastCameraT
  }
  recorder.onstop=completeRecording;
  recorder.onerror=e=>{status('錄影發生錯誤：'+(e.error?.message||'未知錯誤'));if(finishing)completeRecording()};
+ if(ktvInactive){recording=true;starting=false;cleanupOnRecordEnd=true;stop();return;}
  recording=true;starting=false;if(useTab)document.documentElement.classList.add('ktv-direct-capture');buttonState();recorder.start(isMobile?1000:1000);if(canvas)paint();status(useTab?'🔴 正直接錄製 KTV 分頁與鏡頭，無二次合成；點「停止」可預覽':'🔴 正在錄影；點「停止」可結束並預覽');
- }catch(e){if(isMobile)setImmersive(false);document.documentElement.classList.remove('ktv-direct-capture');recording=false;starting=false;stopTracks(tabStream);tabStream=null;document.getElementById('simpleTabVideo')?.remove();stopMicMonitor();stopTracks(micStream);micStream=null;if(audioCtx){audioCtx.close().catch(()=>{});audioCtx=null}if(isMobile){stopTracks(camStream);camStream=null;camera.pause();camera.srcObject=null;cameraBox.classList.add('hidden');cameraBox.style.display='none'}status('無法開始錄影：'+e.message);buttonState()}}
+ }catch(e){if(isMobile)setImmersive(false);document.documentElement.classList.remove('ktv-direct-capture');recording=false;starting=false;stopTracks(tabStream);tabStream=null;document.getElementById('simpleTabVideo')?.remove();stopMicMonitor();stopTracks(micStream);micStream=null;if(audioCtx){audioCtx.close().catch(()=>{});audioCtx=null}if(isMobile){stopTracks(camStream);camStream=null;camera.pause();camera.srcObject=null;cameraBox.classList.add('hidden');cameraBox.style.display='none'}if(ktvInactive)releaseKtvDevices();status('無法開始錄影：'+e.message);buttonState()}}
 function pauseSong(){try{const f=$('ktvPlayerFrame');if(f?.contentWindow)f.contentWindow.postMessage(JSON.stringify({event:'command',func:'pauseVideo',args:[]}), '*')}catch{}}
 function stop(){if(!recording||finishing)return;pauseSong();finishing=true;recording=false;buttonState();status('正在完成影片，請稍候…');cancelAnimationFrame(raf);
  try{if(recorder?.state==='recording'){if(!isMobile){try{recorder.requestData()}catch{}}recorder.stop()}else if(recorder?.state==='inactive'){recorder.onstop?.()}else throw Error('錄影器狀態異常')}catch(e){status('正在嘗試完成錄影：'+e.message);recorder?.onstop?.()}

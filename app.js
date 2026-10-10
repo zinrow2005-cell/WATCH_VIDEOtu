@@ -554,6 +554,7 @@ function showKtvMode(){
  try{if(immersiveFull)exitImmersiveFullscreen()}catch(e){}
  try{stopPlaybackForHome()}catch(e){}
  try{stopMusic()}catch(e){}
+ window.dispatchEvent(new Event('ktv-mode-entering'));
  ktvModeActive=true;
  musicModeActive=false;
  document.body.classList.remove('watch-mode','music-mode-active');
@@ -574,6 +575,7 @@ function showKtvMode(){
 }
 
 function leaveKtvMode(){
+ window.dispatchEvent(new Event('ktv-mode-leaving'));
  setKtvQueueDrawer(false);
  closeKtvPlayer();
  ktvModeActive=false;
