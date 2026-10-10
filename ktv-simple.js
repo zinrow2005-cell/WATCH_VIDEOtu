@@ -29,6 +29,7 @@ function releaseKtvDevices(){
  stopMicMonitor();stopTracks(micStream);micStream=null;stopTracks(tabStream);tabStream=null;
  buttonState();
 }
+window.addEventListener('ktv-player-closed',()=>{if(!recording&&!starting&&!finishing)releaseKtvDevices()});
 window.addEventListener('ktv-mode-entering',()=>{ktvInactive=false;cleanupOnRecordEnd=false});
 window.addEventListener('ktv-mode-leaving',()=>{
  ktvInactive=true;cleanupOnRecordEnd=true;
@@ -109,7 +110,10 @@ async function start(){if(starting||recording||finishing||Date.now()-lastCameraT
  if(mode==='tab'){
  if(isMobile)throw Error('手機／平板不能直接擷取 KTV 分頁。請選自拍鏡頭、預設舞台或相簿照片');
  if(!navigator.mediaDevices.getDisplayMedia)throw Error('這個瀏覽器無法分享 KTV 分頁；請選擇預設背景或自選照片');
- status('瀏覽器將要求擷取 KTV 畫面：請選「目前 KTV 分頁」並開啟「分享分頁音訊」。這不會上傳到 GitHub。');tabStream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:true});
+ status('瀏覽器將要求擷取 KTV 畫面：請選「目前 KTV 分頁」並開啟「分享分頁音訊」。這不會上傳到 GitHub。');// Ask Chrome to keep playing local KTV audio while allowing tab-audio capture.
+ let displayConstraints={video:true,audio:{suppressLocalAudioPlayback:false,echoCancellation:false,noiseSuppression:false,autoGainControl:false}};
+ try{tabStream=await navigator.mediaDevices.getDisplayMedia(displayConstraints)}
+ catch(error){if(error?.name==='TypeError'||error?.name==='OverconstrainedError')tabStream=await navigator.mediaDevices.getDisplayMedia({video:true,audio:true});else throw error;}
  const v=document.createElement('video');v.id='simpleTabVideo';v.muted=true;v.playsInline=true;v.srcObject=tabStream;v.style.display='none';document.body.appendChild(v);await v.play();tabStream.getVideoTracks()[0].addEventListener('ended',()=>{if(recording)stop()}, {once:true});
  }
  const useTab=mode==='tab'&&!!tabStream;

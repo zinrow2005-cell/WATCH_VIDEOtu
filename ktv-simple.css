@@ -89,3 +89,11 @@ html.ktv-direct-capture #ktvCamFloat { box-shadow:none!important; }
 
 /* V1.5.7.58: desktop size fallback before JS measures a previously hidden stage. */
 @media(min-width:1101px){#ktvCamFloat{width:40%;min-width:240px;max-width:58%;}}
+
+/* V1.5.7.59: KTV favorite/history actions */
+.ktv-player-favorite-bar{display:flex;flex-wrap:wrap;gap:8px;margin:10px 0}
+.ktv-now-favorite{border:1px solid #bf6c91;border-radius:10px;background:#382540;color:#ffe8f1;padding:10px 14px;min-height:42px;font-weight:700;cursor:pointer}
+.ktv-now-favorite.secondary{background:#253956;border-color:#476489;color:#e8f2ff}
+.ktv-now-favorite[aria-pressed="true"]{background:#6a264d;color:white}
+.ktv-fav-song{border:1px solid #8a6b85;border-radius:9px;background:#342942;color:#ffd7e3;font-size:20px;min-width:42px;min-height:42px;cursor:pointer}
+@media(max-width:560px){.ktv-player-favorite-bar .ktv-now-favorite{flex:1;font-size:14px}.ktv-song-actions{flex-wrap:wrap}}
