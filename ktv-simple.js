@@ -207,7 +207,9 @@ function applyMirror(){
 mirrorButton.addEventListener('click',e=>{e.stopPropagation();mirrorEnabled=!mirrorEnabled;applyMirror();try{localStorage.setItem(mirrorKey,String(mirrorEnabled))}catch{}status(mirrorEnabled?'已開啟自拍預覽左右鏡像':'已關閉自拍預覽左右鏡像')});
 cameraBox.appendChild(mirrorButton);applyMirror();
 camera.addEventListener('click',()=>{if(camStream&&camera.paused)camera.play().catch(()=>status('請允許瀏覽器播放鏡頭影像'))});
-const cameraSize=$('simpleCameraSize');const camPrefsKey='simpleKtvCamSizeV1';
+const cameraSize=$('simpleCameraSize');
+// Separate computer size from the earlier mobile-shared preference.
+const camPrefsKey=isMobile?'simpleKtvCamSizeV1':'simpleKtvDesktopCamSizeV2';
 function cameraIsLandscape(){return window.matchMedia('(orientation: landscape)').matches && isMobile;}
 function cameraAspect(){return isMobile?(cameraIsLandscape()?16/9:9/16):16/9;}
 function setCameraWidth(pct,save=true){
@@ -230,7 +232,7 @@ function setCameraWidth(pct,save=true){
  }
 }
 if(cameraSize)cameraSize.addEventListener('input',()=>setCameraWidth(cameraSize.value));
-let initialCameraWidth=isMobile?28:24;
+let initialCameraWidth=isMobile?28:40;
 try{initialCameraWidth=localStorage.getItem(camPrefsKey)||initialCameraWidth}catch{}
 setCameraWidth(initialCameraWidth,false);
 let resizeOrigin=null;
