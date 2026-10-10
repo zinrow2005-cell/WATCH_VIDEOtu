@@ -70,3 +70,16 @@ html.ktv-direct-capture #ktvCamFloat { box-shadow:none!important; }
 #simpleCamMirror{position:absolute;top:5px;left:5px;z-index:45;min-width:72px;min-height:38px;border:1px solid #d7e7ff;border-radius:9px;background:rgba(9,23,47,.84);color:#fff;font-size:12px;font-weight:700;padding:5px 7px;touch-action:manipulation;cursor:pointer;pointer-events:auto}
 #simpleCamMirror[aria-pressed="true"]{background:rgba(17,93,161,.93)}
 @media(max-width:700px){#simpleCamMirror{font-size:11px;min-width:65px;min-height:36px;padding:4px}}
+
+/* V1.5.7.54: non-obscuring camera controls; maintain drag/resize touch support */
+#simpleCamMirror,#simpleCamMirror[aria-pressed="true"]{
+ top:4px!important;left:4px!important;width:27px!important;height:27px!important;
+ min-width:0!important;min-height:0!important;padding:0!important;display:grid!important;place-items:center!important;
+ font-size:16px!important;line-height:1!important;border-radius:7px!important;
+ background:rgba(8,22,40,.58)!important;border:1px solid rgba(255,255,255,.75)!important;
+ box-sizing:border-box!important;white-space:nowrap!important;
+}
+#simpleCamMirror[aria-pressed="true"]{background:rgba(20,95,160,.65)!important}
+#simpleCamSizeHandle{right:2px!important;bottom:2px!important;width:26px!important;height:26px!important;min-width:0!important;min-height:0!important;padding:0!important;font-size:18px!important;line-height:1!important;border-width:1px!important;border-radius:7px!important;background:rgba(20,75,145,.72)!important;box-sizing:border-box!important;}
+@media(max-width:700px){#simpleCamMirror{width:25px!important;height:25px!important;font-size:15px!important}#simpleCamSizeHandle{width:25px!important;height:25px!important}}
+#simpleCamera,#simpleRecord{touch-action:manipulation;position:relative;pointer-events:auto}

@@ -58,7 +58,8 @@ async function openCamera(){
   buttonState();throw e;
  }finally{cameraOpening=false}
 }function closeCamera(){if(recording)return;stopTracks(camStream);camStream=null;camera.srcObject=null;cameraBox.classList.add('hidden');cameraBox.style.display='none';status('已關閉鏡頭');buttonState()}
-$('simpleCamera').addEventListener('click',async()=>{if(starting)return;try{if(camStream)closeCamera();else await openCamera()}catch(e){status('無法開啟鏡頭：'+e.message);buttonState()}});
+let lastCameraTap=0;
+$('simpleCamera').addEventListener('click',async e=>{e.stopPropagation();lastCameraTap=Date.now();if(starting||recording||finishing)return;try{if(camStream)closeCamera();else await openCamera()}catch(e){status('無法開啟鏡頭：'+e.message);buttonState()}});
 const opts=$('simpleOptions');$('simpleOptionsBtn').onclick=()=>{opts.hidden=!opts.hidden};$('simpleOptionsClose').onclick=()=>{opts.hidden=true};
 // Microphone live input meter and safe cleanup (not connected to speakers).
 function stopMicMonitor(){if(micMonitorTimer){clearInterval(micMonitorTimer);micMonitorTimer=null;}if(micMonitorCtx){const ctx=micMonitorCtx;micMonitorCtx=null;ctx.close().catch(()=>{});}const meter=$('simpleMicMeter');if(meter)meter.value=0;}
@@ -81,7 +82,7 @@ if(camStream&&camera.readyState>=2&&mode!=='camera'&&mode!=='tab'){
  raf=requestAnimationFrame(paint)
 }
 function drawImageIn(ctx,v,x,y,w,h){const iw=v.videoWidth||w,ih=v.videoHeight||h,z=Math.min(w/iw,h/ih);ctx.drawImage(v,x+(w-iw*z)/2,y+(h-ih*z)/2,iw*z,ih*z)}
-async function start(){if(starting||recording||finishing)return;reviewSong={title:$('ktvPlayerTitle')?.textContent||'',artist:$('ktvPlayerArtist')?.textContent||''};starting=true;buttonState();try{
+async function start(){if(starting||recording||finishing||Date.now()-lastCameraTap<900)return;reviewSong={title:$('ktvPlayerTitle')?.textContent||'',artist:$('ktvPlayerArtist')?.textContent||''};starting=true;buttonState();try{
  const audioOnly=$('simpleRecordingType').value==='audio';const mode=audioOnly?'gradient':$('simpleBackground').value;
    if(isMobile){setImmersive(true);opts.hidden=true;}if(mode==='photo'&&!photo)throw Error('請先選擇背景照片，或改用預設背景');
  if($('simpleRecordingType').value!=='audio'&&!camStream)await openCamera();
@@ -158,7 +159,7 @@ function stop(){if(!recording||finishing)return;pauseSong();finishing=true;recor
  try{if(recorder?.state==='recording'){if(!isMobile){try{recorder.requestData()}catch{}}recorder.stop()}else if(recorder?.state==='inactive'){recorder.onstop?.()}else throw Error('錄影器狀態異常')}catch(e){status('正在嘗試完成錄影：'+e.message);recorder?.onstop?.()}
  stopWatchdog=setTimeout(()=>{if(finishing){status('影片封裝超時，嘗試顯示已錄內容');recorder?.onstop?.()}},4500);
  }
-$('simpleRecord').onclick=start;$('simpleStop').onclick=stop;
+$('simpleRecord').onclick=e=>{e.stopPropagation();if(e.currentTarget!==$('simpleRecord'))return;start()};$('simpleStop').onclick=stop;
 const review=$('simpleReview');$('simplePlayback').addEventListener('error',()=>{if(recordBlob?.size)$('simpleReviewHint').textContent='此瀏覽器無法播放目前的錄影格式，影片仍可使用下方儲存按鈕下載。';});function reviewClose(){review.hidden=true;$('simplePlayback').pause();$('simpleLyricsPanel').hidden=true};$('simpleReviewClose').onclick=reviewClose;$('simpleRetry').onclick=()=>{reviewClose();start()};
 function outputName(){const type=recordBlob?.type||'';const ext=type.includes('mp4')?'mp4':type.includes('ogg')?'ogg':type.startsWith('audio/')?'webm':'webm';return '我的KTV作品_'+new Date().toISOString().replace(/[:.]/g,'-')+'.'+ext}
 // Confirmed saved works are kept as real Blob records, not filename-only logs.
@@ -199,7 +200,7 @@ let mirrorEnabled=false;
 try{mirrorEnabled=localStorage.getItem(mirrorKey)==='true'}catch{}
 function applyMirror(){
  camera.classList.toggle('simple-mirror-preview',mirrorEnabled);
- mirrorButton.textContent=mirrorEnabled?'⇄ 鏡像開':'⇄ 鏡像關';
+ mirrorButton.textContent='⇄';mirrorButton.title=mirrorEnabled?'關閉左右鏡像':'開啟左右鏡像';mirrorButton.setAttribute('aria-label',mirrorButton.title);
  mirrorButton.setAttribute('aria-pressed',String(mirrorEnabled));
 }
 ['pointerdown','pointermove','pointerup','pointercancel'].forEach(type=>mirrorButton.addEventListener(type,e=>e.stopPropagation()));
