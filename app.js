@@ -786,8 +786,8 @@ function setKtvSearchBusy(on){
  ktvBusy=!!on;
  var b=$('ktvSearchBtn');
  if(b){
-  b.disabled=!!on;
-  b.textContent=on?'⏳ 搜尋中…':'🔎 搜尋點歌';
+  b.disabled=false; // Always allow another search when third-party sources stall.
+  b.textContent=on?'🔎 重新搜尋／等待中…':'🔎 搜尋點歌';
  }
 }
 
@@ -863,7 +863,7 @@ function mergeKtvNetworkGroups(groups){
 }
 
 function fetchKtvQuery(query,q,region,timeoutMs){
- return ktvPromiseTimeout(fetchSearchWithFallback(query,1),timeoutMs||7500).then(function(res){
+ return ktvPromiseTimeout(Promise.resolve().then(function(){return fetchSearchWithFallback(query,1)}),timeoutMs||5000).then(function(res){
   return normalizeKtvNetworkItems((res&&res.items)||[],q,region);
  }).catch(function(){return []});
 }
@@ -876,13 +876,13 @@ function onlineSingerSongs(singer,onProgress){
  var groups=[];
 
  // First query returns as quickly as possible.
- return fetchKtvQuery(queries[0],name,singer.region||'',6000).then(function(first){
+ return fetchKtvQuery(queries[0],name,singer.region||'',4800).then(function(first){
   groups.push(first||[]);
   if(onProgress)onProgress('fast',first||[]);
 
   // Remaining queries run in parallel after the first batch is available.
   var rest=queries.slice(1).map(function(query){
-   return fetchKtvQuery(query,name,singer.region||'',7500);
+   return fetchKtvQuery(query,name,singer.region||'',5000);
   });
 
   return Promise.all(rest).then(function(more){
@@ -1227,9 +1227,18 @@ function findKnownKtvSinger(q){
 function searchKtv(forceQuery){
  var q=String(forceQuery||$('ktvSearchInput').value||'').trim();
  if(!q)return;
- if(ktvBusy)return;
+ // A new search cancels the older UI updates; do not trap the user behind a stalled source.
+ setKtvSearchBusy(false);
 
  var searchId=++ktvSearchSerial;
+ var searchWatchdog=setTimeout(function(){
+  if(searchId!==ktvSearchSerial)return;
+  ++ktvSearchSerial; // Ignore any results arriving after the UI has timed out.
+  clearTimeout(searchWatchdog);
+  setKtvSearchBusy(false);
+  finishKtvSearchProgress('網路搜尋逾時，已保留目前找到的歌曲');
+  $('ktvStatus').textContent='網路搜尋較慢，已停止等待；可直接輸入新歌名重試。';
+ },12500);
  var knownSinger=findKnownKtvSinger(q);
  var treatAsSinger=(ktvSearchType==='artist'||!!knownSinger);
  var effectiveType=treatAsSinger?'artist':ktvSearchType;
@@ -1295,6 +1304,7 @@ function searchKtv(forceQuery){
     local.length+' 首本機 · '+online.length+' 筆網路 · 共 '+merged.length+' 筆'
    );
 
+   clearTimeout(searchWatchdog);
    setKtvSearchBusy(false);
    finishKtvSearchProgress('搜尋完成：共 '+merged.length+' 筆結果');
    $('ktvStatus').textContent=
@@ -1302,6 +1312,7 @@ function searchKtv(forceQuery){
   }).catch(function(){
    if(searchId!==ktvSearchSerial)return;
 
+   clearTimeout(searchWatchdog);
    setKtvSearchBusy(false);
    var merged=local.slice();
    ktvSearchResults=merged;
@@ -1319,7 +1330,7 @@ function searchKtv(forceQuery){
  var queries=ktvSearchQueries(q,effectiveType);
  var groups=[];
 
- fetchKtvQuery(queries[0],q,'',6000).then(function(first){
+ fetchKtvQuery(queries[0],q,'',4800).then(function(first){
   if(searchId!==ktvSearchSerial)return [];
 
   groups.push(first||[]);
@@ -1339,7 +1350,7 @@ function searchKtv(forceQuery){
    '第一批已找到 '+firstMerged.length+' 筆，正在繼續搜尋更多 KTV／伴奏版本…';
 
   var rest=queries.slice(1).map(function(query){
-   return fetchKtvQuery(query,q,'',7500);
+   return fetchKtvQuery(query,q,'',5000);
   });
   return Promise.all(rest);
 
@@ -1357,6 +1368,7 @@ function searchKtv(forceQuery){
    local.length+' 首本機 · '+online.length+' 筆網路 · 共 '+merged.length+' 筆'
   );
 
+  clearTimeout(searchWatchdog);
   setKtvSearchBusy(false);
   finishKtvSearchProgress('搜尋完成：共 '+merged.length+' 筆結果');
   $('ktvStatus').textContent=
@@ -1369,6 +1381,7 @@ function searchKtv(forceQuery){
   var merged=mergeKtvSongLists(local,online);
   ktvSearchResults=merged.slice();
 
+  clearTimeout(searchWatchdog);
   setKtvSearchBusy(false);
 
   if(merged.length){
