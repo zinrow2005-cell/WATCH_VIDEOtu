@@ -1,5 +1,5 @@
 {
-  "name": "WATCH_VIDEOtu V1.5.7.52 KTV Recording Studio",
+  "name": "WATCH_VIDEOtu｜影片・KTV・電視・電台",
   "short_name": "WATCH_VIDEOtu",
   "start_url": "./",
   "display": "standalone",
@@ -19,5 +19,6 @@
       "purpose": "any maskable"
     }
   ],
-  "scope": "./"
+  "scope": "./",
+  "description": "影片播放、KTV 歡唱錄音錄影、電視頻道、網路電台與音樂，支援電腦、手機和平板。"
 }
